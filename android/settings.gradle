@@ -1,0 +1,3 @@
+rootProject.name = 'TrendingSeriesClient'
+
+include ':app'
