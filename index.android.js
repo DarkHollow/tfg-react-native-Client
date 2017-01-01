@@ -8,6 +8,8 @@ import {
 } from 'react-native';
 
 import Root from './root';
+import Search from './search';
+import SearchResults from './searchResults';
 
 export default class TrendingSeriesClient extends Component {
 
@@ -16,6 +18,12 @@ export default class TrendingSeriesClient extends Component {
 
     if (route.name == 'root') {
       return <Root navigator={navigator} />
+    }
+    if (route.name == 'search') {
+      return <Search navigator={navigator} />
+    }
+    if (route.name == 'searchResults') {
+      return <SearchResults navigator={navigator} {...route.passProps} />
     }
   }
 
