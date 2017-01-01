@@ -18,6 +18,11 @@ class Root extends Component {
     return (
       <View style={styles.container}>
         <Text style={styles.title}>Trending Series</Text>
+
+        <TouchableHighlight onPress={this.navigate.bind(this, 'search')}
+          style={styles.button} >
+          <Text style={styles.buttonText}>Buscar</Text>
+        </TouchableHighlight>
       </View>
     );
   }
