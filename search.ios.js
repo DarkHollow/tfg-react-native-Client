@@ -8,8 +8,9 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
-  Alert
+  Alert,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 class Search extends Component {
   constructor() {
@@ -61,7 +62,8 @@ class Search extends Component {
         navigator={this.props.navigator}
         navigationBar={
           <Navigator.NavigationBar
-            routeMapper={NavigationBarRouteMapper} />
+            routeMapper={NavigationBarRouteMapper}
+            style={styles.nav} />
         }
       />
     );
@@ -78,7 +80,8 @@ class Search extends Component {
 
         <TextInput
          onChangeText={ (text)=> this.setState({searchText: text}) }
-         style={styles.input} value={this.state.searchText} >
+         style={styles.input} value={this.state.searchText}
+         placeholder='¿Qué serie buscas?' >
         </TextInput>
 
         <TouchableHighlight onPress={this.onBuscarBtnPressed.bind(this)} style={styles.button}>
@@ -95,11 +98,9 @@ class Search extends Component {
 var NavigationBarRouteMapper = {
   LeftButton(route, navigator, index, navState) {
     return (
-      <TouchableOpacity style={{flex: 1, justifyContent: 'center'}}
+      <TouchableOpacity style={styles.backButton}
           onPress={() => navigator.parentNavigator.pop()}>
-        <Text style={styles.backButtonText}>
-          &lt; Volver
-        </Text>
+        <Icon name="ios-arrow-back" style={styles.backIcon} />
       </TouchableOpacity>
     );
   },
@@ -108,9 +109,11 @@ var NavigationBarRouteMapper = {
   },
   Title(route, navigator, index, navState) {
     return (
-      <Text style={styles.titleText}>
-        Buscar
-      </Text>
+      <View style={styles.titleView}>
+        <Text style={styles.titleText}>
+          Buscar
+        </Text>
+      </View>
     );
   }
 };
@@ -120,35 +123,56 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-    padding: 10,
-    paddingTop: 80
+    backgroundColor: '#fafafa',
+    //padding: 10,
+    paddingTop: 64
+  },
+  nav: {
+    backgroundColor: '#3e50b4',
+  },
+  titleView: {
+    flex: 1,
+    justifyContent: 'center',
   },
   titleText: {
-    color: 'black',
-    margin: 10,
-    fontSize: 16
+    color: '#fefefe',
+    fontSize: 17,
+    fontWeight: '500'
   },
-  backButtonText: {
-    marginLeft: 10
+  backButton: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 9,
+    paddingTop: 11
+  },
+  backIcon: {
+    fontSize: 33,
+    color: '#fefefe'
   },
   input: {
-    height: 50,
+    height: 40,
     alignSelf: 'stretch',
-    fontSize: 18,
-    borderWidth: 1,
-    borderColor: '#48bbec',
-    color: 'black'
+    backgroundColor: '#fefefe',
+    color: '#212121',
+    fontSize: 14,
+    paddingLeft: 30,
+    paddingTop: 2,
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 1
+    },
+    shadowOpacity: 0.1
   },
   button: {
-    height: 50,
+    height: 40,
     backgroundColor: '#48BBEC',
     alignSelf: 'stretch',
     marginTop: 10,
     justifyContent: 'center'
   },
   buttonText: {
-    fontSize: 22,
+    fontSize: 20,
     color: '#FFF',
     alignSelf: 'center'
   },
