@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 
 import Root from './root';
-import Search from './search';
+import Search from './search.android';
 import SearchResults from './searchResults';
 
 export default class TrendingSeriesClient extends Component {
@@ -33,6 +33,13 @@ export default class TrendingSeriesClient extends Component {
         <Navigator
           initialRoute={{ name: 'root'}}
           renderScene={this.renderScene.bind(this)}
+          configureScene={(route) => {
+            if (route.name == 'search') {
+              return Navigator.SceneConfigs.FadeAndroid;
+            } else {
+              return Navigator.SceneConfigs.FloatFromBottomAndroid;
+            }
+          }}
           />
       </View>
     );
@@ -42,7 +49,7 @@ export default class TrendingSeriesClient extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5FCFF',
+    backgroundColor: '#fafafa',
   }
 });
 
