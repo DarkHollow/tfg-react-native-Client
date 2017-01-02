@@ -8,9 +8,10 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
+  Alert
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { Hideo } from 'react-native-textinput-effects';
 
 class Search extends Component {
   constructor() {
@@ -78,24 +79,21 @@ class Search extends Component {
     return (
       <View style={styles.container}>
         <View style={styles.viewSearch}>
-          <TextInput
-           onChangeText={ (text)=> this.setState({searchText: text}) }
-           style={styles.input} value={this.state.searchText}
-           placeholder='¿Qué serie buscas?'
-          underlineColorAndroid='rgba(0,0,0,0)'
-          autoCorrect={false} >
-          </TextInput>
+          <Hideo
+            placeholder='¿Qué serie buscas?'
+            iconClass={Icon}
+            iconName={'md-search'}
+            iconColor={'#757575'}
+            iconBackgroundColor={'#fefefe'}
+            inputStyle={styles.input}
+            onChangeText={ (text)=> this.setState({searchText: text}) }
+            onSubmitEditing={ () => this.onBuscarBtnPressed() }
+          />
         </View>
 
         <View style={styles.viewBody}>
-          <TouchableHighlight onPress={this.onBuscarBtnPressed.bind(this)} style={styles.button}>
-            <Text style={styles.buttonText}>
-              Buscar
-            </Text>
-          </TouchableHighlight>
           {spinner}
         </View>
-
       </View>
     );
   }
@@ -158,41 +156,23 @@ const styles = StyleSheet.create({
   },
   viewSearch: {
     elevation: 2,
-    height: 53,
+    height: 54,
     borderWidth: 1,
     borderColor: '#fefefe',
-    backgroundColor: '#fefefe'
+    backgroundColor: '#fefefe',
+    paddingTop: 4
   },
   input: {
-    height: 50,
     alignSelf: 'stretch',
-    marginTop: 6,
     backgroundColor: '#fefefe',
-    color: '#212121',
-    fontSize: 16,
-    paddingLeft: 40,
-    paddingTop: 2
+    color: '#757575',
+    fontSize: 16
   },
   viewBody: {
     flex: 1,
     padding: 10,
     justifyContent: 'flex-start',
     alignItems: 'center'
-  },
-  button: {
-    height: 40,
-    backgroundColor: '#48BBEC',
-    alignSelf: 'stretch',
-    marginTop: 10,
-    justifyContent: 'center'
-  },
-  buttonText: {
-    fontSize: 20,
-    color: '#FFF',
-    alignSelf: 'center'
-  },
-  heading: {
-    fontSize: 30,
   },
   loader: {
     marginTop: 20

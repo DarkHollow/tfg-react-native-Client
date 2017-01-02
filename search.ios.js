@@ -8,9 +8,10 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
+  Alert
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { Hideo } from 'react-native-textinput-effects';
 
 class Search extends Component {
   constructor() {
@@ -77,19 +78,22 @@ class Search extends Component {
 
     return (
       <View style={styles.container}>
+        <View style={styles.viewSearch}>
+          <Hideo
+            placeholder='¿Qué serie buscas?'
+            iconClass={Icon}
+            iconName={'ios-search'}
+            iconColor={'#757575'}
+            iconBackgroundColor={'#fefefe'}
+            inputStyle={styles.input}
+            onChangeText={ (text)=> this.setState({searchText: text}) }
+            onSubmitEditing={ () => this.onBuscarBtnPressed() }
+          />
+        </View>
 
-        <TextInput
-         onChangeText={ (text)=> this.setState({searchText: text}) }
-         style={styles.input} value={this.state.searchText}
-         placeholder='¿Qué serie buscas?' >
-        </TextInput>
-
-        <TouchableHighlight onPress={this.onBuscarBtnPressed.bind(this)} style={styles.button}>
-          <Text style={styles.buttonText}>
-            Buscar
-          </Text>
-        </TouchableHighlight>
+        <View style={styles.viewBody}>
         {spinner}
+        </View>
       </View>
     );
   }
@@ -122,7 +126,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'flex-start',
-    alignItems: 'center',
+    //alignItems: 'center',
     backgroundColor: '#fafafa',
     //padding: 10,
     paddingTop: 64
@@ -149,35 +153,28 @@ const styles = StyleSheet.create({
     fontSize: 33,
     color: '#fefefe'
   },
-  input: {
-    height: 40,
+  viewSearch: {
+    height: 46,
     alignSelf: 'stretch',
     backgroundColor: '#fefefe',
-    color: '#212121',
-    fontSize: 14,
-    paddingLeft: 30,
-    paddingTop: 2,
     shadowColor: '#000000',
     shadowOffset: {
+      height: 1,
       width: 0,
-      height: 1
     },
-    shadowOpacity: 0.1
+    shadowOpacity: 0.2,
   },
-  button: {
-    height: 40,
-    backgroundColor: '#48BBEC',
+  input: {
     alignSelf: 'stretch',
-    marginTop: 10,
-    justifyContent: 'center'
+    backgroundColor: '#fefefe',
+    color: '#757575',
+    fontSize: 16
   },
-  buttonText: {
-    fontSize: 20,
-    color: '#FFF',
-    alignSelf: 'center'
-  },
-  heading: {
-    fontSize: 30,
+  viewBody: {
+    flex: 1,
+    padding: 10,
+    justifyContent: 'flex-start',
+    alignItems: 'center'
   },
   loader: {
     marginTop: 20
