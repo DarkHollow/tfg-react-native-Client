@@ -4,7 +4,8 @@ import {
   StyleSheet,
   Text,
   View,
-  Navigator
+  Navigator,
+  BackAndroid
 } from 'react-native';
 
 import Root from './root';
@@ -16,6 +17,17 @@ export default class TrendingSeriesClient extends Component {
   renderScene(route, navigator) {
     console.log(route);
 
+    // comportamiento del botón Back de Android según la escena
+    BackAndroid.addEventListener('hardwareBackPress', () => {
+      if (route.name == 'root') {
+        return true;
+      } else if(route.name == 'search') {
+        navigator.pop();
+        return true;
+      }
+    });
+
+    // qué vista cargar en el navigator
     if (route.name == 'root') {
       return <Root navigator={navigator} />
     }
