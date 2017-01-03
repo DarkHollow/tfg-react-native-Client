@@ -130,11 +130,12 @@ const styles = StyleSheet.create({
     //alignItems: 'center',
     backgroundColor: '#fafafa',
     //padding: 10,
-    paddingTop: 56
+    paddingTop: 80
   },
   nav: {
     elevation: 6,
     backgroundColor: '#3e50b4',
+    marginTop: 24
   },
   titleView: {
     flex: 1,
