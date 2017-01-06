@@ -8,7 +8,8 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
-  Alert
+  Alert,
+  ListView
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Hideo } from 'react-native-textinput-effects';
@@ -16,10 +17,12 @@ import { Hideo } from 'react-native-textinput-effects';
 class Search extends Component {
   constructor() {
     super();
+    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state = {
       searchText: "",
+      searchedText: "",
       showProgress: false,
-      jsonData: "",
+      dataSource: ds.cloneWithRows([])
     }
   }
 
@@ -31,19 +34,35 @@ class Search extends Component {
 
   onBuscarBtnPressed() {
     // fetch datos de la API
+
+    // mostramos spinner
     this.setState({showProgress: true});
+    // guardamos el termino buscado
+    this.setState({searchedText: this.state.searchText});
+    // vaciamos la lista
+    this.setState({dataSource: this.state.dataSource.cloneWithRows([])});
 
     console.log('Buscar ' + this.state.searchText);
 
-    fetch('http://localhost:9000/api/search/series/' + this.state.searchText, {method: "GET"})
+    // hacemos fetch a la API
+    fetch('http://192.168.1.13:9000/api/search/series/' + this.state.searchText, {method: "GET"})
     .then((response) => response.json())
     .then((responseData) => {
+      this.processData(responseData);
       this.setState({showProgress: false});
-      this.redirect('searchResults', responseData);
     }).catch((error) => {
       this.setState({showProgress: false});
       Alert.alert('', 'Lamentablemente, no se ha podido buscar');
     });
+  }
+
+  processData(data) {
+    // si la API nos devuelve que no ha encontrado nada
+    if (data.error == "Not found") {
+      // TODO: mostrar que no se ha encontrado
+    } else {
+      this.setState({dataSource: this.state.dataSource.cloneWithRows(data)});
+    }
   }
 
   redirect(routeName, responseData) {
@@ -93,6 +112,11 @@ class Search extends Component {
 
         <View style={styles.viewBody}>
           {spinner}
+          <ListView
+            dataSource={this.state.dataSource}
+            renderRow={(rowData) => <Text>{rowData.seriesName}</Text>}
+            enableEmptySections={true}
+          />
         </View>
       </View>
     );
