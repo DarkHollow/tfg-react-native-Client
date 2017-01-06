@@ -26,15 +26,8 @@ class Search extends Component {
     }
   }
 
-  redirect(routeName) {
-    this.props.navigator.push({
-      name: routeName
-    });
-  }
-
   onBuscarBtnPressed() {
     // fetch datos de la API
-
     // mostramos spinner
     this.setState({showProgress: true});
     // guardamos el termino buscado
@@ -63,16 +56,6 @@ class Search extends Component {
     } else {
       this.setState({dataSource: this.state.dataSource.cloneWithRows(data)});
     }
-  }
-
-  redirect(routeName, responseData) {
-    this.props.navigator.push({
-      name: routeName,
-      passProps: {
-        responseData: responseData,
-        searchText: this.state.searchText
-      }
-    });
   }
 
   render() {
