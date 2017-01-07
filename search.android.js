@@ -10,7 +10,8 @@ import {
   ActivityIndicator,
   Alert,
   ListView,
-  Image
+  Image,
+  Animated
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Hideo } from 'react-native-textinput-effects';
@@ -23,19 +24,33 @@ class Search extends Component {
       searchText: "",
       searchedText: "",
       showProgress: false,
-      dataSource: ds.cloneWithRows([])
+      dataSource: ds.cloneWithRows([]),
+      listviewOpacity: new Animated.Value(0),
     }
+  }
+
+  listviewAnimationShow() {
+    Animated.timing(this.state.listviewOpacity, {
+      toValue: 1,
+      duration: 500
+    }).start();
+  }
+
+  listviewAnimationHide() {
+    Animated.timing(this.state.listviewOpacity, {
+      toValue: 0,
+      // fade out, es decir, opacity de 1 to 0 no funciona, por lo que duration 0
+      duration: 0
+    }).start();
   }
 
   onBuscarBtnPressed() {
     // fetch datos de la API
-
-    // mostramos spinner
+    // ocultamos lista y mostramos spinner
+    this.listviewAnimationHide();
     this.setState({showProgress: true});
     // guardamos el termino buscado
     this.setState({searchedText: this.state.searchText});
-    // vaciamos la lista
-    this.setState({dataSource: this.state.dataSource.cloneWithRows([])});
 
     console.log('Buscar ' + this.state.searchText);
 
@@ -44,7 +59,12 @@ class Search extends Component {
     .then((response) => response.json())
     .then((responseData) => {
       this.processData(responseData);
+    }).then( () => {
+      // ocultamos spinner
       this.setState({showProgress: false});
+    }).then( () => {
+      // mostramos lista
+      this.listviewAnimationShow();
     }).catch((error) => {
       this.setState({showProgress: false});
       Alert.alert('', 'Lamentablemente, no se ha podido buscar');
@@ -123,14 +143,15 @@ class Search extends Component {
           />
         </View>
 
-        <View style={styles.viewBody}>
-          {spinner}
+        {spinner}
+
+        <Animated.View style={[{opacity: this.state.listviewOpacity}, styles.viewBody]}>
           <ListView
             dataSource={this.state.dataSource}
             renderRow={(rowData) => this.renderRow(rowData)}
             enableEmptySections={true}
           />
-        </View>
+        </Animated.View>
       </View>
     );
   }
@@ -209,13 +230,15 @@ const styles = StyleSheet.create({
   },
   rowTouch: {
     flex: 1,
+    borderRadius: 2,
+    elevation: 2,
+    backgroundColor: '#fafafa',
+    margin: 12,
+    marginBottom: -3,
     borderRadius: 2
   },
   row: {
     flex: 1,
-    elevation: 2,
-    backgroundColor: '#fafafa',
-    margin: 8,
     borderRadius: 2
   },
   rowTop: {
