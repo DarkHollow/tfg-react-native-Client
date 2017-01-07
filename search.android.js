@@ -9,7 +9,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  ListView
+  ListView,
+  Image
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Hideo } from 'react-native-textinput-effects';
@@ -59,6 +60,34 @@ class Search extends Component {
     }
   }
 
+  renderRow(rowData) {
+    return (
+      <TouchableOpacity style={styles.rowTouch}>
+        <View style={styles.row}>
+          <View style={styles.rowTop}>
+            <Image style={styles.rowImage}
+              source={{uri: rowData.banner}}
+            />
+          </View>
+          <View style={styles.rowBottom}>
+            <View style={styles.rowBottomLeft}>
+              <Text style={styles.rowTitle}>{rowData.seriesName}</Text>
+              <Text style={styles.rowSubtitle}>Año
+                {' ' + new Date(rowData.firstAired).getFullYear()}
+              </Text>
+            </View>
+            <View style={styles.rowBottomRight}>
+              <View style={styles.rating}>
+                <Text style={styles.ratingText}>4,7</Text>
+                <Icon name='md-star' style={styles.ratingIcon}></Icon>
+              </View>
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  }
+
   render() {
     return(
       <Navigator
@@ -86,8 +115,8 @@ class Search extends Component {
             placeholder='¿Qué serie buscas?'
             iconClass={Icon}
             iconName={'md-search'}
-            iconColor={'#757575'}
-            iconBackgroundColor={'#fefefe'}
+            iconColor={'#616161'}
+            iconBackgroundColor={'#ffffff'}
             inputStyle={styles.input}
             onChangeText={ (text)=> this.setState({searchText: text}) }
             onSubmitEditing={ () => this.onBuscarBtnPressed() }
@@ -98,7 +127,7 @@ class Search extends Component {
           {spinner}
           <ListView
             dataSource={this.state.dataSource}
-            renderRow={(rowData) => <Text>{rowData.seriesName}</Text>}
+            renderRow={(rowData) => this.renderRow(rowData)}
             enableEmptySections={true}
           />
         </View>
@@ -134,10 +163,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'column',
-    //justifyContent: 'flex-start',
-    //alignItems: 'center',
-    backgroundColor: '#fafafa',
-    //padding: 10,
+    backgroundColor: '#eeeeee',
     paddingTop: 80
   },
   nav: {
@@ -168,20 +194,75 @@ const styles = StyleSheet.create({
     height: 54,
     borderWidth: 1,
     borderColor: '#fefefe',
-    backgroundColor: '#fefefe',
+    backgroundColor: '#ffffff',
     paddingTop: 4
   },
   input: {
     alignSelf: 'stretch',
-    backgroundColor: '#fefefe',
-    color: '#757575',
+    backgroundColor: '#ffffff',
+    color: '#616161',
     fontSize: 16
   },
   viewBody: {
     flex: 1,
-    padding: 10,
-    justifyContent: 'flex-start',
-    alignItems: 'center'
+    justifyContent: 'flex-start'
+  },
+  rowTouch: {
+    flex: 1,
+    borderRadius: 2
+  },
+  row: {
+    flex: 1,
+    elevation: 2,
+    backgroundColor: '#fafafa',
+    margin: 8,
+    borderRadius: 2
+  },
+  rowTop: {
+    flex: 1,
+    borderRadius: 2
+  },
+  rowImage: {
+    height: 66,
+    resizeMode: 'cover',
+    borderTopLeftRadius: 2,
+    borderTopRightRadius: 2
+  },
+  rowBottom: {
+    flex: 1,
+    flexDirection: 'row',
+    padding: 14
+  },
+  rowBottomLeft: {
+    flex: 1,
+  },
+  rowTitle: {
+    fontFamily: 'Roboto-Regular',
+    fontSize: 16,
+    color: '#212121'
+  },
+  rowSubtitle: {
+    fontFamily: 'Roboto-Regular',
+    fontSize: 12,
+    color: '#616161'
+  },
+  rowBottomRight: {
+    alignSelf: 'flex-end',
+    marginBottom: 10
+  },
+  rating: {
+    flexDirection: 'row'
+  },
+  ratingText: {
+    fontFamily: 'Roboto-Regular',
+    fontSize: 12,
+    color: '#616161',
+    marginRight: 3
+  },
+  ratingIcon: {
+    marginTop: 1,
+    fontSize: 14,
+    color: '#616161'
   },
   loader: {
     marginTop: 20

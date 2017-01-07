@@ -9,7 +9,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  ListView
+  ListView,
+  Image
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Hideo } from 'react-native-textinput-effects';
@@ -58,6 +59,35 @@ class Search extends Component {
     }
   }
 
+  renderRow(rowData) {
+    return (
+      <TouchableOpacity style={styles.rowTouch}>
+        <View style={styles.row}>
+          <View style={styles.rowTop}>
+            <Image style={styles.rowImage}
+              source={{uri: rowData.banner}}
+            />
+          </View>
+          <View style={styles.rowBottom}>
+            <View style={styles.rowBottomLeft}>
+              <Text style={styles.rowTitle}>{rowData.seriesName}</Text>
+              <Text style={styles.rowSubtitle}>Año
+                {' ' + new Date(rowData.firstAired).getFullYear()}
+              </Text>
+            </View>
+            <View style={styles.rowBottomRight}>
+              <View style={styles.rating}>
+                <Text style={styles.ratingText}>4,7</Text>
+                <Icon name='ios-star' style={styles.ratingIcon}></Icon>
+                <Icon name='ios-arrow-forward' style={styles.forwardIcon}></Icon>
+              </View>
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  }
+
   render() {
     return(
       <Navigator
@@ -85,21 +115,22 @@ class Search extends Component {
             placeholder='¿Qué serie buscas?'
             iconClass={Icon}
             iconName={'ios-search'}
-            iconColor={'#757575'}
-            iconBackgroundColor={'#fefefe'}
+            iconColor={'#616161'}
+            iconBackgroundColor={'#ffffff'}
             inputStyle={styles.input}
+            clearButtonMode={'always'}
             onChangeText={ (text)=> this.setState({searchText: text}) }
             onSubmitEditing={ () => this.onBuscarBtnPressed() }
           />
         </View>
 
         <View style={styles.viewBody}>
-        {spinner}
-        <ListView
-          dataSource={this.state.dataSource}
-          renderRow={(rowData) => <Text>{rowData.seriesName}</Text>}
-          enableEmptySections={true}
-        />
+          {spinner}
+          <ListView
+            dataSource={this.state.dataSource}
+            renderRow={(rowData) => this.renderRow(rowData)}
+            enableEmptySections={true}
+          />
         </View>
       </View>
     );
@@ -133,13 +164,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'flex-start',
-    //alignItems: 'center',
     backgroundColor: '#fafafa',
-    //padding: 10,
     paddingTop: 64
   },
   nav: {
     backgroundColor: '#3e50b4',
+    borderBottomWidth: 1,
+    borderColor: '#2f3e9e'
   },
   titleView: {
     flex: 1,
@@ -163,25 +194,81 @@ const styles = StyleSheet.create({
   viewSearch: {
     height: 46,
     alignSelf: 'stretch',
-    backgroundColor: '#fefefe',
+    backgroundColor: '#ffffff',
     shadowColor: '#000000',
     shadowOffset: {
       height: 1,
       width: 0,
     },
     shadowOpacity: 0.2,
+    zIndex: 1,
   },
   input: {
     alignSelf: 'stretch',
-    backgroundColor: '#fefefe',
-    color: '#757575',
+    backgroundColor: '#ffffff',
+    color: '#616161',
     fontSize: 16
   },
   viewBody: {
     flex: 1,
-    padding: 10,
     justifyContent: 'flex-start',
-    alignItems: 'center'
+    backgroundColor: '#eeeeee'
+  },
+  rowTouch: {
+    flex: 1,
+    marginBottom: 8,
+    borderBottomWidth: 1,
+    borderColor: '#dedede'
+  },
+  row: {
+    flex: 1,
+    backgroundColor: '#fafafa'
+  },
+  rowTop: {
+    flex: 1,
+  },
+  rowImage: {
+    height: 66,
+    resizeMode: 'cover'
+  },
+  rowBottom: {
+    flex: 1,
+    flexDirection: 'row',
+    padding: 14
+  },
+  rowBottomLeft: {
+    flex: 1,
+  },
+  rowTitle: {
+    fontSize: 16,
+    color: '#212121'
+  },
+  rowSubtitle: {
+    fontSize: 12,
+    color: '#aaaaaa'
+  },
+  rowBottomRight: {
+    alignSelf: 'flex-end',
+    marginBottom: 3
+  },
+  rating: {
+    flexDirection: 'row'
+  },
+  ratingText: {
+    fontSize: 12,
+    color: '#aaaaaa',
+    marginRight: 3,
+    marginTop: 3
+  },
+  ratingIcon: {
+    fontSize: 14,
+    color: '#aaaaaa',
+    marginTop: 3
+  },
+  forwardIcon: {
+    fontSize: 20,
+    color: '#bbbbc1',
+    marginLeft: 20
   },
   loader: {
     marginTop: 20
