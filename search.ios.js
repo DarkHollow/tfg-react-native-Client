@@ -134,7 +134,6 @@ class Search extends Component {
         <View style={styles.viewSearch}>
           <Hideo
             placeholder={'¿Qué serie buscas?'}
-
             iconClass={Icon}
             iconName={'ios-search'}
             iconColor={'#616161'}
