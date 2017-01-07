@@ -10,7 +10,8 @@ import {
   ActivityIndicator,
   Alert,
   ListView,
-  Image
+  Image,
+  Animated
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Hideo } from 'react-native-textinput-effects';
@@ -23,18 +24,33 @@ class Search extends Component {
       searchText: "",
       searchedText: "",
       showProgress: false,
-      dataSource: ds.cloneWithRows([])
+      dataSource: ds.cloneWithRows([]),
+      listviewOpacity: new Animated.Value(0),
     }
+  }
+
+  listviewAnimationShow() {
+    Animated.timing(this.state.listviewOpacity, {
+      toValue: 1,
+      duration: 500
+    }).start();
+  }
+
+  listviewAnimationHide() {
+    Animated.timing(this.state.listviewOpacity, {
+      toValue: 0,
+      // fade out, es decir, opacity de 1 to 0 en iOS SÍ funciona
+      duration: 500
+    }).start();
   }
 
   onBuscarBtnPressed() {
     // fetch datos de la API
-    // mostramos spinner
+    // ocultamos lista y mostramos spinner
+    this.listviewAnimationHide();
     this.setState({showProgress: true});
     // guardamos el termino buscado
     this.setState({searchedText: this.state.searchText});
-    // vaciamos la lista
-    this.setState({dataSource: this.state.dataSource.cloneWithRows([])});
 
     console.log('Buscar ' + this.state.searchText);
 
@@ -43,7 +59,12 @@ class Search extends Component {
     .then((response) => response.json())
     .then((responseData) => {
       this.processData(responseData);
+    }).then( () => {
+      // ocultamos spinner
       this.setState({showProgress: false});
+    }).then( () => {
+      // mostramos lista
+      this.listviewAnimationShow();
     }).catch((error) => {
       this.setState({showProgress: false});
       Alert.alert('', 'Lamentablemente, no se ha podido buscar');
@@ -105,32 +126,35 @@ class Search extends Component {
   renderScene(route, navigator) {
     var spinner = this.state.showProgress ?
       ( <ActivityIndicator style={styles.loader}
-          size='large'/> ) :
+          size={'small'} color={'#fe3f80'} /> ) :
       ( <View/>);
 
     return (
       <View style={styles.container}>
         <View style={styles.viewSearch}>
           <Hideo
-            placeholder='¿Qué serie buscas?'
+            placeholder={'¿Qué serie buscas?'}
+
             iconClass={Icon}
             iconName={'ios-search'}
             iconColor={'#616161'}
-            iconBackgroundColor={'#ffffff'}
+            iconBackgroundColor={'#eeeeee'}
             inputStyle={styles.input}
             clearButtonMode={'always'}
             onChangeText={ (text)=> this.setState({searchText: text}) }
             onSubmitEditing={ () => this.onBuscarBtnPressed() }
           />
+          {spinner}
         </View>
 
         <View style={styles.viewBody}>
-          {spinner}
-          <ListView
-            dataSource={this.state.dataSource}
-            renderRow={(rowData) => this.renderRow(rowData)}
-            enableEmptySections={true}
-          />
+          <Animated.View style={{opacity: this.state.listviewOpacity}}>
+            <ListView
+              dataSource={this.state.dataSource}
+              renderRow={(rowData) => this.renderRow(rowData)}
+              enableEmptySections={true}
+            />
+          </Animated.View>
         </View>
       </View>
     );
@@ -192,22 +216,20 @@ const styles = StyleSheet.create({
     color: '#fefefe'
   },
   viewSearch: {
-    height: 46,
+    height: 49,
     alignSelf: 'stretch',
-    backgroundColor: '#ffffff',
-    shadowColor: '#000000',
-    shadowOffset: {
-      height: 1,
-      width: 0,
-    },
-    shadowOpacity: 0.2,
+    backgroundColor: '#eeeeee',
     zIndex: 1,
   },
   input: {
+    height: 30,
+    marginTop: 10,
     alignSelf: 'stretch',
-    backgroundColor: '#ffffff',
+    backgroundColor: '#e6e6e6',
     color: '#616161',
-    fontSize: 16
+    fontSize: 14,
+    marginRight: 50,
+    borderRadius: 4
   },
   viewBody: {
     flex: 1,
@@ -271,7 +293,10 @@ const styles = StyleSheet.create({
     marginLeft: 20
   },
   loader: {
-    marginTop: 20
+    marginTop: 20,
+    alignSelf: 'flex-end',
+    marginRight: 14,
+    marginBottom: 20
   }
 });
 
