@@ -8,7 +8,13 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
-  Alert
+  Alert,
+  ListView,
+  Image,
+  Animated,
+  StatusBar,
+  Keyboard,
+  KeyboardAvoidingView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Hideo } from 'react-native-textinput-effects';
@@ -16,84 +22,159 @@ import { Hideo } from 'react-native-textinput-effects';
 class Search extends Component {
   constructor() {
     super();
+    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state = {
       searchText: "",
+      searchedText: "",
       showProgress: false,
-      jsonData: "",
+      dataSource: ds.cloneWithRows([]),
+      listviewOpacity: new Animated.Value(0),
     }
   }
 
-  redirect(routeName) {
-    this.props.navigator.push({
-      name: routeName
-    });
+  listviewAnimationShow() {
+    Animated.timing(this.state.listviewOpacity, {
+      toValue: 1,
+      duration: 500
+    }).start();
+  }
+
+  listviewAnimationHide() {
+    Animated.timing(this.state.listviewOpacity, {
+      toValue: 0,
+      // fade out, es decir, opacity de 1 to 0 en iOS SÍ funciona
+      duration: 500
+    }).start();
   }
 
   onBuscarBtnPressed() {
     // fetch datos de la API
+    // ocultamos lista y mostramos spinner
+    this.listviewAnimationHide();
     this.setState({showProgress: true});
+    // guardamos el termino buscado
+    this.setState({searchedText: this.state.searchText});
 
     console.log('Buscar ' + this.state.searchText);
 
+    // hacemos fetch a la API
     fetch('http://localhost:9000/api/search/series/' + this.state.searchText, {method: "GET"})
     .then((response) => response.json())
     .then((responseData) => {
+      this.processData(responseData);
+    }).then( () => {
+      // ocultamos spinner
       this.setState({showProgress: false});
-      this.redirect('searchResults', responseData);
+    }).then( () => {
+      // mostramos lista
+      this.listviewAnimationShow();
+      // ocultamos teclado
+      Keyboard.dismiss();
     }).catch((error) => {
       this.setState({showProgress: false});
       Alert.alert('', 'Lamentablemente, no se ha podido buscar');
     });
   }
 
-  redirect(routeName, responseData) {
-    this.props.navigator.push({
-      name: routeName,
-      passProps: {
-        responseData: responseData,
-        searchText: this.state.searchText
-      }
-    });
+  processData(data) {
+    // si la API nos devuelve que no ha encontrado nada
+    if (data.error == "Not found") {
+      // TODO: mostrar que no se ha encontrado
+    } else {
+      // cargamos datos en el datasource
+      this.setState({dataSource: this.state.dataSource.cloneWithRows(data)});
+    }
+  }
+
+  renderHeader() {
+    return (
+      <View style={styles.listHeader}>
+        <Text style={styles.listHeaderLeft}>Resultados de "{this.state.searchedText}"</Text>
+        <Text style={styles.listHeaderRight}>{this.state.dataSource.getSectionLengths()}</Text>
+      </View>
+    );
+  }
+
+  renderRow(rowData) {
+    return (
+      <TouchableOpacity style={styles.rowTouch}>
+        <View style={styles.row}>
+          <View style={styles.rowTop}>
+            <Image style={styles.rowImage}
+              source={{uri: rowData.banner}}
+            />
+          </View>
+          <View style={styles.rowBottom}>
+            <View style={styles.rowBottomLeft}>
+              <Text style={styles.rowTitle}>{rowData.seriesName}</Text>
+              <Text style={styles.rowSubtitle}>Año
+                {' ' + new Date(rowData.firstAired).getFullYear()}
+              </Text>
+            </View>
+            <View style={styles.rowBottomRight}>
+              <View style={styles.rating}>
+                <Text style={styles.ratingText}>4,7</Text>
+                <Icon name='ios-star' style={styles.ratingIcon}></Icon>
+                <Icon name='ios-arrow-forward' style={styles.forwardIcon}></Icon>
+              </View>
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
   }
 
   render() {
     return(
-      <Navigator
-        renderScene={this.renderScene.bind(this)}
-        navigator={this.props.navigator}
-        navigationBar={
-          <Navigator.NavigationBar
-            routeMapper={NavigationBarRouteMapper}
-            style={styles.nav} />
-        }
-      />
+      <View style={styles.statusBarAndNavView}>
+        <StatusBar barStyle={'light-content'} animated />
+        <Navigator
+          renderScene={this.renderScene.bind(this)}
+          navigator={this.props.navigator}
+          navigationBar={
+            <Navigator.NavigationBar
+              routeMapper={NavigationBarRouteMapper}
+              style={styles.nav} />
+          }
+        />
+      </View>
     );
   }
 
   renderScene(route, navigator) {
     var spinner = this.state.showProgress ?
       ( <ActivityIndicator style={styles.loader}
-          size='large'/> ) :
+          size={'small'} color={'#fe3f80'} /> ) :
       ( <View/>);
 
     return (
       <View style={styles.container}>
         <View style={styles.viewSearch}>
           <Hideo
-            placeholder='¿Qué serie buscas?'
+            autoFocus={true}
+            placeholder={'¿Qué serie buscas?'}
             iconClass={Icon}
             iconName={'ios-search'}
-            iconColor={'#757575'}
-            iconBackgroundColor={'#fefefe'}
+            iconColor={'#616161'}
+            iconBackgroundColor={'#eeeeee'}
             inputStyle={styles.input}
+            clearButtonMode={'always'}
             onChangeText={ (text)=> this.setState({searchText: text}) }
             onSubmitEditing={ () => this.onBuscarBtnPressed() }
           />
+          {spinner}
         </View>
 
-        <View style={styles.viewBody}>
-        {spinner}
-        </View>
+        <KeyboardAvoidingView behavior={'padding'} style={styles.viewBody}>
+          <Animated.View style={{opacity: this.state.listviewOpacity}}>
+            <ListView
+              dataSource={this.state.dataSource}
+              renderHeader={() => this.renderHeader()}
+              renderRow={(rowData) => this.renderRow(rowData)}
+              enableEmptySections={true}
+            />
+          </Animated.View>
+        </KeyboardAvoidingView>
       </View>
     );
   }
@@ -123,16 +204,13 @@ var NavigationBarRouteMapper = {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  statusBarAndNavView: {
     flex: 1,
-    justifyContent: 'flex-start',
-    //alignItems: 'center',
-    backgroundColor: '#fafafa',
-    //padding: 10,
-    paddingTop: 64
   },
   nav: {
     backgroundColor: '#3e50b4',
+    borderBottomWidth: 1,
+    borderColor: '#2f3e9e'
   },
   titleView: {
     flex: 1,
@@ -153,31 +231,113 @@ const styles = StyleSheet.create({
     fontSize: 33,
     color: '#fefefe'
   },
+  container: {
+    flex: 1,
+    justifyContent: 'flex-start',
+    backgroundColor: '#fafafa',
+    paddingTop: 64
+  },
   viewSearch: {
-    height: 46,
+    height: 49,
     alignSelf: 'stretch',
-    backgroundColor: '#fefefe',
-    shadowColor: '#000000',
-    shadowOffset: {
-      height: 1,
-      width: 0,
-    },
-    shadowOpacity: 0.2,
+    backgroundColor: '#eeeeee',
+    zIndex: 1,
   },
   input: {
+    height: 30,
+    marginTop: 10,
     alignSelf: 'stretch',
-    backgroundColor: '#fefefe',
-    color: '#757575',
-    fontSize: 16
+    backgroundColor: '#e6e6e6',
+    color: '#616161',
+    fontSize: 14,
+    marginRight: 50,
+    borderRadius: 4
   },
   viewBody: {
     flex: 1,
-    padding: 10,
     justifyContent: 'flex-start',
-    alignItems: 'center'
+    backgroundColor: '#eeeeee'
+  },
+  listHeader: {
+    backgroundColor: '#e6e6e6',
+    padding: 8,
+    paddingLeft: 12,
+    flexDirection: 'row'
+  },
+  listHeaderLeft: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: '100',
+    color: '#616161'
+  },
+  listHeaderRight: {
+    alignSelf: 'flex-end',
+    marginRight: 5,
+    fontSize: 12,
+    fontWeight: '100',
+    color: '#616161'
+  },
+  rowTouch: {
+    flex: 1,
+    marginBottom: 8,
+    borderBottomWidth: 1,
+    borderColor: '#dedede'
+  },
+  row: {
+    flex: 1,
+    backgroundColor: '#fafafa'
+  },
+  rowTop: {
+    flex: 1,
+  },
+  rowImage: {
+    height: 66,
+    resizeMode: 'cover'
+  },
+  rowBottom: {
+    flex: 1,
+    flexDirection: 'row',
+    padding: 14
+  },
+  rowBottomLeft: {
+    flex: 1,
+  },
+  rowTitle: {
+    fontSize: 16,
+    color: '#212121'
+  },
+  rowSubtitle: {
+    fontSize: 12,
+    color: '#aaaaaa'
+  },
+  rowBottomRight: {
+    alignSelf: 'flex-end',
+    marginBottom: 3
+  },
+  rating: {
+    flexDirection: 'row'
+  },
+  ratingText: {
+    fontSize: 12,
+    color: '#aaaaaa',
+    marginRight: 3,
+    marginTop: 3
+  },
+  ratingIcon: {
+    fontSize: 14,
+    color: '#aaaaaa',
+    marginTop: 3
+  },
+  forwardIcon: {
+    fontSize: 20,
+    color: '#bbbbc1',
+    marginLeft: 20
   },
   loader: {
-    marginTop: 20
+    marginTop: 20,
+    alignSelf: 'flex-end',
+    marginRight: 14,
+    marginBottom: 20
   }
 });
 

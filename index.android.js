@@ -5,7 +5,8 @@ import {
   Text,
   View,
   Navigator,
-  BackAndroid
+  BackAndroid,
+  StatusBar,
 } from 'react-native';
 
 import Root from './root';
@@ -42,6 +43,7 @@ export default class TrendingSeriesClient extends Component {
   render() {
     return (
       <View style={styles.container}>
+        <StatusBar animated backgroundColor={'#2f3e9e'} />
         <Navigator
           initialRoute={{ name: 'root'}}
           renderScene={this.renderScene.bind(this)}
