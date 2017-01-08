@@ -118,6 +118,12 @@ class Search extends Component {
     );
   }
 
+  renderFooter() {
+    return (
+      <View style={styles.separatorView}></View>
+    );
+  }
+
   render() {
     return(
       <Navigator
@@ -160,6 +166,7 @@ class Search extends Component {
             dataSource={this.state.dataSource}
             renderHeader={() => this.renderHeader()}
             renderRow={(rowData) => this.renderRow(rowData)}
+            renderFooter={() => this.renderFooter()}
             enableEmptySections={true}
           />
         </Animated.View>
@@ -314,6 +321,9 @@ const styles = StyleSheet.create({
     marginTop: 1,
     fontSize: 14,
     color: '#616161'
+  },
+  separatorView: {
+    height: 54
   },
   loader: {
     marginTop: 20
