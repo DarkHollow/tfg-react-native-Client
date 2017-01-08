@@ -76,8 +76,18 @@ class Search extends Component {
     if (data.error == "Not found") {
       // TODO: mostrar que no se ha encontrado
     } else {
+      // cargamos datos en el datasource
       this.setState({dataSource: this.state.dataSource.cloneWithRows(data)});
     }
+  }
+
+  renderHeader() {
+    return (
+      <View style={styles.listHeader}>
+        <Text style={styles.listHeaderLeft}>Resultados de "{this.state.searchedText}"</Text>
+        <Text style={styles.listHeaderRight}>{this.state.dataSource.getSectionLengths()}</Text>
+      </View>
+    );
   }
 
   renderRow(rowData) {
@@ -148,6 +158,7 @@ class Search extends Component {
         <Animated.View style={[{opacity: this.state.listviewOpacity}, styles.viewBody]}>
           <ListView
             dataSource={this.state.dataSource}
+            renderHeader={() => this.renderHeader()}
             renderRow={(rowData) => this.renderRow(rowData)}
             enableEmptySections={true}
           />
@@ -228,13 +239,30 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-start'
   },
+  listHeader: {
+    backgroundColor: '#e6e6e6',
+    padding: 14,
+    paddingTop: 8,
+    paddingBottom: 8,
+    flexDirection: 'row'
+  },
+  listHeaderLeft: {
+    flex: 1,
+    fontFamily: 'Roboto-Light'
+  },
+  listHeaderRight: {
+    alignSelf: 'flex-end',
+    //marginRight: 5,
+    fontFamily: 'Roboto-Light'
+  },
   rowTouch: {
     flex: 1,
     borderRadius: 2,
     elevation: 2,
     backgroundColor: '#fafafa',
     margin: 12,
-    marginBottom: -3,
+    marginTop: 8,
+    marginBottom: -2,
     borderRadius: 2
   },
   row: {
