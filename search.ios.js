@@ -13,6 +13,8 @@ import {
   Image,
   Animated,
   StatusBar,
+  Keyboard,
+  KeyboardAvoidingView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Hideo } from 'react-native-textinput-effects';
@@ -66,6 +68,8 @@ class Search extends Component {
     }).then( () => {
       // mostramos lista
       this.listviewAnimationShow();
+      // ocultamos teclado
+      Keyboard.dismiss();
     }).catch((error) => {
       this.setState({showProgress: false});
       Alert.alert('', 'Lamentablemente, no se ha podido buscar');
@@ -147,6 +151,7 @@ class Search extends Component {
       <View style={styles.container}>
         <View style={styles.viewSearch}>
           <Hideo
+            autoFocus={true}
             placeholder={'¿Qué serie buscas?'}
             iconClass={Icon}
             iconName={'ios-search'}
@@ -160,7 +165,7 @@ class Search extends Component {
           {spinner}
         </View>
 
-        <View style={styles.viewBody}>
+        <KeyboardAvoidingView behavior={'padding'} style={styles.viewBody}>
           <Animated.View style={{opacity: this.state.listviewOpacity}}>
             <ListView
               dataSource={this.state.dataSource}
@@ -169,7 +174,7 @@ class Search extends Component {
               enableEmptySections={true}
             />
           </Animated.View>
-        </View>
+        </KeyboardAvoidingView>
       </View>
     );
   }

@@ -13,6 +13,8 @@ import {
   Image,
   Animated,
   StatusBar,
+  Keyboard,
+  KeyboardAvoidingView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Hideo } from 'react-native-textinput-effects';
@@ -66,6 +68,8 @@ class Search extends Component {
     }).then( () => {
       // mostramos lista
       this.listviewAnimationShow();
+      // ocultamos teclado
+      Keyboard.dismiss();
     }).catch((error) => {
       this.setState({showProgress: false});
       Alert.alert('', 'Lamentablemente, no se ha podido buscar');
@@ -152,12 +156,14 @@ class Search extends Component {
       <View style={styles.container}>
         <View style={styles.viewSearch}>
           <Hideo
+            autoFocus={true}
             placeholder='¿Qué serie buscas?'
             iconClass={Icon}
             iconName={'md-search'}
             iconColor={'#616161'}
             iconBackgroundColor={'#ffffff'}
             inputStyle={styles.input}
+            clearButtonMode={'always'}
             onChangeText={ (text)=> this.setState({searchText: text}) }
             onSubmitEditing={ () => this.onBuscarBtnPressed() }
           />
@@ -165,15 +171,17 @@ class Search extends Component {
 
         {spinner}
 
-        <Animated.View style={[{opacity: this.state.listviewOpacity}, styles.viewBody]}>
-          <ListView
-            dataSource={this.state.dataSource}
-            renderHeader={() => this.renderHeader()}
-            renderRow={(rowData) => this.renderRow(rowData)}
-            renderFooter={() => this.renderFooter()}
-            enableEmptySections={true}
-          />
-        </Animated.View>
+        <KeyboardAvoidingView behavior={'height'} style={styles.viewBody}>
+          <Animated.View style={[{opacity: this.state.listviewOpacity}, styles.viewBody]}>
+            <ListView
+              dataSource={this.state.dataSource}
+              renderHeader={() => this.renderHeader()}
+              renderRow={(rowData) => this.renderRow(rowData)}
+              renderFooter={() => this.renderFooter()}
+              enableEmptySections={true}
+            />
+          </Animated.View>
+        </KeyboardAvoidingView>
       </View>
     );
   }
