@@ -4,7 +4,8 @@ import {
   Text,
   View,
   Navigator,
-  TouchableHighlight
+  TouchableHighlight,
+  StatusBar,
 } from 'react-native';
 
 class Root extends Component {
@@ -17,6 +18,7 @@ class Root extends Component {
   render() {
     return (
       <View style={styles.container}>
+        <StatusBar animated />
         <Text style={styles.title}>Trending Series</Text>
 
         <TouchableHighlight onPress={this.navigate.bind(this, 'search')}

@@ -11,7 +11,8 @@ import {
   Alert,
   ListView,
   Image,
-  Animated
+  Animated,
+  StatusBar,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Hideo } from 'react-native-textinput-effects';
@@ -121,15 +122,18 @@ class Search extends Component {
 
   render() {
     return(
-      <Navigator
-        renderScene={this.renderScene.bind(this)}
-        navigator={this.props.navigator}
-        navigationBar={
-          <Navigator.NavigationBar
-            routeMapper={NavigationBarRouteMapper}
-            style={styles.nav} />
-        }
-      />
+      <View style={styles.statusBarAndNavView}>
+        <StatusBar barStyle={'light-content'} animated />
+        <Navigator
+          renderScene={this.renderScene.bind(this)}
+          navigator={this.props.navigator}
+          navigationBar={
+            <Navigator.NavigationBar
+              routeMapper={NavigationBarRouteMapper}
+              style={styles.nav} />
+          }
+        />
+      </View>
     );
   }
 
@@ -195,11 +199,8 @@ var NavigationBarRouteMapper = {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  statusBarAndNavView: {
     flex: 1,
-    justifyContent: 'flex-start',
-    backgroundColor: '#fafafa',
-    paddingTop: 64
   },
   nav: {
     backgroundColor: '#3e50b4',
@@ -224,6 +225,12 @@ const styles = StyleSheet.create({
   backIcon: {
     fontSize: 33,
     color: '#fefefe'
+  },
+  container: {
+    flex: 1,
+    justifyContent: 'flex-start',
+    backgroundColor: '#fafafa',
+    paddingTop: 64
   },
   viewSearch: {
     height: 49,
