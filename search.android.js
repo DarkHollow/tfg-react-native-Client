@@ -171,7 +171,7 @@ class Search extends Component {
 
         {spinner}
 
-        <KeyboardAvoidingView behavior={'height'} style={styles.viewBody}>
+        <KeyboardAvoidingView behavior={'padding'} style={styles.viewBody}>
           <Animated.View style={[{opacity: this.state.listviewOpacity}, styles.viewBody]}>
             <ListView
               dataSource={this.state.dataSource}
