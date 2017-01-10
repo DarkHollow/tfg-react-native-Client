@@ -11,6 +11,7 @@ import {
 
 import Root from './root';
 import Search from './search.android';
+import Series from './series';
 import SearchResults from './searchResults';
 
 export default class TrendingSeriesClient extends Component {
@@ -35,6 +36,9 @@ export default class TrendingSeriesClient extends Component {
     if (route.name == 'search') {
       return <Search navigator={navigator} />
     }
+    if (route.name == 'series') {
+      return <Series navigator={navigator} {...route.passProps} />
+    }
     if (route.name == 'searchResults') {
       return <SearchResults navigator={navigator} {...route.passProps} />
     }
@@ -50,6 +54,8 @@ export default class TrendingSeriesClient extends Component {
           configureScene={(route) => {
             if (route.name == 'search') {
               return Navigator.SceneConfigs.FadeAndroid;
+            } else if(route.name == 'series') {
+              return Navigator.SceneConfigs.FloatFromBottomAndroid;
             } else {
               return Navigator.SceneConfigs.FloatFromBottomAndroid;
             }
