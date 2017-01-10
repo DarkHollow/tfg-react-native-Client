@@ -86,6 +86,18 @@ class Search extends Component {
     }
   }
 
+  // redirige a la vista de ficha de serie
+  openSeries(seriesId) {
+    console.log('Ver serie con id:' + seriesId);
+    this.props.navigator.push({
+      name: 'series',
+      passProps: {
+        seriesId: seriesId,
+        backButtonText: 'Búsqueda'
+      }
+    });
+  }
+
   renderHeader() {
     return (
       <View style={styles.listHeader}>
@@ -97,7 +109,7 @@ class Search extends Component {
 
   renderRow(rowData) {
     return (
-      <TouchableOpacity style={styles.rowTouch}>
+      <TouchableOpacity style={styles.rowTouch} onPress={ () => this.openSeries(rowData.id)}>
         <View style={styles.row}>
           <View style={styles.rowTop}>
             <Image style={styles.rowImage}
