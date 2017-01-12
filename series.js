@@ -37,6 +37,8 @@ class Series extends Component {
       seriesData: {},
       seriesGenres: '',
       scrollY: new Animated.Value(0),
+      posterOpacity: new Animated.Value(0),
+      fanartOpacity: new Animated.Value(0),
     }
   }
 
@@ -83,6 +85,22 @@ class Series extends Component {
     }
   }
 
+  /* animaciones */
+  onPosterLoadEnded() {
+    Animated.timing(this.state.posterOpacity, {
+      toValue: 1,
+      duration: 500
+    }).start();
+  }
+
+  onFanartLoadEnded() {
+    Animated.timing(this.state.fanartOpacity, {
+      toValue: 1,
+      duration: 500
+    }).start();
+  }
+
+  /* render */
   render() {
     return (
       <View style={styles.statusBarAndNavView}>
@@ -125,11 +143,12 @@ class Series extends Component {
         <Animated.View style={[styles.topBarOverlay, {opacity: topBarOpacity}]} />
         <View style={styles.fanArtOverlay} />
         <Animated.Image style={[
-          styles.fanArt,
-          {transform: [{translateY: imageTranslate}]},
-            /*TODO: {opacity: this.state.fanArt}, usar algo asi para animar la opacidad*/
+            styles.fanArt,
+            {transform: [{translateY: imageTranslate}]},
+            {opacity: this.state.fanartOpacity},
           ]}
           source={{uri: this.state.seriesData.fanart}}
+          onLoadEnded={this.onFanartLoadEnded()}
         />
 
         <ScrollView style={styles.scrollViewV}
@@ -141,7 +160,7 @@ class Series extends Component {
           <View style={styles.scrollViewContent}>
             <View style={styles.zIndexFix} />
             </*header*/View style={styles.headerContent}>
-              <Image style={styles.poster} source={{uri: this.state.seriesData.poster}} />
+              <Animated.Image style={[styles.poster, {opacity: this.state.posterOpacity}]} source={{uri: this.state.seriesData.poster}} onLoadEnded={this.onPosterLoadEnded()} />
               <View style={styles.seriesTitleSubtitleGenre}>
                 <Text style={styles.seriesTitle} numberOfLines={1}>{this.state.seriesData.seriesName}</Text>
                 <Text style={styles.seriesSubtitle}>{new Date(this.state.seriesData.firstAired).getFullYear()}   <Text numberOfLines={1}>{this.state.seriesData.rating}</Text></Text>
@@ -216,7 +235,7 @@ class Series extends Component {
                   imageHeight={(Platform.OS === 'ios') ? 159 : 173}
                   backgroundColor={'#212121'}
                   opacityColor={'#fe3f80'}
-                  source={'https://thetvdb.com/banners/seasons/305288-1-3.jpg'}
+                  source={'https://thetvdb.com/banners/seasons/305288-1-3.jpg'/*animar opacidad al cargar?*/}
                   title={'Temporada 1'}
                   titleSize={(Platform.OS === 'ios') ? 13 : 14}
                   titleColor={'#dedede'}
@@ -512,7 +531,6 @@ const styles = StyleSheet.create({
   },
   seriesSubtitle: {
     color: '#bbbbc1',
-    backgroundColor: 'transparent',
     ...Platform.select({
       ios: {
         marginTop: 10,
@@ -528,7 +546,6 @@ const styles = StyleSheet.create({
   },
   seriesGenre: {
     color: '#bbbbc1',
-    backgroundColor: 'transparent',
     ...Platform.select({
       ios: {
         fontSize: 12.5,
@@ -573,7 +590,6 @@ const styles = StyleSheet.create({
   },
   runtimeText: {
     color: '#eaeaea',
-    backgroundColor: 'transparent',
     textAlign: 'right',
     ...Platform.select({
       ios: {
@@ -592,7 +608,6 @@ const styles = StyleSheet.create({
   },
   networkText: {
     color: '#eaeaea',
-    backgroundColor: 'transparent',
     textAlign: 'right',
     ...Platform.select({
       ios: {
@@ -615,6 +630,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#212121',
   },
   principalButtons: {
+    backgroundColor: '#212121',
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -626,13 +642,14 @@ const styles = StyleSheet.create({
       },
       android: {
         justifyContent: 'center',
-        marginBottom: 7,
+        marginBottom: 2,
       }
     }),
   },
   overview: {
     color: '#bbbbc1',
-    backgroundColor: 'transparent',
+    backgroundColor: '#212121',
+    paddingBottom: 20,
     ...Platform.select({
       ios: {
         fontSize: 14,
@@ -650,7 +667,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingLeft: 20,
     paddingRight: 20,
-    marginTop: 20,
+    backgroundColor: '#212121',
   },
   footerTitleView: {
     flexDirection: 'column',
