@@ -5,10 +5,22 @@ import {
   View,
   TouchableOpacity,
   Platform,
+  Linking,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 class circularButton extends Component {
+
+  checkAndOpenLink(url) {
+    Linking.canOpenURL(url).then(supported => {
+      if (!supported) {
+        console.log('Error: no podemos linkear la url - ' + url);
+      } else {
+        return Linking.openURL(url);
+      }
+    }).catch(err => console.error('Ha ocurrido un error linkeando', err));
+  }
+
   render() {
     return (
       <View style={
@@ -31,7 +43,9 @@ class circularButton extends Component {
             },
             styles.touchableOpacity,
           ]
-      }>
+        }
+        onPress={(this.props.link) ? () => this.checkAndOpenLink(this.props.onPress) : this.props.onPress}
+      >
         <View style={
           [
             {
