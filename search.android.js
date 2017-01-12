@@ -202,10 +202,12 @@ class Search extends Component {
 var NavigationBarRouteMapper = {
   LeftButton(route, navigator, index, navState) {
     return (
-      <TouchableOpacity style={styles.backButton}
-          onPress={() => navigator.parentNavigator.pop()}>
-        <Icon name="md-arrow-back" style={styles.backIcon} />
-      </TouchableOpacity>
+      <View style={styles.backButtonView}>
+        <TouchableOpacity style={styles.backButton}
+            onPress={() => navigator.parentNavigator.pop()}>
+          <Icon name="md-arrow-back" style={styles.backIcon} />
+        </TouchableOpacity>
+      </View>
     );
   },
   RightButton(route, navigator, index, navState) {
@@ -229,7 +231,7 @@ const styles = StyleSheet.create({
   nav: {
     elevation: 6,
     backgroundColor: '#3e50b4',
-    marginTop: 24
+    height: 80,
   },
   titleView: {
     flex: 1,
@@ -240,10 +242,14 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: 'Roboto-Medium'
   },
+  backButtonView: {
+    flex: 1,
+    justifyContent: 'center',
+  },
   backButton: {
     flex: 1,
     justifyContent: 'center',
-    padding: 14
+    padding: 14,
   },
   backIcon: {
     fontSize: 24,
