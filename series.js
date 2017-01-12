@@ -36,6 +36,7 @@ class Series extends Component {
       fetchEnded: false,
       seriesData: {},
       seriesGenres: '',
+      imdbRating: 0,
       scrollY: new Animated.Value(0),
       posterOpacity: new Animated.Value(0),
       fanartOpacity: new Animated.Value(0),
@@ -82,6 +83,8 @@ class Series extends Component {
       this.setState({seriesData: data});
       // procesamos los generos
       this.setState({seriesGenres : data.genre.join(', ')});
+      // procesamos la nota media
+      this.setState({imdbRating: (data.imdbRating).toFixed(1)});
     }
   }
 
@@ -159,7 +162,7 @@ class Series extends Component {
         >
           <View style={styles.scrollViewContent}>
             <View style={styles.zIndexFix} />
-            </*header*/View style={styles.headerContent}>
+            <View style={styles.headerContent}>
               <Animated.Image style={[styles.poster, {opacity: this.state.posterOpacity}]} source={{uri: this.state.seriesData.poster}} onLoadEnded={this.onPosterLoadEnded()} />
               <View style={styles.seriesTitleSubtitleGenre}>
                 <Text style={styles.seriesTitle} numberOfLines={1}>{this.state.seriesData.seriesName}</Text>
@@ -168,7 +171,7 @@ class Series extends Component {
               </View>
               <View style={styles.ratingAndRuntimeView}>
                 <Text style={styles.ratingText}>
-                  <Icon name={(Platform.OS === 'ios') ? 'ios-star' : 'md-star'} style={styles.ratingIcon}/> 4,7
+                  <Icon name={(Platform.OS === 'ios') ? 'ios-star' : 'md-star'} style={styles.ratingIcon}/> {this.state.imdbRating}
                 </Text>
                 <Text style={styles.runtimeText} numberOfLines={1}>
                   <Icon name={(Platform.OS === 'ios') ? 'ios-time-outline' : 'md-time'} /> {this.state.seriesData.runtime} min
@@ -179,11 +182,10 @@ class Series extends Component {
               </View>
             </View>
 
-            </*body*/View style={styles.bodyContent}>
+            <View style={styles.bodyContent}>
 
               <View style={styles.principalButtons}>
-                <CircularButton/* los tres botones principales de la vista*/
-                  disabled
+                <CircularButton
                   size={(Platform.OS === 'ios') ? 35 : 40}
                   backgroundColor={'transparent'}
                   opacityColor={'#fe3f80'}
@@ -191,6 +193,9 @@ class Series extends Component {
                   iconSize={20}
                   iconColor={(Platform.OS === 'ios') ? '#aaaaaa' : '#bbbbc1'}
                   style={{marginRight: 30}}
+                  disabled={(this.state.seriesData.trailer) ? false : true}
+                  link
+                  onPress={'https://www.youtube.com/watch?v=' + this.state.seriesData.trailer}
                 />
                 <CircularButton
                   size={(Platform.OS === 'ios') ? 45 : 55}
@@ -211,23 +216,23 @@ class Series extends Component {
                 />
               </View>
 
-              <Text numberOfLines={3} style={styles.overview}>{this.state.seriesData.overview}/*encontrar manera de animar con mostrar más mostrar menos... altura?*/</Text>
+              <Text numberOfLines={3} style={styles.overview}>{this.state.seriesData.overview}</Text>
             </View>
 
-            </*footer*/View style={styles.footerContent}/*reparto y estado*/>
+            <View style={styles.footerContent}>
               <View style={styles.footerTitleView}>
                 <Text style={styles.footerTitle}>Guionista/s</Text>
                 <Text style={styles.footerTitle}>Reparto</Text>
                 <Text style={styles.footerTitle}>Estado</Text>
               </View>
               <View style={styles.footerDataView}>
-                <Text style={styles.footerData} numberOfLines={1}>Matt Duffer, Ross Duffer</Text>
-                <Text style={styles.footerData} numberOfLines={1}>Winona Ryder, Millie Brown, Noah</Text>
+                <Text style={styles.footerData} numberOfLines={1}>{this.state.seriesData.writer}</Text>
+                <Text style={styles.footerData} numberOfLines={1}>{this.state.seriesData.actors}</Text>
                 <Text style={styles.footerData}>{(this.state.seriesData.status === 'Ended' ? 'Finalizada' : 'Continuada')}</Text>
               </View>
             </View>
 
-            </*anexo: temporadas, de prueba, procesar esto cuando llegue el momento!*/View style={styles.seasonsContent}>
+            <View style={styles.seasonsContent}>
               <ScrollView horizontal style={styles.scrollH}>
 
                 <SeasonButton
@@ -235,7 +240,7 @@ class Series extends Component {
                   imageHeight={(Platform.OS === 'ios') ? 159 : 173}
                   backgroundColor={'#212121'}
                   opacityColor={'#fe3f80'}
-                  source={'https://thetvdb.com/banners/seasons/305288-1-3.jpg'/*animar opacidad al cargar?*/}
+                  source={'https://thetvdb.com/banners/seasons/305288-1-3.jpg'}
                   title={'Temporada 1'}
                   titleSize={(Platform.OS === 'ios') ? 13 : 14}
                   titleColor={'#dedede'}
