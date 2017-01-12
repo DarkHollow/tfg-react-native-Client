@@ -11,6 +11,7 @@ import {
   Alert,
   ScrollView,
   Image,
+  Animated,
 } from 'react-native';
 
 const TouchableNativeFeedback = Platform.select({
@@ -22,6 +23,11 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import CircularButton from './components/circularButton';
 import SeasonButton from './components/seasonButton';
 
+/* Constantes efecto Parallax */
+const HEADER_MAX_HEIGHT = 200;
+const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? 60 : 73;
+const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
+
 class Series extends Component {
   constructor(props) {
     super(props);
@@ -30,6 +36,7 @@ class Series extends Component {
       fetchEnded: false,
       seriesData: {},
       seriesGenres: '',
+      scrollY: new Animated.Value(0),
     }
   }
 
@@ -99,12 +106,27 @@ class Series extends Component {
   }
 
   renderScene(route, navigator) {
+    /* calculo efecto parallax */
+    const imageTranslate = this.state.scrollY.interpolate({
+      inputRange: [0, HEADER_SCROLL_DISTANCE],
+      outputRange: [0, -50],
+      extrapolate: 'clamp',
+    });
+    /* calculo de la opacidad de la barra top */
+    const topBarOpacity = this.state.scrollY.interpolate({
+      inputRange: [0, HEADER_SCROLL_DISTANCE / 2, HEADER_SCROLL_DISTANCE],
+      outputRange: [0, 0, 0.8],
+      extrapolate: 'clamp',
+    });
+
 
     return (
       <View style={styles.containerDark}>
-        <View style={styles.topBarOverlay/*TODO: animar la opacidad*/} />
+        <Animated.View style={[styles.topBarOverlay, {opacity: topBarOpacity}]} />
         <View style={styles.fanArtOverlay} />
-        <Image style={[styles.fanArt,/*TODO: usar transform para PARALLAX*/
+        <Animated.Image style={[
+          styles.fanArt,
+          {transform: [{translateY: imageTranslate}]},
             /*TODO: {opacity: this.state.fanArt}, usar algo asi para animar la opacidad*/
           ]}
           source={{uri: this.state.seriesData.fanart}}
@@ -112,14 +134,17 @@ class Series extends Component {
 
         <ScrollView style={styles.scrollViewV}
           scrollEventThrottle={16}
+          onScroll={Animated.event(
+            [{nativeEvent: {contentOffset: {y: this.state.scrollY}}}]
+          )}
         >
           <View style={styles.scrollViewContent}>
             <View style={styles.zIndexFix} />
             </*header*/View style={styles.headerContent}>
               <Image style={styles.poster} source={{uri: this.state.seriesData.poster}} />
               <View style={styles.seriesTitleSubtitleGenre}>
-                <Text style={styles.seriesTitle}>{this.state.seriesData.seriesName}</Text>
-                <Text style={styles.seriesSubtitle} numberOfLines={1}>{new Date(this.state.seriesData.firstAired).getFullYear()}   <Text numberOfLines={1}>{this.state.seriesData.rating}</Text></Text>
+                <Text style={styles.seriesTitle} numberOfLines={1}>{this.state.seriesData.seriesName}</Text>
+                <Text style={styles.seriesSubtitle}>{new Date(this.state.seriesData.firstAired).getFullYear()}   <Text numberOfLines={1}>{this.state.seriesData.rating}</Text></Text>
                 <Text style={styles.seriesGenre} numberOfLines={1}>{this.state.seriesGenres}</Text>
               </View>
               <View style={styles.ratingAndRuntimeView}>
@@ -171,12 +196,12 @@ class Series extends Component {
             </View>
 
             </*footer*/View style={styles.footerContent}/*reparto y estado*/>
-              <View style={{marginRight: 14}}>
+              <View style={styles.footerTitleView}>
                 <Text style={styles.footerTitle}>Guionista/s</Text>
                 <Text style={styles.footerTitle}>Reparto</Text>
                 <Text style={styles.footerTitle}>Estado</Text>
               </View>
-              <View>
+              <View style={styles.footerDataView}>
                 <Text style={styles.footerData} numberOfLines={1}>Matt Duffer, Ross Duffer</Text>
                 <Text style={styles.footerData} numberOfLines={1}>Winona Ryder, Millie Brown, Noah</Text>
                 <Text style={styles.footerData}>{(this.state.seriesData.status === 'Ended' ? 'Finalizada' : 'Continuada')}</Text>
@@ -270,16 +295,18 @@ class Series extends Component {
 var NavigationBarRouteMapper = props => ({
   LeftButton(route, navigator, index, navState) {
     return (
-      <TouchableOpacity style={styles.backButton}
-          onPress={() => navigator.parentNavigator.pop()}>
-        <Icon
-          name={(Platform.OS === 'ios') ? 'ios-arrow-back' : 'md-arrow-back'}
-          style={styles.backIcon}
-        />
-        <Text style={styles.backButtonText}>
-
-        </Text>
-      </TouchableOpacity>
+      <View style={styles.backButtonView}>
+        <TouchableOpacity style={styles.backButton}
+            onPress={() => navigator.parentNavigator.pop()}>
+          <Icon
+            name={(Platform.OS === 'ios') ? 'ios-arrow-back' : 'md-arrow-back'}
+            style={styles.backIcon}
+          />
+          {/*<Text style={styles.backButtonText}>
+            Atrás
+          </Text>*/}
+        </TouchableOpacity>
+      </View>
     );
   },
   RightButton(route, navigator, index, navState) {
@@ -309,6 +336,10 @@ const styles = StyleSheet.create({
       }
     }),
   },
+  backButtonView: {
+    flex: 1,
+    justifyContent: 'center',
+  },
   backButton: {
     flex: 1,
     flexDirection: 'row',
@@ -322,12 +353,6 @@ const styles = StyleSheet.create({
         padding: 14,
       }
     }),
-  },
-  backButtonText: {
-    fontSize: 17,
-    color: '#c0c5ff',
-    marginTop: 6,
-    marginLeft: 6,
   },
   backIcon: {
     color: '#dddddd',
@@ -345,6 +370,21 @@ const styles = StyleSheet.create({
       }
     }),
   },
+
+  backButtonText: {
+    color: '#dddddd',
+    fontSize: 17,
+    ...Platform.select({
+      ios: {
+        marginTop: 6,
+        marginLeft: 6,
+      },
+      android: {
+        marginLeft: 4,
+      }
+    }),
+
+  },
   // vista escena
   containerDark: {
     flex: 1,
@@ -358,7 +398,6 @@ const styles = StyleSheet.create({
     top: 0,
     right: 0,
     backgroundColor: 'black',
-    opacity: 0.6,/*TODO: animar*/
     width: null,
     ...Platform.select({
       ios: {
@@ -378,7 +417,7 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: null,
-    height: 200,/*TODO: se repite, pensar en globalizarla, comprobar Android*/
+    height: HEADER_MAX_HEIGHT,
     backgroundColor: 'black',
     opacity: 0.6,
     zIndex: -1,
@@ -390,7 +429,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     width: null,
-    height: 200,/*TODO: se repite, pensar en globalizarla, comprobar Android*/
+    height: HEADER_MAX_HEIGHT,
     resizeMode: 'cover',
     zIndex: -2,
   },
@@ -400,7 +439,7 @@ const styles = StyleSheet.create({
   },
   scrollViewContent: {
     flex: 1,
-    marginTop: 200,/*TODO: se repite, pensar en globalizarla, comprobar Android*/
+    marginTop: HEADER_MAX_HEIGHT,
     ...Platform.select({
       ios: {
         backgroundColor: '#212121',
@@ -505,10 +544,10 @@ const styles = StyleSheet.create({
   ratingAndRuntimeView: {
     ...Platform.select({
       ios: {
-        marginTop: 2,
+        marginTop: 1,
       },
       android: {
-        marginTop: -3,
+        marginTop: -4,
       }
     }),
   },
@@ -518,19 +557,19 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     ...Platform.select({
       ios: {
-        fontSize: 12.5,
+        fontSize: 14,
         fontWeight: '500',
-        opacity: 0.8,
+        opacity: 0.9,
       },
       android: {
         fontFamily: 'Roboto-Medium',
-        fontSize: 14,
-        opacity: 0.6,
+        fontSize: 15,
+        opacity: 0.8,
       }
     }),
   },
   ratingIcon: {
-    fontSize: 12.5,
+    fontSize: 14,
   },
   runtimeText: {
     color: '#eaeaea',
@@ -538,7 +577,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     ...Platform.select({
       ios: {
-        marginTop: 12,
+        marginTop: 10.5,
         fontSize: 12.5,
         fontWeight: '200',
         opacity: 0.8,
@@ -613,6 +652,9 @@ const styles = StyleSheet.create({
     paddingRight: 20,
     marginTop: 20,
   },
+  footerTitleView: {
+    flexDirection: 'column',
+  },
   footerTitle: {
     fontSize: 16,
     color: '#919191',
@@ -623,9 +665,13 @@ const styles = StyleSheet.create({
       android: {
         fontFamily: 'Roboto-Regular',
         fontSize: 16,
-        //opacity: 0.9,
       }
     }),
+  },
+  footerDataView: {
+    flex: 1,
+    flexDirection: 'column',
+    marginLeft: 8,
   },
   footerData: {
     color: '#bbbbc1',
@@ -636,7 +682,6 @@ const styles = StyleSheet.create({
       android: {
         fontFamily: 'Roboto-Regular',
         fontSize: 16,
-        //opacity: 0.9,
       }
     }),
   },
