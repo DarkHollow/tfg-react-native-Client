@@ -199,7 +199,6 @@ class Series extends Component {
             play={this.state.isPlaying}
             hidden={false}
             playsInline={true}
-            apiKey="AIzaSyB5cuCFM8BXz6sliy8CEJUI-wI9cB0pc2o"
             onReady={(e)=>{this.setState({isReady: true})}}
             onChangeState={(e)=>{this.setState({status: e.state})}}
             onChangeQuality={(e)=>{this.setState({quality: e.quality})}}
