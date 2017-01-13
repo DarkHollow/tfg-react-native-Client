@@ -19,6 +19,11 @@ const TouchableNativeFeedback = Platform.select({
   ios: () => null,
 })();
 
+const YouTube = Platform.select({
+  android: () => null,
+  ios: () => require('react-native-youtube'),
+})();
+
 import Icon from 'react-native-vector-icons/Ionicons';
 import CircularButton from './components/circularButton';
 import SeasonButton from './components/seasonButton';
@@ -31,16 +36,37 @@ const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
 class Series extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      seriesId: this.props.seriesId,
-      fetchEnded: false,
-      seriesData: {},
-      seriesGenres: '',
-      imdbRating: 0,
-      scrollY: new Animated.Value(0),
-      posterOpacity: new Animated.Value(0),
-      fanartOpacity: new Animated.Value(0),
-    }
+
+    (Platform.OS === 'ios') ? (
+      this.state = {
+        seriesId: this.props.seriesId,
+        fetchEnded: false,
+        seriesData: {},
+        seriesGenres: '',
+        imdbRating: 0,
+        scrollY: new Animated.Value(0),
+        posterOpacity: new Animated.Value(0),
+        fanartOpacity: new Animated.Value(0),
+        youtubeOpacity: new Animated.Value(0),
+        showVideoPlayer: false,
+        isReady: false,
+        status: null,
+        quality: null,
+        error: null,
+        isPlaying: false,
+      }
+    ) : (
+      this.state = {
+        seriesId: this.props.seriesId,
+        fetchEnded: false,
+        seriesData: {},
+        seriesGenres: '',
+        imdbRating: 0,
+        scrollY: new Animated.Value(0),
+        posterOpacity: new Animated.Value(0),
+        fanartOpacity: new Animated.Value(0),
+      }
+    )
   }
 
   errorAndPop() {
@@ -103,6 +129,31 @@ class Series extends Component {
     }).start();
   }
 
+  playTrailer() {
+    Animated.timing(this.state.youtubeOpacity, {
+      toValue: 1,
+      duration: 500
+    }).start(() => {
+      this.setState({
+        showVideoPlayer: true,
+        isPlaying: true,
+      });
+    });
+  }
+
+  hideVideoPlayer() {
+    this.setState({isPlaying: false});
+
+    Animated.timing(this.state.youtubeOpacity, {
+      toValue: 0,
+      duration: 500
+    }).start(() => {
+      this.setState({
+        showVideoPlayer: false,
+      });
+    });
+  }
+
   /* render */
   render() {
     return (
@@ -118,7 +169,7 @@ class Series extends Component {
           navigator={this.props.navigator}
           navigationBar={
             <Navigator.NavigationBar
-              routeMapper={NavigationBarRouteMapper(this.props)}
+              routeMapper={NavigationBarRouteMapper(this)}
               style={styles.nav} />
           }
         />
@@ -140,9 +191,28 @@ class Series extends Component {
       extrapolate: 'clamp',
     });
 
+    var videoPlayer = this.state.showVideoPlayer && Platform.OS === 'ios' ?
+      (
+        <Animated.View style={[styles.youtubeView, {opacity: this.state.youtubeOpacity}]}>
+          <YouTube
+            videoId={(this.state.seriesData.trailer) ? this.state.seriesData.trailer : 'novideo'}
+            play={this.state.isPlaying}
+            hidden={false}
+            playsInline={true}
+            apiKey="AIzaSyB5cuCFM8BXz6sliy8CEJUI-wI9cB0pc2o"
+            onReady={(e)=>{this.setState({isReady: true})}}
+            onChangeState={(e)=>{this.setState({status: e.state})}}
+            onChangeQuality={(e)=>{this.setState({quality: e.quality})}}
+            onError={(e)=>{this.setState({error: e.error})}}
+            style={styles.youtube}
+          />
+        </Animated.View>
+      ) : ( <View /> );
 
     return (
       <View style={styles.containerDark}>
+        {videoPlayer}
+
         <Animated.View style={[styles.topBarOverlay, {opacity: topBarOpacity}]} />
         <View style={styles.fanArtOverlay} />
         <Animated.Image style={[
@@ -194,8 +264,8 @@ class Series extends Component {
                   iconColor={(Platform.OS === 'ios') ? '#aaaaaa' : '#bbbbc1'}
                   style={{marginRight: 30}}
                   disabled={(this.state.seriesData.trailer) ? false : true}
-                  link
-                  onPress={'https://www.youtube.com/watch?v=' + this.state.seriesData.trailer}
+                  link={ (Platform.OS === 'ios') ? false : true }
+                  onPress={ (Platform.OS === 'ios') ? () => this.playTrailer() : 'https://www.youtube.com/watch?v=' + this.state.seriesData.trailer }
                 />
                 <CircularButton
                   size={(Platform.OS === 'ios') ? 45 : 55}
@@ -321,7 +391,7 @@ var NavigationBarRouteMapper = props => ({
     return (
       <View style={styles.backButtonView}>
         <TouchableOpacity style={styles.backButton}
-            onPress={() => navigator.parentNavigator.pop()}>
+            onPress={() => (props.state.showVideoPlayer && Platform.OS === 'ios') ? props.hideVideoPlayer() : navigator.parentNavigator.pop()}>
           <Icon
             name={(Platform.OS === 'ios') ? 'ios-arrow-back' : 'md-arrow-back'}
             style={styles.backIcon}
@@ -650,6 +720,22 @@ const styles = StyleSheet.create({
         marginBottom: 2,
       }
     }),
+  },
+  youtubeView: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'black',
+    zIndex: 2,
+  },
+  youtube: {
+    alignSelf: 'stretch',
+    height: 250,
+    backgroundColor: 'black',
   },
   overview: {
     color: '#bbbbc1',
