@@ -24,8 +24,8 @@ class Search extends Component {
     super();
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state = {
-      searchText: "",
-      searchedText: "",
+      searchText: '',
+      searchedText: '',
       showProgress: false,
       dataSource: ds.cloneWithRows([]),
       listviewOpacity: new Animated.Value(0),
@@ -48,32 +48,38 @@ class Search extends Component {
   }
 
   onBuscarBtnPressed() {
+    console.log('Buscar ' + this.state.searchText);
     // fetch datos de la API
     // ocultamos lista y mostramos spinner
     this.listviewAnimationHide();
     this.setState({showProgress: true});
-    // guardamos el termino buscado
-    this.setState({searchedText: this.state.searchText});
 
-    console.log('Buscar ' + this.state.searchText);
+    // comprobar longitud de query
+    if (this.state.searchText.length >= 3) {
+      // guardamos el termino buscado
+      this.setState({searchedText: this.state.searchText});
 
-    // hacemos fetch a la API
-    fetch('http://localhost:9000/api/search/series/' + this.state.searchText, {method: "GET"})
-    .then((response) => response.json())
-    .then((responseData) => {
-      this.processData(responseData);
-    }).then( () => {
-      // ocultamos spinner
+      // hacemos fetch a la API
+      fetch('http://localhost:9000/api/search/series/' + this.state.searchText, {method: "GET"})
+      .then((response) => response.json())
+      .then((responseData) => {
+        this.processData(responseData);
+      }).then( () => {
+        // ocultamos spinner
+        this.setState({showProgress: false});
+      }).then( () => {
+        // mostramos lista
+        this.listviewAnimationShow();
+        // ocultamos teclado
+        Keyboard.dismiss();
+      }).catch((error) => {
+        this.setState({showProgress: false});
+        Alert.alert('Buscar', 'Lamentablemente, no se ha podido buscar');
+      });
+    } else {
       this.setState({showProgress: false});
-    }).then( () => {
-      // mostramos lista
-      this.listviewAnimationShow();
-      // ocultamos teclado
-      Keyboard.dismiss();
-    }).catch((error) => {
-      this.setState({showProgress: false});
-      Alert.alert('', 'Lamentablemente, no se ha podido buscar');
-    });
+      Alert.alert('Buscar', 'Introduce como mínimo 3 caracteres');
+    }
   }
 
   processData(data) {
@@ -163,6 +169,7 @@ class Search extends Component {
       <View style={styles.container}>
         <View style={styles.viewSearch}>
           <Hideo
+            ref={'textinput'}
             autoFocus={true}
             placeholder={'¿Qué serie buscas?'}
             iconClass={Icon}
