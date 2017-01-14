@@ -15,7 +15,6 @@ import {
   StatusBar,
   Keyboard,
   KeyboardAvoidingView,
-  Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Hideo } from 'react-native-textinput-effects';
@@ -25,75 +24,69 @@ class Search extends Component {
     super();
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state = {
-      searchText: '',
-      searchedText: '',
+      searchText: "",
+      searchedText: "",
       showProgress: false,
-      showListView: false,
-      showNotFound: false,
       dataSource: ds.cloneWithRows([]),
       listviewOpacity: new Animated.Value(0),
-      notFoundOpacity: new Animated.Value(0),
     }
   }
 
-  /* mensaje popUp */
-  popUp(title, message) {
-    Alert.alert(title, message);
+  listviewAnimationShow() {
+    Animated.timing(this.state.listviewOpacity, {
+      toValue: 1,
+      duration: 500
+    }).start();
   }
 
-  /* submit buscar */
-  onSubmit() {
+  listviewAnimationHide() {
+    Animated.timing(this.state.listviewOpacity, {
+      toValue: 0,
+      // fade out, es decir, opacity de 1 to 0 no funciona, por lo que duration 0
+      duration: 0
+    }).start();
+  }
+
+  onBuscarBtnPressed() {
+    // fetch datos de la API
+    // ocultamos lista y mostramos spinner
+    this.listviewAnimationHide();
+    this.setState({showProgress: true});
+    // guardamos el termino buscado
+    this.setState({searchedText: this.state.searchText});
+
     console.log('Buscar ' + this.state.searchText);
 
-    this.setState({showProgress: true});
-    this.notFoundAnimationHide(0);
-    this.listviewAnimationHide(0);
-
-    // comprobar longitud de query
-    if (this.state.searchText.length >= 3) {
-      // guardamos el termino buscado
-      this.setState({searchedText: this.state.searchText});
-
-      // hacemos fetch a la API
-      fetch('http://192.168.1.13:9000/api/search/series/' + this.state.searchText, {method: "GET"})
-      .then((response) => response.json())
-      .then((responseData) => {
-        this.processData(responseData);
-      }).then( () => {
-        // ocultamos spinner
-        this.setState({showProgress: false});
-      }).then( () => {
-        // ocultamos teclado
-        Keyboard.dismiss();
-      }).catch((error) => {
-        this.setState({showProgress: false});
-        this.popUp('Error', 'Lamentablemente no se ha podido realizar la búsqueda');
-      });
-    } else {
+    // hacemos fetch a la API
+    fetch('http://192.168.1.13:9000/api/search/series/' + this.state.searchText, {method: "GET"})
+    .then((response) => response.json())
+    .then((responseData) => {
+      this.processData(responseData);
+    }).then( () => {
+      // ocultamos spinner
       this.setState({showProgress: false});
-      this.popUp('Buscar', 'Introduce como mínimo 3 caracteres');
-    }
+    }).then( () => {
+      // mostramos lista
+      this.listviewAnimationShow();
+      // ocultamos teclado
+      Keyboard.dismiss();
+    }).catch((error) => {
+      this.setState({showProgress: false});
+      Alert.alert('', 'Lamentablemente, no se ha podido buscar');
+    });
   }
 
-  /* procesamos los datos que nos devuelve la API */
   processData(data) {
     // si la API nos devuelve que no ha encontrado nada
-    if (data.error) {
-      if (data.error == 'Not found') {
-        // no se han encontrado resultados con esa query
-        this.notFoundAnimationShow(0);
-      } else {
-        // otro tipo de error interno
-        this.popUp('Error', 'Lamentablemente no se ha podido realizar la búsqueda');
-      }
+    if (data.error == "Not found") {
+      // TODO: mostrar que no se ha encontrado
     } else {
       // cargamos datos en el datasource
       this.setState({dataSource: this.state.dataSource.cloneWithRows(data)});
-      this.listviewAnimationShow(0);
     }
   }
 
-  /* redirige a la vista de ficha de serie */
+  // redirige a la vista de ficha de serie
   openSeries(seriesId) {
     console.log('Ver serie con id:' + seriesId);
     this.props.navigator.push({
@@ -105,54 +98,6 @@ class Search extends Component {
     });
   }
 
-  /* animaciones */
-
-  notFoundAnimationShow(delay) {
-    setTimeout( () => {
-      this.setState({
-        dataSource: this.state.dataSource.cloneWithRows([]),
-        showNotFound: true,
-      });
-      Animated.timing(this.state.notFoundOpacity, {
-        toValue: 1,
-        delay: delay,
-        duration: 250
-      }).start();
-    }, 110);
-  }
-
-  notFoundAnimationHide(delay) {
-    Animated.timing(this.state.notFoundOpacity, {
-      toValue: 0,
-      delay: delay,
-      duration: 100
-    }).start( () => {
-      this.setState({showNotFound: false});
-    });
-  }
-
-  listviewAnimationShow(delay) {
-    setTimeout( ()=> {
-      this.setState({showListView: true});
-      Animated.timing(this.state.listviewOpacity, {
-        toValue: 1,
-        delay: delay,
-        duration: 250
-      }).start();
-    }, 110);
-  }
-
-  listviewAnimationHide(delay) {
-    Animated.timing(this.state.listviewOpacity, {
-      toValue: 0,
-      delay: delay,
-      duration: 100
-    }).start( () => {
-      this.setState({showListView: false});
-    });
-  }
-
-  /* cabecera del listview: mostrar cuántos resultados se han obtenido */
   renderHeader() {
     return (
       <View style={styles.listHeader}>
@@ -162,7 +107,6 @@ class Search extends Component {
     );
   }
 
-  /* contenido de cada elemento del listview */
   renderRow(rowData) {
     return (
       <TouchableOpacity style={styles.rowTouch} onPress={ () => this.openSeries(rowData.id)}>
@@ -215,19 +159,10 @@ class Search extends Component {
   }
 
   renderScene(route, navigator) {
-    var spinner = this.state.showProgress ? (
-      <ActivityIndicator style={styles.loader}
-        size={'small'} color={'#fe3f80'} />
-    ) : ( null );
-
-    var notFound = this.state.showNotFound ? (
-      <Animated.View style={[styles.notFound, {opacity: this.state.notFoundOpacity}]}>
-        <View style={styles.notFoundCircle}>
-          <Icon name={(Platform.OS === 'ios') ? 'ios-search' : 'md-search'} style={styles.notFoundIcon}></Icon>
-        </View>
-        <Text style={styles.notFoundText}>Sin resultados</Text>
-      </Animated.View>
-    ) : ( null );
+    var spinner = this.state.showProgress ?
+      ( <ActivityIndicator style={styles.loader}
+          size='large'/> ) :
+      ( <View/>);
 
     return (
       <View style={styles.container}>
@@ -242,27 +177,22 @@ class Search extends Component {
             inputStyle={styles.input}
             clearButtonMode={'always'}
             onChangeText={ (text)=> this.setState({searchText: text}) }
-            onSubmitEditing={ () => this.onSubmit() }
+            onSubmitEditing={ () => this.onBuscarBtnPressed() }
           />
         </View>
 
         {spinner}
 
         <KeyboardAvoidingView behavior={'padding'} style={styles.viewBody}>
-          {(this.state.showListView) ? (
-            <Animated.View style={{opacity: this.state.listviewOpacity}}>
-              <ListView
-                dataSource={this.state.dataSource}
-                renderHeader={() => this.renderHeader()}
-                renderRow={(rowData) => this.renderRow(rowData)}
-                renderFooter={() => this.renderFooter()}
-                enableEmptySections={true}
-              />
-            </Animated.View>
-          ) : (
-            null
-          )}
-          {notFound}
+          <Animated.View style={[{opacity: this.state.listviewOpacity}, styles.viewBody]}>
+            <ListView
+              dataSource={this.state.dataSource}
+              renderHeader={() => this.renderHeader()}
+              renderRow={(rowData) => this.renderRow(rowData)}
+              renderFooter={() => this.renderFooter()}
+              enableEmptySections={true}
+            />
+          </Animated.View>
         </KeyboardAvoidingView>
       </View>
     );
@@ -385,7 +315,6 @@ const styles = StyleSheet.create({
   },
   rowImage: {
     height: 66,
-    width: null,
     resizeMode: 'cover',
     borderTopLeftRadius: 2,
     borderTopRightRadius: 2
@@ -431,31 +360,7 @@ const styles = StyleSheet.create({
   },
   loader: {
     marginTop: 20
-  },
-  notFound: {
-    flex: 1,
-    marginTop: -40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  notFoundCircle: {
-    height: 120,
-    width: 120,
-    backgroundColor: '#f5f5f5',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 30,
-    borderRadius: 200,
-  },
-  notFoundIcon: {
-    fontSize: 50,
-    color: '#dddddd'
-  },
-  notFoundText: {
-    marginTop: 10,
-    fontSize: 20,
-    color: '#bbbbc1',
-  },
+  }
 });
 
 export default Search;
