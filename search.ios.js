@@ -75,7 +75,8 @@ class Search extends Component {
       Alert.alert('', 'Lamentablemente, no se ha podido buscar');
     });
   }
-
+  
+  /* procesamos los datos que nos devuelve la API */
   processData(data) {
     // si la API nos devuelve que no ha encontrado nada
     if (data.error == "Not found") {
