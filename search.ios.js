@@ -74,7 +74,8 @@ class Search extends Component {
       this.popUp('Buscar', 'Introduce como mínimo 3 caracteres');
     }
   }
-
+  
+  /* procesamos los datos que nos devuelve la API */
   processData(data) {
     // si la API nos devuelve que no ha encontrado nada
     if (data.error) {
