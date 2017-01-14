@@ -15,6 +15,7 @@ import {
   StatusBar,
   Keyboard,
   KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Hideo } from 'react-native-textinput-effects';
@@ -27,32 +28,26 @@ class Search extends Component {
       searchText: '',
       searchedText: '',
       showProgress: false,
+      showListView: false,
+      showNotFound: false,
       dataSource: ds.cloneWithRows([]),
       listviewOpacity: new Animated.Value(0),
+      notFoundOpacity: new Animated.Value(0),
     }
   }
 
-  listviewAnimationShow() {
-    Animated.timing(this.state.listviewOpacity, {
-      toValue: 1,
-      duration: 500
-    }).start();
+  /* mensaje popUp */
+  popUp(title, message) {
+    Alert.alert(title, message);
   }
 
-  listviewAnimationHide() {
-    Animated.timing(this.state.listviewOpacity, {
-      toValue: 0,
-      // fade out, es decir, opacity de 1 to 0 en iOS SÍ funciona
-      duration: 500
-    }).start();
-  }
-
-  onBuscarBtnPressed() {
+  /* mensaje popUp */
+  onSubmit() {
     console.log('Buscar ' + this.state.searchText);
-    // fetch datos de la API
-    // ocultamos lista y mostramos spinner
-    this.listviewAnimationHide();
+
     this.setState({showProgress: true});
+    this.notFoundAnimationHide(0);
+    this.listviewAnimationHide(0);
 
     // comprobar longitud de query
     if (this.state.searchText.length >= 3) {
@@ -68,31 +63,36 @@ class Search extends Component {
         // ocultamos spinner
         this.setState({showProgress: false});
       }).then( () => {
-        // mostramos lista
-        this.listviewAnimationShow();
         // ocultamos teclado
         Keyboard.dismiss();
       }).catch((error) => {
         this.setState({showProgress: false});
-        Alert.alert('Buscar', 'Lamentablemente, no se ha podido buscar');
+        this.popUp('Error', 'Lamentablemente no se ha podido realizar la búsqueda');
       });
     } else {
       this.setState({showProgress: false});
-      Alert.alert('Buscar', 'Introduce como mínimo 3 caracteres');
+      this.popUp('Buscar', 'Introduce como mínimo 3 caracteres');
     }
   }
 
   processData(data) {
     // si la API nos devuelve que no ha encontrado nada
-    if (data.error == "Not found") {
-      // TODO: mostrar que no se ha encontrado
+    if (data.error) {
+      if (data.error == 'Not found') {
+        // no se han encontrado resultados con esa query
+        this.notFoundAnimationShow(0);
+      } else {
+        // otro tipo de error interno
+        this.popUp('Error', 'Lamentablemente no se ha podido realizar la búsqueda');
+      }
     } else {
       // cargamos datos en el datasource
       this.setState({dataSource: this.state.dataSource.cloneWithRows(data)});
+      this.listviewAnimationShow(0);
     }
   }
 
-  // redirige a la vista de ficha de serie
+  /* redirige a la vista de ficha de serie */
   openSeries(seriesId) {
     console.log('Ver serie con id:' + seriesId);
     this.props.navigator.push({
@@ -104,6 +104,54 @@ class Search extends Component {
     });
   }
 
+  /* animaciones */
+
+  notFoundAnimationShow(delay) {
+    setTimeout( () => {
+      this.setState({
+        dataSource: this.state.dataSource.cloneWithRows([]),
+        showNotFound: true,
+      });
+      Animated.timing(this.state.notFoundOpacity, {
+        toValue: 1,
+        delay: delay,
+        duration: 250
+      }).start();
+    }, 110);
+  }
+
+  notFoundAnimationHide(delay) {
+    Animated.timing(this.state.notFoundOpacity, {
+      toValue: 0,
+      delay: delay,
+      duration: 100
+    }).start( () => {
+      this.setState({showNotFound: false});
+    });
+  }
+
+  listviewAnimationShow(delay) {
+    setTimeout( ()=> {
+      this.setState({showListView: true});
+      Animated.timing(this.state.listviewOpacity, {
+        toValue: 1,
+        delay: delay,
+        duration: 250
+      }).start();
+    }, 110);
+  }
+
+  listviewAnimationHide(delay) {
+    Animated.timing(this.state.listviewOpacity, {
+      toValue: 0,
+      delay: delay,
+      duration: 100
+    }).start( () => {
+      this.setState({showListView: false});
+    });
+  }
+
+  /* cabecera del listview: mostrar cuántos resultados se han obtenido */
   renderHeader() {
     return (
       <View style={styles.listHeader}>
@@ -113,6 +161,7 @@ class Search extends Component {
     );
   }
 
+  /* contenido de cada elemento del listview */
   renderRow(rowData) {
     return (
       <TouchableOpacity style={styles.rowTouch} onPress={ () => this.openSeries(rowData.id)}>
@@ -160,10 +209,19 @@ class Search extends Component {
   }
 
   renderScene(route, navigator) {
-    var spinner = this.state.showProgress ?
-      ( <ActivityIndicator style={styles.loader}
-          size={'small'} color={'#fe3f80'} /> ) :
-      ( <View/>);
+    var spinner = this.state.showProgress ? (
+      <ActivityIndicator style={styles.loader}
+        size={'small'} color={'#fe3f80'} />
+    ) : ( null );
+
+    var notFound = this.state.showNotFound ? (
+      <Animated.View style={[styles.notFound, {opacity: this.state.notFoundOpacity}]}>
+        <View style={styles.notFoundCircle}>
+          <Icon name={(Platform.OS === 'ios') ? 'ios-search' : 'md-search'} style={styles.notFoundIcon}></Icon>
+        </View>
+        <Text style={styles.notFoundText}>Sin resultados</Text>
+      </Animated.View>
+    ) : ( null );
 
     return (
       <View style={styles.container}>
@@ -179,20 +237,25 @@ class Search extends Component {
             inputStyle={styles.input}
             clearButtonMode={'always'}
             onChangeText={ (text)=> this.setState({searchText: text}) }
-            onSubmitEditing={ () => this.onBuscarBtnPressed() }
+            onSubmitEditing={ () => this.onSubmit() }
           />
           {spinner}
         </View>
 
         <KeyboardAvoidingView behavior={'padding'} style={styles.viewBody}>
-          <Animated.View style={{opacity: this.state.listviewOpacity}}>
-            <ListView
-              dataSource={this.state.dataSource}
-              renderHeader={() => this.renderHeader()}
-              renderRow={(rowData) => this.renderRow(rowData)}
-              enableEmptySections={true}
-            />
-          </Animated.View>
+          {(this.state.showListView) ? (
+            <Animated.View style={{opacity: this.state.listviewOpacity}}>
+              <ListView
+                dataSource={this.state.dataSource}
+                renderHeader={() => this.renderHeader()}
+                renderRow={(rowData) => this.renderRow(rowData)}
+                enableEmptySections={true}
+              />
+            </Animated.View>
+          ) : (
+            null
+          )}
+          {notFound}
         </KeyboardAvoidingView>
       </View>
     );
@@ -311,6 +374,7 @@ const styles = StyleSheet.create({
   },
   rowImage: {
     height: 66,
+    width: null,
     resizeMode: 'cover'
   },
   rowBottom: {
@@ -357,7 +421,31 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     marginRight: 14,
     marginBottom: 20
-  }
+  },
+  notFound: {
+    flex: 1,
+    marginTop: -40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  notFoundCircle: {
+    height: 120,
+    width: 120,
+    backgroundColor: '#f5f5f5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 30,
+    borderRadius: 200,
+  },
+  notFoundIcon: {
+    fontSize: 50,
+    color: '#dddddd'
+  },
+  notFoundText: {
+    marginTop: 10,
+    fontSize: 20,
+    color: '#bbbbc1',
+  },
 });
 
 export default Search;
