@@ -191,6 +191,7 @@ class Search extends Component {
     );
   }
 
+  /* pie de la listview para hacer padding en Android por navbar transparente */
   renderFooter() {
     return (
       <View style={styles.separatorView}></View>
