@@ -96,8 +96,8 @@ class Series extends Component {
 
   processData(data) {
     // si la API nos devuelve que no ha encontrado nada
-    if (data.error != undefined) {
-      if (data.error == 'Not Found') {
+    if (data.error) {
+      if (data.error == 'Not found') {
         // id no encontrada
       } else {
         // otro tipo de error interno

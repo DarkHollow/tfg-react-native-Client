@@ -82,6 +82,9 @@ class Search extends Component {
       if (data.error == 'Not found') {
         // no se han encontrado resultados con esa query
         this.notFoundAnimationShow(0);
+      } else if (data.error == 'Bad request') {
+        // error bad request por introducir menos de 3 caracteres
+        this.popUp('Buscar', 'Introduce como mínimo 3 caracteres');
       } else {
         // otro tipo de error interno
         this.popUp('Error', 'Lamentablemente no se ha podido realizar la búsqueda');
