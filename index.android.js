@@ -1,31 +1,63 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- * @flow
- */
-
 import React, { Component } from 'react';
 import {
   AppRegistry,
   StyleSheet,
   Text,
-  View
+  View,
+  Navigator,
+  BackAndroid,
+  StatusBar,
 } from 'react-native';
 
+import Root from './root';
+import Search from './search.android';
+import Series from './series';
+
 export default class TrendingSeriesClient extends Component {
+
+  renderScene(route, navigator) {
+    console.log(route);
+
+    // comportamiento del botón Back de Android según la escena
+    BackAndroid.addEventListener('hardwareBackPress', () => {
+      if (route.name == 'root') {
+        return true;
+      } else if(route.name == 'search') {
+        navigator.pop();
+        return true;
+      }
+    });
+
+    // qué vista cargar en el navigator
+    if (route.name == 'root') {
+      return <Root navigator={navigator} />
+    }
+    if (route.name == 'search') {
+      return <Search navigator={navigator} />
+    }
+    if (route.name == 'series') {
+      return <Series navigator={navigator} {...route.passProps} />
+    }
+  }
+
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Welcome to React Native!
-        </Text>
-        <Text style={styles.instructions}>
-          To get started, edit index.android.js
-        </Text>
-        <Text style={styles.instructions}>
-          Double tap R on your keyboard to reload,{'\n'}
-          Shake or press menu button for dev menu
-        </Text>
+        <StatusBar animated backgroundColor={'#2f3e9e'} />
+        <Navigator
+          style={{backgroundColor: '#3e50b4'}}
+          initialRoute={{ name: 'root'}}
+          renderScene={this.renderScene.bind(this)}
+          configureScene={(route) => {
+            if (route.name == 'search') {
+              return Navigator.SceneConfigs.FadeAndroid;
+            } else if(route.name == 'series') {
+              return Navigator.SceneConfigs.FloatFromBottomAndroid;
+            } else {
+              return Navigator.SceneConfigs.FloatFromBottomAndroid;
+            }
+          }}
+          />
       </View>
     );
   }
@@ -34,20 +66,8 @@ export default class TrendingSeriesClient extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
+    backgroundColor: '#fafafa',
+  }
 });
 
 AppRegistry.registerComponent('TrendingSeriesClient', () => TrendingSeriesClient);

@@ -1,31 +1,51 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- * @flow
- */
-
 import React, { Component } from 'react';
 import {
   AppRegistry,
   StyleSheet,
   Text,
-  View
+  View,
+  Navigator,
+  StatusBar,
 } from 'react-native';
 
+import Root from './root';
+import Search from './search.ios';
+import Series from './series';
+
 export default class TrendingSeriesClient extends Component {
+
+  renderScene(route, navigator) {
+    console.log(route);
+
+    if (route.name == 'root') {
+      return <Root navigator={navigator} />
+    }
+    if (route.name == 'search') {
+      return <Search navigator={navigator} />
+    }
+    if (route.name == 'series') {
+      return <Series navigator={navigator} {...route.passProps} />
+    }
+  }
+
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Welcome to React Native!
-        </Text>
-        <Text style={styles.instructions}>
-          To get started, edit index.ios.js
-        </Text>
-        <Text style={styles.instructions}>
-          Press Cmd+R to reload,{'\n'}
-          Cmd+D or shake for dev menu
-        </Text>
+        <StatusBar animated />
+        <Navigator
+          style={{backgroundColor: '#3e50b4'}}
+          initialRoute={{ name: 'root'}}
+          renderScene={this.renderScene.bind(this)}
+          configureScene={(route) => {
+            if (route.name == 'search') {
+              return Navigator.SceneConfigs.PushFromRight;
+            } else if (route.name == 'series') {
+              return Navigator.SceneConfigs.FloatFromBottom;
+            } else {
+              return Navigator.SceneConfigs.PushFromRight;
+            }
+          }}
+          />
       </View>
     );
   }
@@ -34,20 +54,8 @@ export default class TrendingSeriesClient extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
+    backgroundColor: '#fafafa',
+  }
 });
 
 AppRegistry.registerComponent('TrendingSeriesClient', () => TrendingSeriesClient);
