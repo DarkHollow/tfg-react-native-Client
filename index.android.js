@@ -12,7 +12,6 @@ import {
 import Root from './root';
 import Search from './search.android';
 import Series from './series';
-import SearchResults from './searchResults';
 
 export default class TrendingSeriesClient extends Component {
 
@@ -38,9 +37,6 @@ export default class TrendingSeriesClient extends Component {
     }
     if (route.name == 'series') {
       return <Series navigator={navigator} {...route.passProps} />
-    }
-    if (route.name == 'searchResults') {
-      return <SearchResults navigator={navigator} {...route.passProps} />
     }
   }
 
