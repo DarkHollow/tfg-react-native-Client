@@ -55,7 +55,7 @@ class Search extends Component {
       this.setState({searchedText: this.state.searchText});
 
       // hacemos fetch a la API
-      fetch('http://localhost:9000/api/search/series/' + this.state.searchText, {method: "GET"})
+      fetch('http://localhost:9000/api/search/tvshows/' + this.state.searchText, {method: "GET"})
       .then((response) => response.json())
       .then((responseData) => {
         this.processData(responseData);
@@ -96,13 +96,13 @@ class Search extends Component {
     }
   }
 
-  /* redirige a la vista de ficha de serie */
-  openSeries(seriesId) {
-    console.log('Ver serie con id:' + seriesId);
+  /* redirige a la vista de ficha del tv show */
+  openTvShow(tvShowId) {
+    console.log('Ver tv show con id:' + tvShowId);
     this.props.navigator.push({
-      name: 'series',
+      name: 'tvshow',
       passProps: {
-        seriesId: seriesId,
+        tvShowId: tvShowId,
         backButtonText: 'Búsqueda'
       }
     });
@@ -168,7 +168,7 @@ class Search extends Component {
   /* contenido de cada elemento del listview */
   renderRow(rowData) {
     return (
-      <TouchableOpacity style={styles.rowTouch} onPress={ () => this.openSeries(rowData.id)}>
+      <TouchableOpacity style={styles.rowTouch} onPress={ () => this.openTvShow(rowData.id)}>
         <View style={styles.row}>
           <View style={styles.rowTop}>
             <Image style={styles.rowImage}
@@ -177,7 +177,7 @@ class Search extends Component {
           </View>
           <View style={styles.rowBottom}>
             <View style={styles.rowBottomLeft}>
-              <Text style={styles.rowTitle}>{rowData.seriesName}</Text>
+              <Text style={styles.rowTitle}>{rowData.name}</Text>
               <Text style={styles.rowSubtitle}>Año
                 {' ' + new Date(rowData.firstAired).getFullYear()}
               </Text>

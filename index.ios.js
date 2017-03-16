@@ -10,7 +10,7 @@ import {
 
 import Root from './root';
 import Search from './search.ios';
-import Series from './series';
+import TvShow from './tvshow';
 
 export default class TrendingSeriesClient extends Component {
 
@@ -23,8 +23,8 @@ export default class TrendingSeriesClient extends Component {
     if (route.name == 'search') {
       return <Search navigator={navigator} />
     }
-    if (route.name == 'series') {
-      return <Series navigator={navigator} {...route.passProps} />
+    if (route.name == 'tvshow') {
+      return <TvShow navigator={navigator} {...route.passProps} />
     }
   }
 
@@ -39,7 +39,7 @@ export default class TrendingSeriesClient extends Component {
           configureScene={(route) => {
             if (route.name == 'search') {
               return Navigator.SceneConfigs.PushFromRight;
-            } else if (route.name == 'series') {
+            } else if (route.name == 'tvshow') {
               return Navigator.SceneConfigs.FloatFromBottom;
             } else {
               return Navigator.SceneConfigs.PushFromRight;
