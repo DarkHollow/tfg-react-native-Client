@@ -33,16 +33,16 @@ const HEADER_MAX_HEIGHT = 200;
 const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? 60 : 73;
 const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
 
-class Series extends Component {
+class TvShow extends Component {
   constructor(props) {
     super(props);
 
     (Platform.OS === 'ios') ? (
       this.state = {
-        seriesId: this.props.seriesId,
+        tvShowId: this.props.tvShowId,
         fetchEnded: false,
-        seriesData: {},
-        seriesGenres: '',
+        tvShowData: {},
+        tvShowGenres: '',
         imdbRating: 0,
         scrollY: new Animated.Value(0),
         posterOpacity: new Animated.Value(0),
@@ -57,10 +57,10 @@ class Series extends Component {
       }
     ) : (
       this.state = {
-        seriesId: this.props.seriesId,
+        tvShowId: this.props.tvShowId,
         fetchEnded: false,
-        seriesData: {},
-        seriesGenres: '',
+        tvShowData: {},
+        tvShowGenres: '',
         imdbRating: 0,
         scrollY: new Animated.Value(0),
         posterOpacity: new Animated.Value(0),
@@ -70,18 +70,18 @@ class Series extends Component {
   }
 
   errorAndPop() {
-    Alert.alert('Error', 'Lamentablemente no se han podido cargar los datos de la serie');
+    Alert.alert('Error', 'Lamentablemente no se han podido cargar los datos del tv show');
     this.props.navigator.pop();
   }
 
   componentWillMount() {
-    console.log('Consulta serie id: ' + this.state.seriesId);
+    console.log('Consulta tv show id: ' + this.state.tvShowId);
     // segun la plataforma, url
     const URL = (Platform.OS === 'ios') ?
-      'http://localhost:9000/api/series/' : 'http://192.168.1.13:9000/api/series/';
+      'http://localhost:9000/api/tvshow/' : 'http://192.168.1.13:9000/api/tvshow/';
 
     // hacemos fetch a la API
-    fetch(URL + this.state.seriesId, {method: "GET"})
+    fetch(URL + this.state.tvShowId, {method: "GET"})
     .then((response) => response.json())
     .then((responseData) => {
       // procesamos datos
@@ -106,9 +106,9 @@ class Series extends Component {
       this.errorAndPop();
     } else {
       // cargamos datos en el state
-      this.setState({seriesData: data});
+      this.setState({tvShowData: data});
       // procesamos los generos
-      this.setState({seriesGenres : data.genre.join(', ')});
+      this.setState({tvShowGenres : data.genre.join(', ')});
       // procesamos la nota media
       this.setState({imdbRating: (data.imdbRating).toFixed(1)});
     }
@@ -195,7 +195,7 @@ class Series extends Component {
       (
         <Animated.View style={[styles.youtubeView, {opacity: this.state.youtubeOpacity}]}>
           <YouTube
-            videoId={(this.state.seriesData.trailer) ? this.state.seriesData.trailer : 'novideo'}
+            videoId={(this.state.tvShowData.trailer) ? this.state.tvShowData.trailer : 'novideo'}
             play={this.state.isPlaying}
             hidden={false}
             playsInline={true}
@@ -219,7 +219,7 @@ class Series extends Component {
             {transform: [{translateY: imageTranslate}]},
             {opacity: this.state.fanartOpacity},
           ]}
-          source={{uri: this.state.seriesData.fanart}}
+          source={{uri: this.state.tvShowData.fanart}}
           onLoadEnded={this.onFanartLoadEnded()}
         />
 
@@ -232,21 +232,21 @@ class Series extends Component {
           <View style={styles.scrollViewContent}>
             <View style={styles.zIndexFix} />
             <View style={styles.headerContent}>
-              <Animated.Image style={[styles.poster, {opacity: this.state.posterOpacity}]} source={{uri: this.state.seriesData.poster}} onLoadEnded={this.onPosterLoadEnded()} />
-              <View style={styles.seriesTitleSubtitleGenre}>
-                <Text style={styles.seriesTitle} numberOfLines={1}>{this.state.seriesData.seriesName}</Text>
-                <Text style={styles.seriesSubtitle}>{new Date(this.state.seriesData.firstAired).getFullYear()}   <Text numberOfLines={1}>{this.state.seriesData.rating}</Text></Text>
-                <Text style={styles.seriesGenre} numberOfLines={1}>{this.state.seriesGenres}</Text>
+              <Animated.Image style={[styles.poster, {opacity: this.state.posterOpacity}]} source={{uri: this.state.tvShowData.poster}} onLoadEnded={this.onPosterLoadEnded()} />
+              <View style={styles.tvShowTitleSubtitleGenre}>
+                <Text style={styles.tvShowTitle} numberOfLines={1}>{this.state.tvShowData.name}</Text>
+                <Text style={styles.tvShowSubtitle}>{new Date(this.state.tvShowData.firstAired).getFullYear()}   <Text numberOfLines={1}>{this.state.tvShowData.rating}</Text></Text>
+                <Text style={styles.tvShowGenre} numberOfLines={1}>{this.state.tvShowGenres}</Text>
               </View>
               <View style={styles.ratingAndRuntimeView}>
                 <Text style={styles.ratingText}>
                   <Icon name={(Platform.OS === 'ios') ? 'ios-star' : 'md-star'} style={styles.ratingIcon}/> {this.state.imdbRating}
                 </Text>
                 <Text style={styles.runtimeText} numberOfLines={1}>
-                  <Icon name={(Platform.OS === 'ios') ? 'ios-time-outline' : 'md-time'} /> {this.state.seriesData.runtime} min
+                  <Icon name={(Platform.OS === 'ios') ? 'ios-time-outline' : 'md-time'} /> {this.state.tvShowData.runtime} min
                 </Text>
                 <Text style={styles.networkText} numberOfLines={1}>
-                  <Icon name={(Platform.OS === 'ios') ? 'ios-desktop' : 'md-desktop'} /> {this.state.seriesData.network}
+                  <Icon name={(Platform.OS === 'ios') ? 'ios-desktop' : 'md-desktop'} /> {this.state.tvShowData.network}
                 </Text>
               </View>
             </View>
@@ -262,9 +262,9 @@ class Series extends Component {
                   iconSize={20}
                   iconColor={(Platform.OS === 'ios') ? '#aaaaaa' : '#bbbbc1'}
                   style={{marginRight: 30}}
-                  disabled={(this.state.seriesData.trailer) ? false : true}
+                  disabled={(this.state.tvShowData.trailer) ? false : true}
                   link={ (Platform.OS === 'ios') ? false : true }
-                  onPress={ (Platform.OS === 'ios') ? () => this.playTrailer() : 'https://www.youtube.com/watch?v=' + this.state.seriesData.trailer }
+                  onPress={ (Platform.OS === 'ios') ? () => this.playTrailer() : 'https://www.youtube.com/watch?v=' + this.state.tvShowData.trailer }
                 />
                 <CircularButton
                   size={(Platform.OS === 'ios') ? 45 : 55}
@@ -285,7 +285,7 @@ class Series extends Component {
                 />
               </View>
 
-              <Text numberOfLines={3} style={styles.overview}>{this.state.seriesData.overview}</Text>
+              <Text numberOfLines={3} style={styles.overview}>{this.state.tvShowData.overview}</Text>
             </View>
 
             <View style={styles.footerContent}>
@@ -295,9 +295,9 @@ class Series extends Component {
                 <Text style={styles.footerTitle}>Estado</Text>
               </View>
               <View style={styles.footerDataView}>
-                <Text style={styles.footerData} numberOfLines={1}>{this.state.seriesData.writer}</Text>
-                <Text style={styles.footerData} numberOfLines={1}>{this.state.seriesData.actors}</Text>
-                <Text style={styles.footerData}>{(this.state.seriesData.status === 'Ended' ? 'Finalizada' : 'Continuada')}</Text>
+                <Text style={styles.footerData} numberOfLines={1}>{this.state.tvShowData.writer}</Text>
+                <Text style={styles.footerData} numberOfLines={1}>{this.state.tvShowData.actors}</Text>
+                <Text style={styles.footerData}>{(this.state.tvShowData.status === 'Ended' ? 'Finalizada' : 'Continuada')}</Text>
               </View>
             </View>
 
@@ -563,7 +563,7 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  // imagen poster de la serie
+  // imagen poster del tv show
   poster: {
     marginTop: -86,
     height: 147,
@@ -572,8 +572,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
-  // vista donde estan el titulo, año, content rating y generos de la serie
-  seriesTitleSubtitleGenre: {
+  // vista donde estan el titulo, año, content rating y generos del tv show
+  tvShowTitleSubtitleGenre: {
     flex: 1,
     flexDirection: 'column',
     padding: 12,
@@ -587,7 +587,7 @@ const styles = StyleSheet.create({
       }
     }),
   },
-  seriesTitle: {
+  tvShowTitle: {
     color: '#eaeaea',
     backgroundColor: 'transparent',
     ...Platform.select({
@@ -603,7 +603,7 @@ const styles = StyleSheet.create({
       }
     }),
   },
-  seriesSubtitle: {
+  tvShowSubtitle: {
     color: '#bbbbc1',
     ...Platform.select({
       ios: {
@@ -618,7 +618,7 @@ const styles = StyleSheet.create({
       }
     }),
   },
-  seriesGenre: {
+  tvShowGenre: {
     color: '#bbbbc1',
     ...Platform.select({
       ios: {
@@ -631,7 +631,7 @@ const styles = StyleSheet.create({
       }
     }),
   },
-  // vista donde están la puntuacion, runtime y network de la serie
+  // vista donde están la puntuacion, runtime y network del tv show
   ratingAndRuntimeView: {
     ...Platform.select({
       ios: {
@@ -751,7 +751,7 @@ const styles = StyleSheet.create({
       }
     }),
   },
-  // contenido del pie: reparto, estado de la serie, y por ultimo, temporadas?
+  // contenido del pie: reparto, estado del tv show, y por ultimo, temporadas?
   footerContent: {
     flex: 1,
     flexDirection: 'row',
@@ -807,4 +807,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default Series;
+export default TvShow;
