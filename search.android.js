@@ -4,8 +4,7 @@ import {
   Text,
   View,
   Navigator,
-  TouchableHighlight,
-  TextInput,
+  TouchableNativeFeedback,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
@@ -155,6 +154,14 @@ class Search extends Component {
     });
   }
 
+  /* navegar a vista de solicitar nueva serie */
+  navigateToRequestTvShow() {
+    console.log('Navegar a solicitar nueva serie');
+    this.props.navigator.push({
+      name: 'requesttvshow'
+    });
+  }
+
   /* cabecera del listview: mostrar cuántos resultados se han obtenido */
   renderHeader() {
     return (
@@ -230,6 +237,20 @@ class Search extends Component {
           <Icon name={(Platform.OS === 'ios') ? 'ios-search' : 'md-search'} style={styles.notFoundIcon}></Icon>
         </View>
         <Text style={styles.notFoundText}>Sin resultados</Text>
+        <View style={styles.solicitarSerie}>
+          <Text style={styles.solicitarSerieQuestion}>¿No encuentras lo que buscas?</Text>
+          <View style={styles.solicitarSerieButtonView}>
+            <TouchableNativeFeedback
+                onPress={this.navigateToRequestTvShow}
+                background={TouchableNativeFeedback.Ripple('#ff77a7', true)}>
+              <View style={styles.addButton}>
+                <Icon name='md-add' size={14} style={styles.addIcon}>
+                  <Text style={styles.principalButtonText}> Solicitar nueva serie</Text>
+                </Icon>
+              </View>
+            </TouchableNativeFeedback>
+          </View>
+        </View>
       </Animated.View>
     ) : ( null );
 
@@ -262,6 +283,20 @@ class Search extends Component {
                 renderFooter={() => this.renderFooter()}
                 enableEmptySections={true}
               />
+              <View style={styles.solicitarSerie}>
+                <Text style={styles.solicitarSerieQuestion}>¿No encuentras lo que buscas?</Text>
+                <View style={styles.solicitarSerieButtonView}>
+                  <TouchableNativeFeedback
+                      onPress={this.navigateToRequestTvShow}
+                      background={TouchableNativeFeedback.Ripple('#ff77a7', true)}>
+                    <View style={styles.addButton}>
+                      <Icon name='md-add' size={14} style={styles.addIcon}>
+                        <Text style={styles.principalButtonText}> Solicitar nueva serie</Text>
+                      </Icon>
+                    </View>
+                  </TouchableNativeFeedback>
+                </View>
+              </View>
             </Animated.View>
           ) : (
             null
@@ -285,7 +320,17 @@ var NavigationBarRouteMapper = {
     );
   },
   RightButton(route, navigator, index, navState) {
-    return null;
+    return (
+      <View style={styles.rightButtonView}>
+        <TouchableNativeFeedback
+            onPress={this.navigateToRequestTvShow}
+            background={TouchableNativeFeedback.Ripple('#ff77a7', true)}>
+          <View style={styles.addButtonNavigator}>
+            <Icon name="md-add" style={styles.addButtonIconNavigator} />
+          </View>
+        </TouchableNativeFeedback>
+      </View>
+    );
   },
   Title(route, navigator, index, navState) {
     return (
@@ -329,6 +374,23 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: '#fefefe'
   },
+  rightButtonView: {
+    width: 45,
+    height: 45,
+    marginTop: 6,
+    borderRadius: 45,
+  },
+  addButtonNavigator: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 14,
+    paddingTop: 13,
+    borderRadius: 14,
+  },
+  addButtonIconNavigator: {
+    fontSize: 24,
+    color: '#ff3d83'
+  },
   container: {
     flex: 1,
     flexDirection: 'column',
@@ -371,7 +433,6 @@ const styles = StyleSheet.create({
   },
   rowTouch: {
     flex: 1,
-    borderRadius: 2,
     elevation: 2,
     backgroundColor: '#fafafa',
     margin: 12,
@@ -438,7 +499,7 @@ const styles = StyleSheet.create({
   },
   notFound: {
     flex: 1,
-    marginTop: -40,
+    marginTop: -60,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -459,6 +520,32 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 20,
     color: '#bbbbc1',
+  },
+  solicitarSerie: {
+    paddingBottom: 8,
+    alignItems: 'center',
+  },
+  solicitarSerieQuestion: {
+    marginBottom: 8,
+    fontFamily: 'Roboto-Regular',
+    color: '#bbbbc1',
+  },
+  solicitarSerieButtonView: {
+    borderRadius: 5,
+    elevation: 3,
+  },
+  addButton: {
+    backgroundColor: '#ff3d83',
+    padding: 6,
+    borderRadius: 5,
+  },
+  addIcon: {
+    color: '#ffffff',
+  },
+  principalButtonText: {
+    color: '#ffffff',
+    fontFamily: 'Roboto-Medium',
+    fontSize: 14,
   },
 });
 
