@@ -37,7 +37,7 @@ class RequestTvShow extends Component {
   }
 
   /* mensaje popUp */
-  popUp(title, message) {
+  static popUp(title, message) {
     Alert.alert(title, message);
   }
 
@@ -66,6 +66,7 @@ class RequestTvShow extends Component {
         // ocultamos teclado
         Keyboard.dismiss();
       }).catch((error) => {
+        console.log(error.stack);
         this.setState({showProgress: false});
         this.popUp('Error', 'Lamentablemente no se ha podido realizar la búsqueda');
       });
@@ -79,10 +80,10 @@ class RequestTvShow extends Component {
   processData(data) {
     // si la API nos devuelve que no ha encontrado nada
     if (data.error) {
-      if (data.error == 'Not found') {
+      if (data.error === 'Not found') {
         // no se han encontrado resultados con esa query
         this.notFoundAnimationShow(0);
-      } else if (data.error == 'Bad request') {
+      } else if (data.error === 'Bad request') {
         // error bad request por introducir menos de 3 caracteres
         this.popUp('Buscar', 'Introduce como mínimo 3 caracteres');
       } else {
@@ -113,8 +114,8 @@ class RequestTvShow extends Component {
       }
     } else if (data.ok) {
       // actualizamos los datos
-      var data = this.state.data;
-      var index = data.findIndex(function(item, i) {
+      let data = this.state.data;
+      let index = data.findIndex(function(item) {
         return item.tvdbId === tvdbId;
       });
 
@@ -292,9 +293,9 @@ class RequestTvShow extends Component {
   }
 
   /* pie de la listview para hacer padding en Android por navbar transparente */
-  renderFooter() {
+  static renderFooter() {
     return (
-      <View style={styles.separatorView}></View>
+      <View style={styles.separatorView} />
     );
   }
 
@@ -316,15 +317,15 @@ class RequestTvShow extends Component {
   }
 
   renderScene(route, navigator) {
-    var spinner = this.state.showProgress ? (
+    let spinner = this.state.showProgress ? (
       <ActivityIndicator style={styles.loader}
         size={'small'} color={'#fe3f80'} />
     ) : ( null );
 
-    var notFound = this.state.showNotFound ? (
+    let notFound = this.state.showNotFound ? (
       <Animated.View style={[styles.notFound, {opacity: this.state.notFoundOpacity}]}>
         <View style={styles.notFoundCircle}>
-          <Icon name={(Platform.OS === 'ios') ? 'ios-search' : 'md-search'} style={styles.notFoundIcon}></Icon>
+          <Icon name={(Platform.OS === 'ios') ? 'ios-search' : 'md-search'} style={styles.notFoundIcon} />
         </View>
         <Text style={styles.notFoundText}>Sin resultados</Text>
         <View style={styles.solicitarSerie}>
@@ -375,7 +376,7 @@ class RequestTvShow extends Component {
   }
 }
 
-var NavigationBarRouteMapper = {
+let NavigationBarRouteMapper = {
   LeftButton(route, navigator, index, navState) {
     return (
       <View style={styles.backButtonView}>

@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 
 import Root from './root';
-import Search from './search.android';
+import Search from './search';
 import TvShow from './tvshow';
 import RequestTvShow from "./requestTvShow";
 

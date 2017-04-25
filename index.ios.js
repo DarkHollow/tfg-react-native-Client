@@ -2,32 +2,31 @@ import React, { Component } from 'react';
 import {
   AppRegistry,
   StyleSheet,
-  Text,
   View,
   Navigator,
   StatusBar,
 } from 'react-native';
 
 import Root from './root';
-import Search from './search.ios';
+import Search from './search';
 import TvShow from './tvshow';
 import RequestTvShow from "./requestTvShow";
 
 export default class TrendingSeriesClient extends Component {
 
-  renderScene(route, navigator) {
+  static renderScene(route, navigator) {
     console.log(route);
 
-    if (route.name == 'root') {
+    if (route.name === 'root') {
       return <Root navigator={navigator} />
     }
-    if (route.name == 'search') {
+    if (route.name === 'search') {
       return <Search navigator={navigator} />
     }
-    if (route.name == 'tvshow') {
+    if (route.name === 'tvshow') {
       return <TvShow navigator={navigator} {...route.passProps} />
     }
-    if (route.name == 'requestTvShow') {
+    if (route.name === 'requestTvShow') {
       return <RequestTvShow navigator={navigator} {...route.passProps} />
     }
   }
@@ -41,11 +40,11 @@ export default class TrendingSeriesClient extends Component {
           initialRoute={{ name: 'root'}}
           renderScene={this.renderScene.bind(this)}
           configureScene={(route) => {
-            if (route.name == 'search') {
+            if (route.name === 'search') {
               return Navigator.SceneConfigs.PushFromRight;
-            } else if (route.name == 'tvshow') {
+            } else if (route.name === 'tvshow') {
               return Navigator.SceneConfigs.FloatFromBottom;
-            } else if (route.name == 'requestTvShow') {
+            } else if (route.name === 'requestTvShow') {
               return Navigator.SceneConfigs.FloatFromBottom;
             } else {
               return Navigator.SceneConfigs.PushFromRight;
