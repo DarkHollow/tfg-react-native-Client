@@ -155,6 +155,17 @@ class Search extends Component {
     });
   }
 
+  /* navegar a vista de solicitar nueva serie */
+  navigateToRequestTvShow() {
+    console.log('Navegar a solicitar nueva serie');
+    this.props.navigator.push({
+      name: 'requestTvShow',
+      passProps: {
+        searchText: this.state.searchText
+      }
+    });
+  }
+
   /* cabecera del listview: mostrar cuántos resultados se han obtenido */
   renderHeader() {
     return (
@@ -185,8 +196,8 @@ class Search extends Component {
             <View style={styles.rowBottomRight}>
               <View style={styles.rating}>
                 <Text style={styles.ratingText}>4,7</Text>
-                <Icon name='ios-star' style={styles.ratingIcon}></Icon>
-                <Icon name='ios-arrow-forward' style={styles.forwardIcon}></Icon>
+                <Icon name='ios-star' style={styles.ratingIcon} />
+                <Icon name='ios-arrow-forward' style={styles.forwardIcon} />
               </View>
             </View>
           </View>
@@ -224,6 +235,13 @@ class Search extends Component {
           <Icon name={(Platform.OS === 'ios') ? 'ios-search' : 'md-search'} style={styles.notFoundIcon}></Icon>
         </View>
         <Text style={styles.notFoundText}>Sin resultados</Text>
+        <View style={styles.solicitarSerie}>
+          <Text style={styles.solicitarSerieQuestion}>¿No encuentras lo que buscas?</Text>
+          <Icon.Button name='ios-add' size={26} style={styles.addButton} onPress={ () => { this.navigateToRequestTvShow() }}
+                       underlayColor={'white'}>
+            <Text style={styles.principalButtonText}>Solicitar nueva serie</Text>
+          </Icon.Button>
+        </View>
       </Animated.View>
     ) : ( null );
 
@@ -255,6 +273,13 @@ class Search extends Component {
                 renderRow={(rowData) => this.renderRow(rowData)}
                 enableEmptySections={true}
               />
+              <View style={styles.solicitarSerie}>
+                <Text style={styles.solicitarSerieQuestion}>¿No encuentras lo que buscas?</Text>
+                <Icon.Button name='ios-add' size={26} style={styles.addButton} onPress={() => { this.navigateToRequestTvShow() }}
+                             underlayColor={'white'}>
+                  <Text style={styles.principalButtonText}>Solicitar nueva serie</Text>
+                </Icon.Button>
+              </View>
             </Animated.View>
           ) : (
             null
@@ -276,7 +301,14 @@ var NavigationBarRouteMapper = {
     );
   },
   RightButton(route, navigator, index, navState) {
-    return null;
+    return (
+      <TouchableOpacity style={styles.addButtonNavigator}
+          onPress={() => navigator.parentNavigator.push({
+            name: 'requestTvShow'
+          }) }>
+        <Icon name="md-add" style={styles.addButtonIconNavigator} />
+      </TouchableOpacity>
+    );
   },
   Title(route, navigator, index, navState) {
     return (
@@ -316,6 +348,15 @@ const styles = StyleSheet.create({
   backIcon: {
     fontSize: 33,
     color: '#fefefe'
+  },
+  addButtonNavigator: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 9,
+  },
+  addButtonIconNavigator: {
+    fontSize: 35,
+    color: '#ff3d83'
   },
   container: {
     flex: 1,
@@ -449,6 +490,26 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 20,
     color: '#bbbbc1',
+  },
+  solicitarSerie: {
+    margin: 10,
+    alignItems: 'center',
+    padding: 8,
+  },
+  solicitarSerieQuestion: {
+    marginBottom: 8,
+    color: '#bbbbc1',
+  },
+  addButton: {
+    backgroundColor: '#ff3d83',
+    paddingTop: 2,
+    paddingBottom: 2,
+  },
+  addIcon: {
+    color: '#ffffff',
+  },
+  principalButtonText: {
+    color: '#ffffff'
   },
 });
 

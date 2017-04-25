@@ -11,6 +11,7 @@ import {
 import Root from './root';
 import Search from './search.ios';
 import TvShow from './tvshow';
+import RequestTvShow from "./requestTvShow";
 
 export default class TrendingSeriesClient extends Component {
 
@@ -26,6 +27,9 @@ export default class TrendingSeriesClient extends Component {
     if (route.name == 'tvshow') {
       return <TvShow navigator={navigator} {...route.passProps} />
     }
+    if (route.name == 'requestTvShow') {
+      return <RequestTvShow navigator={navigator} {...route.passProps} />
+    }
   }
 
   render() {
@@ -40,6 +44,8 @@ export default class TrendingSeriesClient extends Component {
             if (route.name == 'search') {
               return Navigator.SceneConfigs.PushFromRight;
             } else if (route.name == 'tvshow') {
+              return Navigator.SceneConfigs.FloatFromBottom;
+            } else if (route.name == 'requestTvShow') {
               return Navigator.SceneConfigs.FloatFromBottom;
             } else {
               return Navigator.SceneConfigs.PushFromRight;

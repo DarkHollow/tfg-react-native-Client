@@ -4,7 +4,6 @@ import {
   Text,
   View,
   Navigator,
-  TouchableNativeFeedback,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
@@ -19,16 +18,18 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Hideo } from 'react-native-textinput-effects';
 
-class Search extends Component {
-  constructor() {
-    super();
+class RequestTvShow extends Component {
+  constructor(props) {
+    super(props);
+
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state = {
-      searchText: '',
+      searchText: this.props.searchText,
       searchedText: '',
       showProgress: false,
       showListView: false,
       showNotFound: false,
+      data: '',
       dataSource: ds.cloneWithRows([]),
       listviewOpacity: new Animated.Value(0),
       notFoundOpacity: new Animated.Value(0),
@@ -42,7 +43,7 @@ class Search extends Component {
 
   /* submit buscar */
   onSubmit() {
-    console.log('Buscar ' + this.state.searchText);
+    console.log('Buscar en TVDB ' + this.state.searchText);
 
     this.setState({showProgress: true});
     this.notFoundAnimationHide(0);
@@ -54,7 +55,7 @@ class Search extends Component {
       this.setState({searchedText: this.state.searchText});
 
       // hacemos fetch a la API
-      fetch('http://192.168.1.13:9000/api/search/tvshows/' + this.state.searchText, {method: "GET"})
+      fetch('http://localhost:9000/api/search/TVDB/' + this.state.searchText, {method: "GET"})
       .then((response) => response.json())
       .then((responseData) => {
         this.processData(responseData);
@@ -91,20 +92,89 @@ class Search extends Component {
     } else {
       // cargamos datos en el datasource
       this.setState({dataSource: this.state.dataSource.cloneWithRows(data)});
+      // nos guardamos los datos en json por si hiciera falta modificar algo en tiempo real
+      this.setState({data: data});
       this.listviewAnimationShow(0);
     }
   }
 
-  /* redirige a la vista de ficha de tv show */
-  openTvShow(tvShowId) {
-    console.log('Ver TV Show con id:' + tvShowId);
-    this.props.navigator.push({
-      name: 'tvshow',
-      passProps: {
-        tvShowId: tvShowId,
-        backButtonText: 'Búsqueda'
+  processRequestResponse(tvdbId, data) {
+    if (data.error) {
+      if (data.error === 'This user requested this TV Show already') {
+        this.popUp('Error', 'Ya has solicitado esta serie');
+      } else if (data.error === 'This user doesn\'t exist') {
+        this.popUp('Error', 'Fallo en la solicitud');
+      } else if (data.error === 'TV Show is on local already') {
+        this.popUp('Error', 'Esta serie ya está en nuestra aplicación');
+      } else if (data.error === 'TV Show doesn\'t exist on TVDB') {
+        this.popUp('Error', 'Fallo al obtener datos de la serie, prueba de nuevo en un momento');
+      } else if (data.error === 'tvdbId/userId can\'t be null') {
+        this.popUp('Error', 'Fallo al procesar solicitud, prueba de nuevo en un momento');
       }
-    });
+    } else if (data.ok) {
+      // actualizamos los datos
+      var data = this.state.data;
+      var index = data.findIndex(function(item, i) {
+        return item.tvdbId === tvdbId;
+      });
+
+      let newArray = this.state.dataSource._dataBlob.s1.slice();
+      newArray[index] = {
+        tvdbId: data[index].tvdbId,
+        name: data[index].name,
+        firstAired: data[index].firstAired,
+        banner: data[index].banner,
+        local: data[index].local,
+        requested: true,
+      };
+      this.setState({dataSource: this.state.dataSource.cloneWithRows(newArray)});
+      this.popUp('Serie solicitada', 'La serie ha sido solicitada y será revisada por un administrador');
+    }
+  }
+
+  /* abre o solicita la serie (segun si la tenemos en local o no) */
+  openOrRequest(rowData) {
+    console.log('Ver o solicitar tv show con id de TVDB:' + rowData.id);
+
+    // si la tenemos en local, abrir
+    if (rowData.local) {
+      this.props.navigator.push({
+        name: 'tvshow',
+        passProps: {
+          tvShowId: rowData.id,
+          backButtonText: 'Solicitar'
+        }
+      });
+    } else if (rowData.requested) {
+      // si está solicitada, mostrar mensaje
+      Alert.alert('Solicitar nueva serie', 'Esta serie ya ha sido solicitada')
+    } else {
+      // si no esta, seguro que quiere solicitarla ?
+      Alert.alert(
+        'Solicitar nueva serie',
+        '¿Seguro que deseas solicitar la serie \'' + rowData.name + '\'?',
+        [
+          {text: 'Sí', onPress: () => {
+            // solicitar serie
+            fetch('http://localhost:9000/api/tvshow/request', {
+              method: 'POST',
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                tvdbId: rowData.tvdbId,
+                userId: 1,
+              })
+            }).then((response) => response.json())
+              .finally((responseData) => {
+                this.processRequestResponse(rowData.tvdbId, responseData);
+              });
+          }},
+          {text: 'Cancelar', onPress: () => console.log('Cancelar')},
+        ]
+      )
+    }
   }
 
   /* animaciones */
@@ -120,7 +190,7 @@ class Search extends Component {
         delay: delay,
         duration: 250
       }).start();
-    }, 110);
+    }, 200);
   }
 
   notFoundAnimationHide(delay) {
@@ -141,7 +211,7 @@ class Search extends Component {
         delay: delay,
         duration: 250
       }).start();
-    }, 110);
+    }, 200);
   }
 
   listviewAnimationHide(delay) {
@@ -151,17 +221,6 @@ class Search extends Component {
       duration: 100
     }).start( () => {
       this.setState({showListView: false});
-    });
-  }
-
-  /* navegar a vista de solicitar nueva serie */
-  navigateToRequestTvShow() {
-    console.log('Navegar a solicitar nueva serie');
-    this.props.navigator.push({
-      name: 'requestTvShow',
-      passProps: {
-        searchText: this.state.searchText
-      }
     });
   }
 
@@ -178,11 +237,12 @@ class Search extends Component {
   /* contenido de cada elemento del listview */
   renderRow(rowData) {
     return (
-      <TouchableOpacity style={styles.rowTouch} onPress={ () => this.openTvShow(rowData.id)}>
+      <TouchableOpacity style={styles.rowTouch} onPress={ () => this.openOrRequest(rowData)}>
         <View style={styles.row}>
           <View style={styles.rowTop}>
             <Image style={styles.rowImage}
-              source={{uri: rowData.banner}}
+                   source={{uri: 'https://thetvdb.com/banners/' + rowData.banner}}
+                   defaultSource={require('./img/placeholderBanner.png')}
             />
           </View>
           <View style={styles.rowBottom}>
@@ -192,29 +252,46 @@ class Search extends Component {
                 {' ' + new Date(rowData.firstAired).getFullYear()}
               </Text>
             </View>
-            <View style={styles.rowBottomRight}>
-              <View style={styles.rating}>
-                <Text style={styles.ratingText}>4,7</Text>
-                <Icon name='md-star' style={styles.ratingIcon}></Icon>
-              </View>
-            </View>
+
+            { rowData.local ? (
+                <View style={styles.rowBottomRight}>
+                  <View style={styles.rating}>
+                    <View style={styles.localView}>
+                      <Text style={styles.localText}>En local</Text>
+                    </View>
+                    <Text style={styles.ratingText}>4,7</Text>
+                    <Icon name='ios-star' style={styles.ratingIcon} />
+                    <Icon name='ios-arrow-forward' style={styles.forwardIcon} />
+                  </View>
+                </View>
+            ) : (
+              rowData.requested ? (
+                <View style={styles.rowBottomRightRequested}>
+                  <View style={styles.requested}>
+                    <Icon name='ios-time-outline' style={styles.requestedIcon} />
+                    <Text style={styles.requestedText}>Solicitada</Text>
+                  </View>
+                </View>
+              ) : (
+                <View style={styles.rowBottomRightRequest}>
+                  <View style={styles.request}>
+                    <Icon name='ios-add' style={styles.requestIcon} />
+                    <Text style={styles.requestText}>Solicitar</Text>
+                  </View>
+                </View>
+              )
+            )}
+
           </View>
         </View>
       </TouchableOpacity>
     );
   }
 
-  /* pie de la listview para hacer padding en Android por navbar transparente */
-  renderFooter() {
-    return (
-      <View style={styles.separatorView}></View>
-    );
-  }
-
   render() {
     return(
       <View style={styles.statusBarAndNavView}>
-        <StatusBar animated backgroundColor={'#2f3e9e'} />
+        <StatusBar barStyle={'light-content'} animated />
         <Navigator
           renderScene={this.renderScene.bind(this)}
           navigator={this.props.navigator}
@@ -237,23 +314,9 @@ class Search extends Component {
     var notFound = this.state.showNotFound ? (
       <Animated.View style={[styles.notFound, {opacity: this.state.notFoundOpacity}]}>
         <View style={styles.notFoundCircle}>
-          <Icon name={(Platform.OS === 'ios') ? 'ios-search' : 'md-search'} style={styles.notFoundIcon}></Icon>
+          <Icon name={(Platform.OS === 'ios') ? 'ios-search' : 'md-search'} style={styles.notFoundIcon} />
         </View>
         <Text style={styles.notFoundText}>Sin resultados</Text>
-        <View style={styles.solicitarSerie}>
-          <Text style={styles.solicitarSerieQuestion}>¿No encuentras lo que buscas?</Text>
-          <View style={styles.solicitarSerieButtonView}>
-            <TouchableNativeFeedback
-                onPress={() => { this.navigateToRequestTvShow() }}
-                background={TouchableNativeFeedback.Ripple('#ff77a7', true)}>
-              <View style={styles.addButton}>
-                <Icon name='md-add' size={14} style={styles.addIcon}>
-                  <Text style={styles.principalButtonText}> Solicitar nueva serie</Text>
-                </Icon>
-              </View>
-            </TouchableNativeFeedback>
-          </View>
-        </View>
       </Animated.View>
     ) : ( null );
 
@@ -261,20 +324,22 @@ class Search extends Component {
       <View style={styles.container}>
         <View style={styles.viewSearch}>
           <Hideo
+            ref={'textinput'}
             autoFocus={true}
-            placeholder='¿Qué serie buscas?'
+            placeholder={'Buscar serie externamente'}
             iconClass={Icon}
-            iconName={'md-search'}
+            iconName={'ios-search'}
             iconColor={'#616161'}
-            iconBackgroundColor={'#ffffff'}
+            iconBackgroundColor={'#eeeeee'}
             inputStyle={styles.input}
             clearButtonMode={'always'}
+            returnKeyType={'search'}
+            defaultValue={this.props.searchText}
             onChangeText={ (text)=> this.setState({searchText: text}) }
             onSubmitEditing={ () => this.onSubmit() }
           />
+          {spinner}
         </View>
-
-        {spinner}
 
         <KeyboardAvoidingView behavior={'padding'} style={styles.viewBody}>
           {(this.state.showListView) ? (
@@ -283,23 +348,8 @@ class Search extends Component {
                 dataSource={this.state.dataSource}
                 renderHeader={() => this.renderHeader()}
                 renderRow={(rowData) => this.renderRow(rowData)}
-                renderFooter={() => this.renderFooter()}
                 enableEmptySections={true}
               />
-              <View style={styles.solicitarSerie}>
-                <Text style={styles.solicitarSerieQuestion}>¿No encuentras lo que buscas?</Text>
-                <View style={styles.solicitarSerieButtonView}>
-                  <TouchableNativeFeedback
-                      onPress={() => { this.navigateToRequestTvShow() }}
-                      background={TouchableNativeFeedback.Ripple('#ff77a7', true)}>
-                    <View style={styles.addButton}>
-                      <Icon name='md-add' size={14} style={styles.addIcon}>
-                        <Text style={styles.principalButtonText}> Solicitar nueva serie</Text>
-                      </Icon>
-                    </View>
-                  </TouchableNativeFeedback>
-                </View>
-              </View>
             </Animated.View>
           ) : (
             null
@@ -314,34 +364,20 @@ class Search extends Component {
 var NavigationBarRouteMapper = {
   LeftButton(route, navigator, index, navState) {
     return (
-      <View style={styles.backButtonView}>
-        <TouchableOpacity style={styles.backButton}
-            onPress={() => navigator.parentNavigator.pop()}>
-          <Icon name="md-arrow-back" style={styles.backIcon} />
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity style={styles.backButton}
+          onPress={() => navigator.parentNavigator.pop()}>
+        <Icon name="ios-arrow-back" style={styles.backIcon} />
+      </TouchableOpacity>
     );
   },
   RightButton(route, navigator, index, navState) {
-    return (
-      <View style={styles.rightButtonView}>
-        <TouchableNativeFeedback
-            onPress={() => navigator.parentNavigator.push({
-                name: 'requestTvShow'
-            }) }
-            background={TouchableNativeFeedback.Ripple('rgba(255,119,167,0.4)', true)}>
-          <View style={styles.addButtonNavigator}>
-            <Icon name="md-add" style={styles.addButtonIconNavigator} />
-          </View>
-        </TouchableNativeFeedback>
-      </View>
-    );
+    return (<View/>);
   },
   Title(route, navigator, index, navState) {
     return (
       <View style={styles.titleView}>
         <Text style={styles.titleText}>
-          Buscar
+          Solicitar nueva serie
         </Text>
       </View>
     );
@@ -353,9 +389,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   nav: {
-    elevation: 6,
     backgroundColor: '#3e50b4',
-    height: 80,
+    borderBottomWidth: 1,
+    borderColor: '#2f3e9e'
   },
   titleView: {
     flex: 1,
@@ -363,102 +399,95 @@ const styles = StyleSheet.create({
   },
   titleText: {
     color: '#fefefe',
-    fontSize: 20,
-    fontFamily: 'Roboto-Medium'
-  },
-  backButtonView: {
-    flex: 1,
-    justifyContent: 'center',
+    fontSize: 17,
+    fontWeight: '500'
   },
   backButton: {
     flex: 1,
     justifyContent: 'center',
-    padding: 14,
+    padding: 9,
+    paddingTop: 11
   },
   backIcon: {
-    fontSize: 24,
+    fontSize: 33,
     color: '#fefefe'
-  },
-  rightButtonView: {
-    width: 45,
-    height: 45,
-    marginTop: 6,
-    borderRadius: 45,
   },
   addButtonNavigator: {
     flex: 1,
     justifyContent: 'center',
-    padding: 14,
-    paddingTop: 13,
-    borderRadius: 14,
+    padding: 9,
   },
   addButtonIconNavigator: {
-    fontSize: 24,
+    fontSize: 35,
     color: '#ff3d83'
   },
   container: {
     flex: 1,
-    flexDirection: 'column',
-    backgroundColor: '#eeeeee',
-    paddingTop: 80
+    justifyContent: 'flex-start',
+    backgroundColor: '#fafafa',
+    paddingTop: 64
   },
   viewSearch: {
-    elevation: 2,
-    height: 54,
-    borderWidth: 1,
-    borderColor: '#fefefe',
-    backgroundColor: '#ffffff',
-    paddingTop: 4
+    height: 49,
+    alignSelf: 'stretch',
+    backgroundColor: '#eeeeee',
+    zIndex: 1,
+  },
+  viewSearchTitle: {
+    padding: 10,
+    paddingBottom: 0,
   },
   input: {
+    height: 30,
+    marginTop: 10,
     alignSelf: 'stretch',
-    backgroundColor: '#ffffff',
+    backgroundColor: '#e6e6e6',
     color: '#616161',
-    fontSize: 16
+    fontSize: 14,
+    marginRight: 50,
+    borderRadius: 4
   },
   viewBody: {
     flex: 1,
-    justifyContent: 'flex-start'
+    justifyContent: 'flex-start',
+    backgroundColor: '#eeeeee'
   },
   listHeader: {
     backgroundColor: '#e6e6e6',
-    padding: 14,
-    paddingTop: 8,
-    paddingBottom: 8,
+    padding: 8,
+    paddingLeft: 12,
     flexDirection: 'row'
   },
   listHeaderLeft: {
     flex: 1,
-    fontFamily: 'Roboto-Light'
+    fontSize: 12,
+    fontWeight: '100',
+    color: '#616161'
   },
   listHeaderRight: {
     alignSelf: 'flex-end',
-    //marginRight: 5,
-    fontFamily: 'Roboto-Light'
+    marginRight: 5,
+    fontSize: 12,
+    fontWeight: '100',
+    color: '#616161'
   },
   rowTouch: {
     flex: 1,
-    elevation: 2,
-    backgroundColor: '#fafafa',
-    margin: 12,
-    marginTop: 8,
-    marginBottom: -2,
-    borderRadius: 2
+    marginBottom: 8,
+    borderBottomWidth: 1,
+    borderColor: '#dedede'
   },
   row: {
     flex: 1,
-    borderRadius: 2
+    backgroundColor: '#fafafa'
   },
   rowTop: {
     flex: 1,
-    borderRadius: 2
   },
   rowImage: {
     height: 66,
     width: null,
-    resizeMode: 'cover',
-    borderTopLeftRadius: 2,
-    borderTopRightRadius: 2
+    resizeMode: 'cover'
   },
   rowBottom: {
     flex: 1,
@@ -469,42 +498,107 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   rowTitle: {
-    fontFamily: 'Roboto-Regular',
     fontSize: 16,
     color: '#212121'
   },
   rowSubtitle: {
-    fontFamily: 'Roboto-Regular',
     fontSize: 12,
-    color: '#616161'
+    color: '#aaaaaa'
   },
   rowBottomRight: {
     alignSelf: 'flex-end',
-    marginBottom: 10
+    marginBottom: 3,
+    borderRadius: 3,
   },
   rating: {
     flexDirection: 'row'
   },
   ratingText: {
-    fontFamily: 'Roboto-Regular',
     fontSize: 12,
-    color: '#616161',
-    marginRight: 3
+    color: '#aaaaaa',
+    marginRight: 3,
+    marginTop: 3
   },
   ratingIcon: {
-    marginTop: 1,
     fontSize: 14,
-    color: '#616161'
+    color: '#aaaaaa',
+    marginTop: 3
   },
-  separatorView: {
-    height: 54
+  localView: {
+    flexDirection: 'row',
+    marginRight: 12,
+    padding: 3,
+    paddingLeft: 6,
+    paddingRight: 6,
+    backgroundColor: '#eeeeee',
+    borderRadius: 3,
+  },
+  localText: {
+    fontSize: 12,
+    color: '#aaaaaa'
+  },
+  rowBottomRightRequest: {
+    alignSelf: 'flex-end',
+    marginBottom: 3,
+    paddingLeft: 7,
+    paddingTop: 3,
+    paddingRight: 6,
+    paddingBottom: 2,
+    backgroundColor: '#ff3d83',
+    borderRadius: 5,
+  },
+  request: {
+    flexDirection: 'row',
+  },
+  forwardIcon: {
+    fontSize: 20,
+    color: '#bbbbc1',
+    marginLeft: 20
+  },
+  requestText: {
+    fontSize: 12,
+    color: '#ffffff',
+    marginRight: 3,
+    marginTop: 3
+  },
+  requestIcon: {
+    fontSize: 20,
+    color: '#ffffff',
+    marginRight: 3
+  },
+  rowBottomRightRequested: {
+    alignSelf: 'flex-end',
+    marginBottom: 3,
+    paddingLeft: 7,
+    paddingTop: 3,
+    paddingRight: 6,
+    paddingBottom: 2,
+    backgroundColor: '#eeeeee',
+    borderRadius: 5,
+  },
+  requested: {
+    flexDirection: 'row',
+  },
+  requestedText: {
+    fontSize: 12,
+    color: '#aaaaaa',
+    marginRight: 3,
+    marginTop: 3
+  },
+  requestedIcon: {
+    fontSize: 20,
+    color: '#aaaaaa',
+    marginRight: 3
   },
   loader: {
-    marginTop: 20
+    marginTop: 20,
+    alignSelf: 'flex-end',
+    marginRight: 14,
+    marginBottom: 20
   },
   notFound: {
     flex: 1,
-    marginTop: -60,
+    marginTop: -40,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -527,31 +621,25 @@ const styles = StyleSheet.create({
     color: '#bbbbc1',
   },
   solicitarSerie: {
-    paddingBottom: 8,
+    margin: 10,
     alignItems: 'center',
+    padding: 8,
   },
   solicitarSerieQuestion: {
     marginBottom: 8,
-    fontFamily: 'Roboto-Regular',
     color: '#bbbbc1',
-  },
-  solicitarSerieButtonView: {
-    borderRadius: 5,
-    elevation: 3,
   },
   addButton: {
     backgroundColor: '#ff3d83',
-    padding: 6,
-    borderRadius: 5,
+    paddingTop: 2,
+    paddingBottom: 2,
   },
   addIcon: {
     color: '#ffffff',
   },
   principalButtonText: {
-    color: '#ffffff',
-    fontFamily: 'Roboto-Medium',
-    fontSize: 14,
+    color: '#ffffff'
   },
 });
 
-export default Search;
+export default RequestTvShow;
