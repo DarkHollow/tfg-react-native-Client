@@ -158,7 +158,10 @@ class Search extends Component {
   navigateToRequestTvShow() {
     console.log('Navegar a solicitar nueva serie');
     this.props.navigator.push({
-      name: 'requesttvshow'
+      name: 'requestTvShow',
+      passProps: {
+        searchText: this.state.searchText
+      }
     });
   }
 
@@ -241,7 +244,7 @@ class Search extends Component {
           <Text style={styles.solicitarSerieQuestion}>¿No encuentras lo que buscas?</Text>
           <View style={styles.solicitarSerieButtonView}>
             <TouchableNativeFeedback
-                onPress={this.navigateToRequestTvShow}
+                onPress={() => { this.navigateToRequestTvShow() }}
                 background={TouchableNativeFeedback.Ripple('#ff77a7', true)}>
               <View style={styles.addButton}>
                 <Icon name='md-add' size={14} style={styles.addIcon}>
@@ -287,7 +290,7 @@ class Search extends Component {
                 <Text style={styles.solicitarSerieQuestion}>¿No encuentras lo que buscas?</Text>
                 <View style={styles.solicitarSerieButtonView}>
                   <TouchableNativeFeedback
-                      onPress={this.navigateToRequestTvShow}
+                      onPress={() => { this.navigateToRequestTvShow() }}
                       background={TouchableNativeFeedback.Ripple('#ff77a7', true)}>
                     <View style={styles.addButton}>
                       <Icon name='md-add' size={14} style={styles.addIcon}>
@@ -323,8 +326,10 @@ var NavigationBarRouteMapper = {
     return (
       <View style={styles.rightButtonView}>
         <TouchableNativeFeedback
-            onPress={this.navigateToRequestTvShow}
-            background={TouchableNativeFeedback.Ripple('#ff77a7', true)}>
+            onPress={() => navigator.parentNavigator.push({
+                name: 'requestTvShow'
+            }) }
+            background={TouchableNativeFeedback.Ripple('rgba(255,119,167,0.4)', true)}>
           <View style={styles.addButtonNavigator}>
             <Icon name="md-add" style={styles.addButtonIconNavigator} />
           </View>

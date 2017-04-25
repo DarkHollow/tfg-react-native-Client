@@ -157,9 +157,12 @@ class Search extends Component {
 
   /* navegar a vista de solicitar nueva serie */
   navigateToRequestTvShow() {
-      console.log('Navegar a solicitar nueva serie');
+    console.log('Navegar a solicitar nueva serie');
     this.props.navigator.push({
-      name: 'requesttvshow'
+      name: 'requestTvShow',
+      passProps: {
+        searchText: this.state.searchText
+      }
     });
   }
 
@@ -234,7 +237,7 @@ class Search extends Component {
         <Text style={styles.notFoundText}>Sin resultados</Text>
         <View style={styles.solicitarSerie}>
           <Text style={styles.solicitarSerieQuestion}>¿No encuentras lo que buscas?</Text>
-          <Icon.Button name='ios-add' size={26} style={styles.addButton} onPress={this.navigateToRequestTvShow}
+          <Icon.Button name='ios-add' size={26} style={styles.addButton} onPress={ () => { this.navigateToRequestTvShow() }}
                        underlayColor={'white'}>
             <Text style={styles.principalButtonText}>Solicitar nueva serie</Text>
           </Icon.Button>
@@ -272,7 +275,7 @@ class Search extends Component {
               />
               <View style={styles.solicitarSerie}>
                 <Text style={styles.solicitarSerieQuestion}>¿No encuentras lo que buscas?</Text>
-                <Icon.Button name='ios-add' size={26} style={styles.addButton} onPress={this.navigateToRequestTvShow}
+                <Icon.Button name='ios-add' size={26} style={styles.addButton} onPress={() => { this.navigateToRequestTvShow() }}
                              underlayColor={'white'}>
                   <Text style={styles.principalButtonText}>Solicitar nueva serie</Text>
                 </Icon.Button>
@@ -300,7 +303,9 @@ var NavigationBarRouteMapper = {
   RightButton(route, navigator, index, navState) {
     return (
       <TouchableOpacity style={styles.addButtonNavigator}
-          onPress={this.navigateToRequestTvShow}>
+          onPress={() => navigator.parentNavigator.push({
+            name: 'requestTvShow'
+          }) }>
         <Icon name="md-add" style={styles.addButtonIconNavigator} />
       </TouchableOpacity>
     );

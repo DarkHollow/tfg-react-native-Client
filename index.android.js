@@ -12,6 +12,7 @@ import {
 import Root from './root';
 import Search from './search.android';
 import TvShow from './tvshow';
+import RequestTvShow from "./requestTvShow";
 
 export default class TrendingSeriesClient extends Component {
 
@@ -20,23 +21,26 @@ export default class TrendingSeriesClient extends Component {
 
     // comportamiento del botón Back de Android según la escena
     BackAndroid.addEventListener('hardwareBackPress', () => {
-      if (route.name == 'root') {
+      if (route.name === 'root') {
         return true;
-      } else if(route.name == 'search') {
+      } else if(route.name === 'search' || route.name === 'tvshow' || route.name === 'requestTvShow') {
         navigator.pop();
         return true;
       }
     });
 
     // qué vista cargar en el navigator
-    if (route.name == 'root') {
+    if (route.name === 'root') {
       return <Root navigator={navigator} />
     }
-    if (route.name == 'search') {
+    if (route.name === 'search') {
       return <Search navigator={navigator} />
     }
-    if (route.name == 'tvshow') {
+    if (route.name === 'tvshow') {
       return <TvShow navigator={navigator} {...route.passProps} />
+    }
+    if (route.name === 'requestTvShow') {
+      return <RequestTvShow navigator={navigator} {...route.passProps} />
     }
   }
 
