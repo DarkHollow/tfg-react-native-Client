@@ -29,6 +29,7 @@ class RequestTvShow extends Component {
       showProgress: false,
       showListView: false,
       showNotFound: false,
+      data: '',
       dataSource: ds.cloneWithRows([]),
       listviewOpacity: new Animated.Value(0),
       notFoundOpacity: new Animated.Value(0),
@@ -91,12 +92,50 @@ class RequestTvShow extends Component {
     } else {
       // cargamos datos en el datasource
       this.setState({dataSource: this.state.dataSource.cloneWithRows(data)});
+      // nos guardamos los datos en json por si hiciera falta modificar algo en tiempo real
+      this.setState({data: data});
       this.listviewAnimationShow(0);
+    }
+  }
+
+  processRequestResponse(tvdbId, data) {
+    if (data.error) {
+      if (data.error === 'This user requested this TV Show already') {
+        this.popUp('Error', 'Ya has solicitado esta serie');
+      } else if (data.error === 'This user doesn\'t exist') {
+        this.popUp('Error', 'Fallo en la solicitud');
+      } else if (data.error === 'TV Show is on local already') {
+        this.popUp('Error', 'Esta serie ya está en nuestra aplicación');
+      } else if (data.error === 'TV Show doesn\'t exist on TVDB') {
+        this.popUp('Error', 'Fallo al obtener datos de la serie, prueba de nuevo en un momento');
+      } else if (data.error === 'tvdbId/userId can\'t be null') {
+        this.popUp('Error', 'Fallo al procesar solicitud, prueba de nuevo en un momento');
+      }
+    } else if (data.ok) {
+      // actualizamos los datos
+      var data = this.state.data;
+      var index = data.findIndex(function(item, i) {
+        return item.tvdbId === tvdbId;
+      });
+
+      let newArray = this.state.dataSource._dataBlob.s1.slice();
+      newArray[index] = {
+        tvdbId: data[index].tvdbId,
+        name: data[index].name,
+        firstAired: data[index].firstAired,
+        banner: data[index].banner,
+        local: data[index].local,
+        requested: true,
+      };
+      this.setState({dataSource: this.state.dataSource.cloneWithRows(newArray)});
+      this.popUp('Serie solicitada', 'La serie ha sido solicitada y será revisada por un administrador');
     }
   }
 
   /* abre o solicita la serie (segun si la tenemos en local o no) */
   openOrRequest(rowData) {
+    console.log('Ver o solicitar tv show con id de TVDB:' + rowData.id);
+
     // si la tenemos en local, abrir
     if (rowData.local) {
       this.props.navigator.push({
@@ -106,13 +145,32 @@ class RequestTvShow extends Component {
           backButtonText: 'Solicitar'
         }
       });
+    } else if (rowData.requested) {
+      // si está solicitada, mostrar mensaje
+      Alert.alert('Solicitar nueva serie', 'Esta serie ya ha sido solicitada')
     } else {
       // si no esta, seguro que quiere solicitarla ?
       Alert.alert(
         'Solicitar nueva serie',
         '¿Seguro que deseas solicitar la serie \'' + rowData.name + '\'?',
         [
-          {text: 'Sí', onPress: () => console.log('Solicitar serie')},
+          {text: 'Sí', onPress: () => {
+            // solicitar serie
+            fetch('http://192.168.1.13:9000/api/tvshow/request', {
+              method: 'POST',
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                tvdbId: rowData.tvdbId,
+                userId: 1,
+              })
+            }).then((response) => response.json())
+              .finally((responseData) => {
+                this.processRequestResponse(rowData.tvdbId, responseData);
+              });
+          }},
           {text: 'Cancelar', onPress: () => console.log('Cancelar')},
         ]
       )
@@ -209,12 +267,22 @@ class RequestTvShow extends Component {
                   </View>
                 </View>
             ) : (
-              <View style={styles.rowBottomRightRequest}>
-                <View style={styles.request}>
-                  <Icon name='md-add' style={styles.requestIcon} />
-                  <Text style={styles.requestText}>Solicitar</Text>
+              rowData.requested ? (
+                <View style={styles.rowBottomRightRequested}>
+                  <View style={styles.requested}>
+                    <Icon name='md-time' style={styles.requestedIcon} />
+                    <Text style={styles.requestedText}>Solicitada</Text>
+                  </View>
                 </View>
-              </View>)}
+              ) : (
+                <View style={styles.rowBottomRightRequest}>
+                  <View style={styles.request}>
+                    <Icon name='md-add' style={styles.requestIcon} />
+                    <Text style={styles.requestText}>Solicitar</Text>
+                  </View>
+                </View>
+              )
+            )}
 
             </View>
           </View>
@@ -519,6 +587,29 @@ const styles = StyleSheet.create({
   requestIcon: {
     fontSize: 16,
     color: '#ffffff',
+    marginRight: 3
+  },
+  rowBottomRightRequested: {
+    alignSelf: 'flex-end',
+    marginBottom: 6,
+    padding: 3,
+    paddingLeft: 6,
+    paddingRight: 6,
+    backgroundColor: '#eeeeee',
+    borderRadius: 3,
+  },
+  requested: {
+    flexDirection: 'row',
+  },
+  requestedText: {
+    fontFamily: 'Roboto-Regular',
+    fontSize: 12,
+    color: '#aaaaaa',
+    marginRight: 3,
+  },
+  requestedIcon: {
+    fontSize: 16,
+    color: '#aaaaaa',
     marginRight: 3
   },
   separatorView: {
