@@ -5,12 +5,10 @@ import {
   Text,
   View,
   Navigator,
-  TouchableHighlight,
   TouchableOpacity,
   StatusBar,
   Alert,
   ScrollView,
-  Image,
   Animated,
 } from 'react-native';
 
@@ -90,6 +88,7 @@ class TvShow extends Component {
       // indicamos que fetch ha terminado
       this.setState({fetchEnded: true});
     }).catch((error) => {
+      console.log(error.stack);
       this.errorAndPop();
     });
   }
@@ -97,7 +96,7 @@ class TvShow extends Component {
   processData(data) {
     // si la API nos devuelve que no ha encontrado nada
     if (data.error) {
-      if (data.error == 'Not found') {
+      if (data.error === 'Not found') {
         // id no encontrada
       } else {
         // otro tipo de error interno
@@ -191,7 +190,7 @@ class TvShow extends Component {
       extrapolate: 'clamp',
     });
 
-    var videoPlayer = this.state.showVideoPlayer && Platform.OS === 'ios' ?
+    let videoPlayer = this.state.showVideoPlayer && Platform.OS === 'ios' ?
       (
         <Animated.View style={[styles.youtubeView, {opacity: this.state.youtubeOpacity}]}>
           <YouTube
@@ -262,8 +261,8 @@ class TvShow extends Component {
                   iconSize={20}
                   iconColor={(Platform.OS === 'ios') ? '#aaaaaa' : '#bbbbc1'}
                   style={{marginRight: 30}}
-                  disabled={(this.state.tvShowData.trailer) ? false : true}
-                  link={ (Platform.OS === 'ios') ? false : true }
+                  disabled={(!this.state.tvShowData.trailer)}
+                  link={ (Platform.OS !== 'ios') }
                   onPress={ (Platform.OS === 'ios') ? () => this.playTrailer() : 'https://www.youtube.com/watch?v=' + this.state.tvShowData.trailer }
                 />
                 <CircularButton
@@ -385,7 +384,7 @@ class TvShow extends Component {
 
 }
 
-var NavigationBarRouteMapper = props => ({
+let NavigationBarRouteMapper = props => ({
   LeftButton(route, navigator, index, navState) {
     return (
       <View style={styles.backButtonView}>
@@ -402,6 +401,9 @@ var NavigationBarRouteMapper = props => ({
       </View>
     );
   },
+  /**
+   * @return {null}
+   */
   RightButton(route, navigator, index, navState) {
     return null;
   },
