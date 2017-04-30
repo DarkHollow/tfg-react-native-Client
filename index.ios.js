@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 
 import Root from './root';
+import Register from './register';
 import Search from './search';
 import TvShow from './tvshow';
 import RequestTvShow from "./requestTvShow";
@@ -19,6 +20,9 @@ export default class TrendingSeriesClient extends Component {
 
     if (route.name === 'root') {
       return <Root navigator={navigator} />
+    }
+    if (route.name === 'register') {
+      return <Register navigator={navigator} />
     }
     if (route.name === 'search') {
       return <Search navigator={navigator} />
@@ -59,7 +63,7 @@ export default class TrendingSeriesClient extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fafafa',
+    backgroundColor: '#eeeeee',
   }
 });
 

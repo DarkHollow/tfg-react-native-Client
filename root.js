@@ -20,6 +20,11 @@ class Root extends Component {
         <StatusBar animated />
         <Text style={styles.title}>Trending Series</Text>
 
+        <TouchableHighlight onPress={this.navigate.bind(this, 'register')}
+                            style={styles.button} >
+          <Text style={styles.buttonText}>Registro</Text>
+        </TouchableHighlight>
+
         <TouchableHighlight onPress={this.navigate.bind(this, 'search')}
           style={styles.button} >
           <Text style={styles.buttonText}>Buscar</Text>
@@ -35,7 +40,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    backgroundColor: '#fafafa',
+    backgroundColor: '#eeeeee',
     padding: 10,
     paddingTop: 180
   },
