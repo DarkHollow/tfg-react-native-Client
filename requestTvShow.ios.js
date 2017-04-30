@@ -37,7 +37,7 @@ class RequestTvShow extends Component {
   }
 
   /* mensaje popUp */
-  static popUp(title, message) {
+  popUp(title, message) {
     Alert.alert(title, message);
   }
 
@@ -50,26 +50,31 @@ class RequestTvShow extends Component {
     this.listviewAnimationHide(0);
 
     // comprobar longitud de query
-    if (this.state.searchText.length >= 3) {
-      // guardamos el termino buscado
-      this.setState({searchedText: this.state.searchText});
-
-      // hacemos fetch a la API
-      fetch('http://localhost:9000/api/search/TVDB/' + this.state.searchText, {method: "GET"})
-      .then((response) => response.json())
-      .then((responseData) => {
-        this.processData(responseData);
-      }).then( () => {
-        // ocultamos spinner
+    if (this.state.searchText !== undefined) {
+      let searchText = this.state.searchText;
+      if (searchText.length >= 3) {
+        // guardamos el termino buscado
+        this.setState({searchedText: searchText});
+        // hacemos fetch a la API
+        fetch('http://localhost:9000/api/search/TVDB/' + searchText, {method: "GET"})
+          .then((response) => response.json())
+          .then((responseData) => {
+            this.processData(responseData);
+          }).then( () => {
+          // ocultamos spinner
+          this.setState({showProgress: false});
+        }).then( () => {
+          // ocultamos teclado
+          Keyboard.dismiss();
+        }).catch((error) => {
+          console.log(error.stack);
+          this.setState({showProgress: false});
+          this.popUp('Error', 'Lamentablemente no se ha podido realizar la búsqueda');
+        });
+      } else {
         this.setState({showProgress: false});
-      }).then( () => {
-        // ocultamos teclado
-        Keyboard.dismiss();
-      }).catch((error) => {
-        console.log(error.stack);
-        this.setState({showProgress: false});
-        this.popUp('Error', 'Lamentablemente no se ha podido realizar la búsqueda');
-      });
+        this.popUp('Buscar', 'Introduce como mínimo 3 caracteres');
+      }
     } else {
       this.setState({showProgress: false});
       this.popUp('Buscar', 'Introduce como mínimo 3 caracteres');
@@ -326,7 +331,6 @@ class RequestTvShow extends Component {
       <View style={styles.container}>
         <View style={styles.viewSearch}>
           <Hideo
-            ref={'textinput'}
             autoFocus={true}
             placeholder={'Buscar serie externamente'}
             iconClass={Icon}
