@@ -33,12 +33,13 @@ local.properties
 # node.js
 #
 node_modules/
+!node_modules/react-native/Libraries/CustomComponents/Navigator/NavigatorNavigationBarStylesAndroid.js
 npm-debug.log
+yarn-error.log
 
 # BUCK
 buck-out/
 \.buckd/
-android/app/libs
 *.keystore
 
 # fastlane
