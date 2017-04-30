@@ -36,7 +36,7 @@ class Search extends Component {
   }
 
   /* mensaje popUp */
-  static popUp(title, message) {
+  popUp(title, message) {
     Alert.alert(title, message);
   }
 
@@ -206,7 +206,7 @@ class Search extends Component {
   }
 
   /* pie de la listview para hacer padding en Android por navbar transparente */
-  static renderFooter() {
+  renderFooter() {
     return (
       <View style={styles.separatorView} />
     );

@@ -38,7 +38,7 @@ export default class TrendingSeriesClient extends Component {
         <Navigator
           style={{backgroundColor: '#3e50b4'}}
           initialRoute={{ name: 'root'}}
-          renderScene={this.renderScene.bind(this)}
+          renderScene={TrendingSeriesClient.renderScene.bind(this)}
           configureScene={(route) => {
             if (route.name === 'search') {
               return Navigator.SceneConfigs.PushFromRight;
@@ -50,7 +50,7 @@ export default class TrendingSeriesClient extends Component {
               return Navigator.SceneConfigs.PushFromRight;
             }
           }}
-          />
+        />
       </View>
     );
   }
