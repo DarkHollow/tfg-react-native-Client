@@ -53,11 +53,11 @@ export default class TrendingSeriesClient extends Component {
           renderScene={TrendingSeriesClient.renderScene.bind(this)}
           configureScene={(route) => {
             if (route.name === 'search') {
-              return Navigator.SceneConfigs.FadeAndroid;
+              return CustomComponents.Navigator.SceneConfigs.FadeAndroid;
             } else if(route.name === 'tvshow') {
-              return Navigator.SceneConfigs.FloatFromBottomAndroid;
+              return CustomComponents.Navigator.SceneConfigs.FloatFromBottomAndroid;
             } else {
-              return Navigator.SceneConfigs.FloatFromBottomAndroid;
+              return CustomComponents.Navigator.SceneConfigs.FloatFromBottomAndroid;
             }
           }}
         />
