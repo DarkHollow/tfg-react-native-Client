@@ -2,12 +2,11 @@ import React, { Component } from 'react';
 import {
   AppRegistry,
   StyleSheet,
-  Text,
   View,
-  Navigator,
-  BackAndroid,
   StatusBar,
+  BackHandler,
 } from 'react-native';
+import CustomComponents from 'react-native-deprecated-custom-components';
 
 import Root from './root';
 import Search from './search';
@@ -16,11 +15,11 @@ import RequestTvShow from "./requestTvShow";
 
 export default class TrendingSeriesClient extends Component {
 
-  static renderScene(route, navigator) {
+  renderScene(route, navigator) {
     console.log(route);
 
     // comportamiento del botón Back de Android según la escena
-    BackAndroid.addEventListener('hardwareBackPress', () => {
+    BackHandler.addEventListener('hardwareBackPress', () => {
       if (route.name === 'root') {
         return true;
       } else if(route.name === 'search' || route.name === 'tvshow' || route.name === 'requestTvShow') {
@@ -48,17 +47,17 @@ export default class TrendingSeriesClient extends Component {
     return (
       <View style={styles.container}>
         <StatusBar animated backgroundColor={'#2f3e9e'} />
-        <Navigator
+        <CustomComponents.Navigator
           style={{backgroundColor: '#3e50b4'}}
           initialRoute={{ name: 'root'}}
-          renderScene={TrendingSeriesClient.renderScene.bind(this)}
+          renderScene={this.renderScene.bind(this)}
           configureScene={(route) => {
             if (route.name === 'search') {
-              return Navigator.SceneConfigs.FadeAndroid;
+              return CustomComponents.Navigator.SceneConfigs.FadeAndroid;
             } else if(route.name === 'tvshow') {
-              return Navigator.SceneConfigs.FloatFromBottomAndroid;
+              return CustomComponents.Navigator.SceneConfigs.FloatFromBottomAndroid;
             } else {
-              return Navigator.SceneConfigs.FloatFromBottomAndroid;
+              return CustomComponents.Navigator.SceneConfigs.FloatFromBottomAndroid;
             }
           }}
         />

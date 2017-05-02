@@ -32,23 +32,9 @@ local.properties
 
 # node.js
 #
+node_modules/
 npm-debug.log
 yarn-error.log
-# ignore node_modules but unignore navigator styles changed
-node_modules/*
-!node_modules/react-native/
-
-node_modules/react-native/*
-!node_modules/react-native/Libraries/
-
-node_modules/react-native/Libraries/*
-!node_modules/react-native/Libraries/CustomComponents/
-
-node_modules/react-native/Libraries/CustomComponents/*
-!node_modules/react-native/Libraries/CustomComponents/Navigator/
-
-node_modules/react-native/Libraries/CustomComponents/Navigator/*
-!node_modules/react-native/Libraries/CustomComponents/Navigator/NavigatorNavigationBarStyleAndroid.js
 
 # BUCK
 buck-out/

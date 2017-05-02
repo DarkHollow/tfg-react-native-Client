@@ -4,13 +4,16 @@ import {
   Platform,
   Text,
   View,
-  Navigator,
   TouchableOpacity,
   StatusBar,
   Alert,
   ScrollView,
   Animated,
 } from 'react-native';
+import CustomComponents from 'react-native-deprecated-custom-components';
+import Icon from 'react-native-vector-icons/Ionicons';
+import CircularButton from './components/circularButton';
+import SeasonButton from './components/seasonButton';
 
 const TouchableNativeFeedback = Platform.select({
   android: () => require('TouchableNativeFeedback'),
@@ -21,10 +24,6 @@ const YouTube = Platform.select({
   android: () => null,
   ios: () => require('react-native-youtube'),
 })();
-
-import Icon from 'react-native-vector-icons/Ionicons';
-import CircularButton from './components/circularButton';
-import SeasonButton from './components/seasonButton';
 
 /* Constantes efecto Parallax */
 const HEADER_MAX_HEIGHT = 200;
@@ -163,11 +162,11 @@ class TvShow extends Component {
           barStyle="light-content"
           backgroundColor={'transparent'}
         />
-        <Navigator
+        <CustomComponents.Navigator
           renderScene={this.renderScene.bind(this)}
           navigator={this.props.navigator}
           navigationBar={
-            <Navigator.NavigationBar
+            <CustomComponents.Navigator.NavigationBar
               routeMapper={NavigationBarRouteMapper(this)}
               style={styles.nav} />
           }

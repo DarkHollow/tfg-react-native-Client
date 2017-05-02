@@ -3,9 +3,9 @@ import {
   AppRegistry,
   StyleSheet,
   View,
-  Navigator,
   StatusBar,
 } from 'react-native';
+import CustomComponents from 'react-native-deprecated-custom-components';
 
 import Root from './root';
 import Search from './search';
@@ -14,7 +14,7 @@ import RequestTvShow from "./requestTvShow";
 
 export default class TrendingSeriesClient extends Component {
 
-  static renderScene(route, navigator) {
+  renderScene(route, navigator) {
     console.log(route);
 
     if (route.name === 'root') {
@@ -35,19 +35,19 @@ export default class TrendingSeriesClient extends Component {
     return (
       <View style={styles.container}>
         <StatusBar animated />
-        <Navigator
+        <CustomComponents.Navigator
           style={{backgroundColor: '#3e50b4'}}
           initialRoute={{ name: 'root'}}
-          renderScene={TrendingSeriesClient.renderScene.bind(this)}
+          renderScene={this.renderScene.bind(this)}
           configureScene={(route) => {
             if (route.name === 'search') {
-              return Navigator.SceneConfigs.PushFromRight;
+              return CustomComponents.Navigator.SceneConfigs.PushFromRight;
             } else if (route.name === 'tvshow') {
-              return Navigator.SceneConfigs.FloatFromBottom;
+              return CustomComponents.Navigator.SceneConfigs.FloatFromBottom;
             } else if (route.name === 'requestTvShow') {
-              return Navigator.SceneConfigs.FloatFromBottom;
+              return CustomComponents.Navigator.SceneConfigs.FloatFromBottom;
             } else {
-              return Navigator.SceneConfigs.PushFromRight;
+              return CustomComponents.Navigator.SceneConfigs.PushFromRight;
             }
           }}
         />
