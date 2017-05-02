@@ -3,8 +3,8 @@ import {
   AppRegistry,
   StyleSheet,
   View,
-  BackAndroid,
   StatusBar,
+  BackHandler,
 } from 'react-native';
 import CustomComponents from 'react-native-deprecated-custom-components';
 
@@ -19,7 +19,7 @@ export default class TrendingSeriesClient extends Component {
     console.log(route);
 
     // comportamiento del botón Back de Android según la escena
-    BackAndroid.addEventListener('hardwareBackPress', () => {
+    BackHandler.addEventListener('hardwareBackPress', () => {
       if (route.name === 'root') {
         return true;
       } else if(route.name === 'search' || route.name === 'tvshow' || route.name === 'requestTvShow') {
