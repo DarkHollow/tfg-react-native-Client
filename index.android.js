@@ -2,12 +2,11 @@ import React, { Component } from 'react';
 import {
   AppRegistry,
   StyleSheet,
-  Text,
   View,
-  Navigator,
   BackAndroid,
   StatusBar,
 } from 'react-native';
+import CustomComponents from 'react-native-deprecated-custom-components';
 
 import Root from './root';
 import Search from './search';
@@ -48,7 +47,7 @@ export default class TrendingSeriesClient extends Component {
     return (
       <View style={styles.container}>
         <StatusBar animated backgroundColor={'#2f3e9e'} />
-        <Navigator
+        <CustomComponents.Navigator
           style={{backgroundColor: '#3e50b4'}}
           initialRoute={{ name: 'root'}}
           renderScene={TrendingSeriesClient.renderScene.bind(this)}
