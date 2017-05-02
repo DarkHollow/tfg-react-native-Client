@@ -15,7 +15,7 @@ import RequestTvShow from "./requestTvShow";
 
 export default class TrendingSeriesClient extends Component {
 
-  static renderScene(route, navigator) {
+  renderScene(route, navigator) {
     console.log(route);
 
     // comportamiento del botón Back de Android según la escena
@@ -50,7 +50,7 @@ export default class TrendingSeriesClient extends Component {
         <CustomComponents.Navigator
           style={{backgroundColor: '#3e50b4'}}
           initialRoute={{ name: 'root'}}
-          renderScene={TrendingSeriesClient.renderScene.bind(this)}
+          renderScene={this.renderScene.bind(this)}
           configureScene={(route) => {
             if (route.name === 'search') {
               return CustomComponents.Navigator.SceneConfigs.FadeAndroid;
