@@ -4,12 +4,11 @@ import {
   Text,
   View,
   StatusBar,
-  Navigator,
   KeyboardAvoidingView,
   Platform,
   TouchableNativeFeedback
 } from 'react-native';
-
+import CustomComponents from 'react-native-deprecated-custom-components';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Hideo } from 'react-native-textinput-effects';
 
@@ -34,7 +33,7 @@ class Register extends Component {
     return(
       <View style={styles.statusBarAndNavView}>
         <StatusBar barStyle={'dark-content'} backgroundColor={'transparent'} hidden animated />
-        <Navigator
+        <CustomComponents.Navigator
           renderScene={this.renderScene.bind(this)}
           navigator={this.props.navigator}
           navigationBar={
