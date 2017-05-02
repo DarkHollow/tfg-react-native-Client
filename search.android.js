@@ -3,7 +3,6 @@ import {
   StyleSheet,
   Text,
   View,
-  Navigator,
   TouchableNativeFeedback,
   TouchableOpacity,
   ActivityIndicator,
@@ -16,6 +15,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import CustomComponents from 'react-native-deprecated-custom-components';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Hideo } from 'react-native-textinput-effects';
 
@@ -216,11 +216,11 @@ class Search extends Component {
     return(
       <View style={styles.statusBarAndNavView}>
         <StatusBar animated backgroundColor={'#2f3e9e'} />
-        <Navigator
+        <CustomComponents.Navigator
           renderScene={this.renderScene.bind(this)}
           navigator={this.props.navigator}
           navigationBar={
-            <Navigator.NavigationBar
+            <CustomComponents.Navigator.NavigationBar
               routeMapper={NavigationBarRouteMapper}
               style={styles.nav} />
           }
