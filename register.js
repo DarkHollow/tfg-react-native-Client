@@ -10,11 +10,15 @@ import {
   TouchableNativeFeedback,
   TouchableHighlight,
   Easing,
+  Modal,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import CustomComponents from 'react-native-deprecated-custom-components';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Ichigo } from 'react-native-textinput-effects';
+import cryptojs from 'crypto-js';
 
 class Register extends Component {
   constructor() {
@@ -39,7 +43,7 @@ class Register extends Component {
     }).start();
   }
 
-  // animacion letra titulo
+  // animaciones letra titulo
   animateLetterOpacityOut(value) {
     Animated.timing(this.state.letterOpacity, {
       toValue: 1,
@@ -55,8 +59,116 @@ class Register extends Component {
     }).start( () => setTimeout(() => this.animateLetterOpacityOut(Math.random() * 4 + 1), Math.random() * 2000 + 1000));
   }
 
+  /* mensaje popUp */
+  popUp(title, message) {
+    // timeout para no solapar animaciones
+    setTimeout(() => Alert.alert(title, message), 10);
+  }
+
+  // funcion para validar un email
+  validateEmail = (email) => {
+    let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(email);
+  };
+
+  // mostrar u ocultar modal: mostrar/ocultar, titulo, mensaje, mostrar/ocultar spinner
+  setModalVisible(visible, title, message, loading) {
+    this.setState({modalTitle: title});
+    this.setState({modalMessage: message});
+    this.setState({modalLoading: loading});
+    this.setState({modalVisible: visible});
+  }
+
+  // procesamos los datos que nos devuelve la API
+  processRegisterResponse(data) {
+    console.log('processRegisterResponse');
+
+    // si la API nos devuelve que no ha encontrado nada
+    if (data.error) {
+      this.setModalVisible(true, 'Registro', data.message, false);
+      setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+    } else if (data.ok !== undefined) {
+      // se ha hecho el registro, redirigimos a vista de login
+      this.setModalVisible(true, 'Registro', 'Te has registrado correctamente', false);
+      setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+      //TODO login -> setTimeout(() => this.navigateTo('login'), 3100);
+    } else {
+      this.setModalVisible(true, 'Registro', 'Ha habido un error, inténtalo más tarde', false);
+      setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+    }
+  }
+
   onSubmit() {
-    // TODO procesar registro
+    console.log('Registro de ' + this.state.emailText);
+    this.setModalVisible(true, 'Registro', 'Registrando usuario...', true);
+
+    const URL = (Platform.OS === 'ios') ?
+      'http://localhost:9000/api/user/' : 'http://192.168.1.13:9000/api/user/';
+
+    let email = this.state.emailText;
+    let password1 = this.state.password1Text;
+    let password2 = this.state.password2Text;
+    let name = this.state.nameText;
+
+    // comprobar longitud email
+    if (email.length >= 3) {
+      // intentamos validar email
+      if (this.validateEmail(email)) {
+        // comprobar longitud password
+        if (password1.length >= 6 && password1.length <= 14) {
+          // comprobar si las contraseñas coinciden
+          if (password1 === password2) {
+            // comprobar longitud nombre
+            if (name.length >= 3 && name.length <= 20) {
+              // calculamos hash de la contraseña
+              let hash = cryptojs.SHA512(password1);
+              // intentamos login -> hacemos fetch a la API
+              console.log('fetch');
+
+              fetch(URL, {
+                method: 'POST',
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  email: email,
+                  password: hash.toString(),
+                  name: name,
+                })
+              }).then((response) => response.json())
+                .finally((responseData) => {
+                  this.processRegisterResponse(responseData);
+                }).catch((error) => {
+                console.error(error);
+                this.setModalVisible(true, 'Registro', 'Lamentablemente no se ha podido identificar', false);
+                setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+              });
+            } else {
+              // longitud nombre invalida
+              this.setModalVisible(true, 'Registro', 'El nombre debe tener entre 3 y 24 caracteres', false);
+              setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+            }
+          } else {
+            // los passwords no coinciden
+            this.setModalVisible(true, 'Registro', 'Las contraseñas no coiciden', false);
+            setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+          }
+        } else {
+          // longitud password 1
+          this.setModalVisible(true, 'Registro', 'La contraseña debe contener entre 6 y 14 caracteres', false);
+          setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+        }
+      } else {
+        // email no valido
+        this.setModalVisible(true, 'Registro', 'El formato de email no es válido', false);
+        setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+      }
+    } else {
+      // email vacio ?
+      this.setModalVisible(true, 'Registro', 'El email no es válido', false);
+      setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+    }
   }
 
   componentDidMount() {
@@ -89,6 +201,26 @@ class Register extends Component {
       <LinearGradient style={styles.container}
                       start={{x: 1, y: 0}} end={{x: 0.2, y: 1}}
                       colors={['#1d1d1d', '#303030']}>
+        <Modal
+          animationType={'fade'}
+          transparent
+          onRequestClose={() => {}}
+          visible={this.state.modalVisible}
+        >
+          <View style={styles.modal}>
+            <View style={styles.innerModal}>
+              <Text style={styles.modalTitle}>{this.state.modalTitle}</Text>
+              <Text style={styles.modalMessage}>{this.state.modalMessage}</Text>
+              {(this.state.modalLoading) ? (
+                <View style={styles.modalBottom}>
+                  <ActivityIndicator style={styles.loader}
+                                     size={'small'} color={'#fe3f80'} />
+                </View>
+              ) : ( null )}
+            </View>
+          </View>
+        </Modal>
+
         <Animated.Image style={[{opacity: this.state.gridBackgroundOpacity}, styles.gridImage]}
                onLoadEnded={this.onBackgroundLoadEnded()}
                blurRadius={8}
@@ -102,6 +234,7 @@ class Register extends Component {
                 <Text style={styles.principalText}>Regístrate para poder acceder a la aplicación.</Text>
                 <View style={styles.inputView}>
                   <Ichigo
+                    ref='1'
                     placeholder={'Correo electrónico'}
                     placeholderTextColor={'rgba(255,255,255,0.4)'}
                     selectionColor={'rgba(255,149,0,1)'}
@@ -117,10 +250,12 @@ class Register extends Component {
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
                     onChangeText={ (text) => this.setState({emailText: text}) }
+
                   />
                 </View>
                 <View style={styles.inputView}>
                   <Ichigo
+                    ref='2'
                     placeholder={'Contraseña'}
                     placeholderTextColor={'rgba(255,255,255,0.4)'}
                     selectionColor={'rgba(255,149,0,1)'}
@@ -357,6 +492,37 @@ const styles = StyleSheet.create({
         fontFamily: 'Roboto-Medium',
       },
     }),
+  },
+  modal: {
+    flex: 1,
+    padding: 50,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+  },
+  innerModal: {
+    paddingTop: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    backgroundColor: 'white',
+    elevation: 3,
+  },
+  modalTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    marginBottom: 3,
+  },
+  modalMessage: {
+    fontSize: 13,
+    marginBottom: 20,
+    paddingHorizontal: 20,
+    textAlign: 'center',
+  },
+  modalBottom: {
+    alignSelf: 'stretch',
+    paddingTop: 12,
+    paddingBottom: 12,
+    borderTopWidth: 0.5,
+    borderColor: '#dddddd'
   },
 });
 
