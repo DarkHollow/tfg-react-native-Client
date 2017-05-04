@@ -34,7 +34,7 @@ class Register extends Component {
   // animacion imagen
   onBackgroundLoadEnded() {
     Animated.timing(this.state.gridBackgroundOpacity, {
-      toValue: 0.15,
+      toValue: 0.10,
       duration: 1000
     }).start();
   }
@@ -88,7 +88,7 @@ class Register extends Component {
     return (
       <LinearGradient style={styles.container}
                       start={{x: 1, y: 0}} end={{x: 0.2, y: 1}}
-                      colors={['#2B2B2B', '#4A4A4A']}>
+                      colors={['#1d1d1d', '#303030']}>
         <Animated.Image style={[{opacity: this.state.gridBackgroundOpacity}, styles.gridImage]}
                onLoadEnded={this.onBackgroundLoadEnded()}
                blurRadius={8}
