@@ -11,7 +11,6 @@ import {
   TouchableHighlight,
   Easing,
   Modal,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -57,12 +56,6 @@ class Register extends Component {
       toValue: value,
       duration: 1000
     }).start( () => setTimeout(() => this.animateLetterOpacityOut(Math.random() * 4 + 1), Math.random() * 2000 + 1000));
-  }
-
-  /* mensaje popUp */
-  popUp(title, message) {
-    // timeout para no solapar animaciones
-    setTimeout(() => Alert.alert(title, message), 10);
   }
 
   // funcion para validar un email
@@ -148,6 +141,7 @@ class Register extends Component {
               // longitud nombre invalida
               this.setModalVisible(true, 'Registro', 'El nombre debe tener entre 3 y 24 caracteres', false);
               setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+              this._textInputName.focus();
             }
           } else {
             // los passwords no coinciden
@@ -158,16 +152,19 @@ class Register extends Component {
           // longitud password 1
           this.setModalVisible(true, 'Registro', 'La contraseña debe contener entre 6 y 14 caracteres', false);
           setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+          this._textInputPass1.focus();
         }
       } else {
         // email no valido
         this.setModalVisible(true, 'Registro', 'El formato de email no es válido', false);
         setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+        this._textInputEmail.focus();
       }
     } else {
       // email vacio ?
       this.setModalVisible(true, 'Registro', 'El email no es válido', false);
       setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+      this._textInputEmail.focus();
     }
   }
 
@@ -231,10 +228,10 @@ class Register extends Component {
             <KeyboardAvoidingView behavior={'padding'} style={styles.viewBody}>
               <View style={styles.principalView}>
                 <Text style={styles.principalTitleText}>Tr<Animated.Text style={{color: letterOpacity}}>e</Animated.Text>nding <Text style={styles.principalTitleSecondText}>Series</Text></Text>
-                <Text style={styles.principalText}>Regístrate para poder acceder a la aplicación.</Text>
+                <Text style={styles.principalText}>Regístrate para poder acceder a la aplicación</Text>
                 <View style={styles.inputView}>
                   <Ichigo
-                    ref='1'
+                    ref={component => this._textInputEmail = component}
                     placeholder={'Correo electrónico'}
                     placeholderTextColor={'rgba(255,255,255,0.4)'}
                     selectionColor={'rgba(255,149,0,1)'}
@@ -250,12 +247,12 @@ class Register extends Component {
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
                     onChangeText={ (text) => this.setState({emailText: text}) }
-
+                    onSubmitEditing={() => this._textInputPass1.focus() }
                   />
                 </View>
                 <View style={styles.inputView}>
                   <Ichigo
-                    ref='2'
+                    ref={component => this._textInputPass1 = component}
                     placeholder={'Contraseña'}
                     placeholderTextColor={'rgba(255,255,255,0.4)'}
                     selectionColor={'rgba(255,149,0,1)'}
@@ -264,6 +261,7 @@ class Register extends Component {
                     autoCorrect={false}
                     keyboardType={'default'}
                     returnKeyType={'next'}
+                    blurOnSubmit={false}
                     secureTextEntry
                     iconClass={Icon}
                     iconName={(Platform.OS === 'ios') ? 'ios-lock-outline' : 'md-lock'}
@@ -272,11 +270,13 @@ class Register extends Component {
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
                     onChangeText={ (text) => this.setState({password1Text: text}) }
+                    onSubmitEditing={() => this._textInputPass2.focus() }
                   />
                 </View>
                 <View style={styles.inputView}>
                   <Ichigo
-                    placeholder={'Repite contraseña'}
+                    ref={component => this._textInputPass2 = component}
+                    placeholder={'Confirma la contraseña'}
                     placeholderTextColor={'rgba(255,255,255,0.4)'}
                     selectionColor={'rgba(255,149,0,1)'}
                     underlineColor={['rgba(255,255,255,0.5)', 'rgba(255,149,0,1)']}
@@ -284,6 +284,7 @@ class Register extends Component {
                     autoCorrect={false}
                     keyboardType={'default'}
                     returnKeyType={'next'}
+                    blurOnSubmit={false}
                     secureTextEntry
                     iconClass={Icon}
                     iconName={(Platform.OS === 'ios') ? 'ios-lock-outline' : 'md-lock'}
@@ -292,10 +293,12 @@ class Register extends Component {
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
                     onChangeText={ (text) => this.setState({password2Text: text}) }
+                    onSubmitEditing={() => this._textInputName.focus() }
                   />
                 </View>
                 <View style={styles.inputView}>
                   <Ichigo
+                    ref={component => this._textInputName = component}
                     placeholder={'Nombre'}
                     placeholderTextColor={'rgba(255,255,255,0.4)'}
                     selectionColor={'rgba(255,149,0,1)'}
@@ -304,6 +307,7 @@ class Register extends Component {
                     autoCorrect={false}
                     keyboardType={'default'}
                     returnKeyType={'go'}
+                    blurOnSubmit={false}
                     iconClass={Icon}
                     iconName={(Platform.OS === 'ios') ? 'ios-person-outline' : 'md-person'}
                     iconColor={'rgba(255,255,255,0.5)'}
@@ -338,7 +342,7 @@ class Register extends Component {
 
             <View style={styles.bottomView}>
               <Text style={styles.bottomText}>¿Ya tienes cuenta?</Text>
-              <Text style={styles.bottomButtonText}>Identifícate</Text>
+              <Text style={styles.bottomButtonText}>Entrar</Text>
             </View>
           </View>
           <View style={styles.separator} />
