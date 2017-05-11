@@ -84,7 +84,7 @@ class Register extends Component {
       // se ha hecho el registro, redirigimos a vista de login
       this.setModalVisible(true, 'Registro', 'Te has registrado correctamente', false);
       setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
-      //TODO login -> setTimeout(() => this.navigateTo('login'), 3100);
+      setTimeout(() => this.navigateTo('login'), 2100);
     } else {
       this.setModalVisible(true, 'Registro', 'Ha habido un error, inténtalo más tarde', false);
       setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
