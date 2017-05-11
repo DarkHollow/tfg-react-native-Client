@@ -56,11 +56,13 @@ export default class TrendingSeriesClient extends Component {
       <View style={styles.container}>
         <StatusBar animated backgroundColor={'#2f3e9e'} />
         <CustomComponents.Navigator
-          style={{backgroundColor: '#3e50b4'}}
+          style={{backgroundColor: 'rgba(80,80,80,1)'}}
           initialRoute={{ name: 'root'}}
           renderScene={this.renderScene.bind(this)}
           configureScene={(route) => {
-            if (route.name === 'search') {
+            if (route.name === 'register') {
+              return CustomComponents.Navigator.SceneConfigs.FloatFromRightAndroid;
+            } else if (route.name === 'search') {
               return CustomComponents.Navigator.SceneConfigs.FadeAndroid;
             } else if(route.name === 'tvshow') {
               return CustomComponents.Navigator.SceneConfigs.FloatFromBottomAndroid;

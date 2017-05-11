@@ -35,12 +35,13 @@ gen
 #
 node_modules/*
 # unignore some files from node_modules
-## Styles of navigator from deprecated custom components
+## Navigator files from deprecated custom components
 !node_modules/react-native-deprecated-custom-components
 node_modules/react-native-deprecated-custom-components/*
 !node_modules/react-native-deprecated-custom-components/src
 node_modules/react-native-deprecated-custom-components/src/*
 !node_modules/react-native-deprecated-custom-components/src/NavigatorNavigationBarStylesAndroid.js
+!node_modules/react-native-deprecated-custom-components/src/NavigatorSceneConfigs.js
 ## Ichigo TextInput component from textinput effects
 !node_modules/react-native-textinput-effects
 node_modules/react-native-textinput-effects/*
