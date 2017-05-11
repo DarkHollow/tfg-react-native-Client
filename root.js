@@ -20,9 +20,9 @@ class Root extends Component {
         <StatusBar animated />
         <Text style={styles.title}>Trending Series</Text>
 
-        <TouchableHighlight onPress={this.navigate.bind(this, 'register')}
+        <TouchableHighlight onPress={this.navigate.bind(this, 'login')}
                             style={styles.button} >
-          <Text style={styles.buttonText}>Registro</Text>
+          <Text style={styles.buttonText}>Login</Text>
         </TouchableHighlight>
 
         <TouchableHighlight onPress={this.navigate.bind(this, 'search')}
