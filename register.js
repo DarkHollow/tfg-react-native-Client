@@ -168,6 +168,12 @@ class Register extends Component {
     }
   }
 
+  navigateTo(route) {
+    this.props.navigator.resetTo({
+      name: route
+    });
+  }
+
   componentDidMount() {
     this.animateLetterOpacityIn(300);
   }
@@ -342,7 +348,7 @@ class Register extends Component {
 
             <View style={styles.bottomView}>
               <Text style={styles.bottomText}>¿Ya tienes cuenta?</Text>
-              <Text style={styles.bottomButtonText}>Entrar</Text>
+              <Text style={styles.bottomButtonText} onPress={ () => this.navigateTo('login')}>Entrar</Text>
             </View>
           </View>
           <View style={styles.separator} />
