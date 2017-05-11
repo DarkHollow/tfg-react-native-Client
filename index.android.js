@@ -9,6 +9,7 @@ import {
 import CustomComponents from 'react-native-deprecated-custom-components';
 
 import Root from './root';
+import Login from './login';
 import Register from './register';
 import Search from './search';
 import TvShow from './tvshow';
@@ -23,7 +24,7 @@ export default class TrendingSeriesClient extends Component {
     BackHandler.addEventListener('hardwareBackPress', () => {
       if (route.name === 'root') {
         return true;
-      } else if (route.name === 'register' || route.name === 'search' || route.name === 'tvshow' || route.name === 'requestTvShow') {
+      } else if (route.name === 'login' || route.name === 'register' || route.name === 'search' || route.name === 'tvshow' || route.name === 'requestTvShow') {
         navigator.pop();
         return true;
       }
@@ -32,6 +33,9 @@ export default class TrendingSeriesClient extends Component {
     // qué vista cargar en el navigator
     if (route.name === 'root') {
       return <Root navigator={navigator} />
+    }
+    if (route.name === 'login') {
+      return <Login navigator={navigator} />
     }
     if (route.name === 'register') {
       return <Register navigator={navigator} />

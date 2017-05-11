@@ -19,14 +19,12 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { Ichigo } from 'react-native-textinput-effects';
 import cryptojs from 'crypto-js';
 
-class Register extends Component {
+class Login extends Component {
   constructor() {
     super();
     this.state = {
       emailText: '',
-      password1Text: '',
-      password2Text: '',
-      nameText: '',
+      passwordText: '',
       modalVisible: false,
       redirectModalVisible: false,
       gridBackgroundOpacity: new Animated.Value(0),
@@ -73,104 +71,85 @@ class Register extends Component {
   }
 
   // procesamos los datos que nos devuelve la API
-  processRegisterResponse(data) {
-    console.log('processRegisterResponse');
+  processLoginResponse(data) {
+    console.log('processLoginResponse');
 
-    // si la API nos devuelve que no ha encontrado nada
+    // si la API nos devuelve error
     if (data.error) {
-      this.setModalVisible(true, 'Registro', data.message, false);
+      this.setModalVisible(true, 'Entrar', data.message, false);
       setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
     } else if (data.ok !== undefined) {
-      // se ha hecho el registro, redirigimos a vista de login
-      this.setModalVisible(true, 'Registro', 'Te has registrado correctamente', false);
+      // se ha hecho login, redirigimos a vista princial
+      this.setModalVisible(true, 'Entrar', 'Has iniciado sesión correctamente', false);
       setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
-      setTimeout(() => this.navigateTo('login'), 2100);
+      //TODO principal -> setTimeout(() => this.navigateTo('principal'), 3100);
     } else {
-      this.setModalVisible(true, 'Registro', 'Ha habido un error, inténtalo más tarde', false);
+      this.setModalVisible(true, 'Entrar', 'Ha habido un error, inténtalo más tarde', false);
       setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
     }
   }
 
   onSubmit() {
-    console.log('Registro de ' + this.state.emailText);
-    this.setModalVisible(true, 'Registro', 'Registrando usuario...', true);
+    console.log('Inicio de sesión de ' + this.state.emailText);
+    this.setModalVisible(true, 'Entrar', 'Iniciando sesión...', true);
 
     const URL = (Platform.OS === 'ios') ?
-      'http://localhost:9000/api/user/' : 'http://192.168.1.13:9000/api/user/';
+      'http://localhost:9000/api/user/session' : 'http://192.168.1.13:9000/api/user/session';
 
     let email = this.state.emailText;
-    let password1 = this.state.password1Text;
-    let password2 = this.state.password2Text;
-    let name = this.state.nameText;
+    let password = this.state.passwordText;
 
     // comprobar longitud email
     if (email.length >= 3) {
       // intentamos validar email
       if (this.validateEmail(email)) {
         // comprobar longitud password
-        if (password1.length >= 6 && password1.length <= 14) {
-          // comprobar si las contraseñas coinciden
-          if (password1 === password2) {
-            // comprobar longitud nombre
-            if (name.length >= 3 && name.length <= 20) {
-              // calculamos hash de la contraseña
-              let hash = cryptojs.SHA512(password1);
-              // intentamos login -> hacemos fetch a la API
-              console.log('fetch');
+        if (password.length >= 6 && password.length <= 14) {
+          let hash = cryptojs.SHA512(password);
+          // intentamos login -> hacemos fetch a la API
+          console.log('fetch');
 
-              fetch(URL, {
-                method: 'POST',
-                headers: {
-                  'Accept': 'application/json',
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  email: email,
-                  password: hash.toString(),
-                  name: name,
-                })
-              }).then((response) => response.json())
-                .finally((responseData) => {
-                  this.processRegisterResponse(responseData);
-                }).catch((error) => {
-                console.error(error);
-                this.setModalVisible(true, 'Registro', 'Lamentablemente no se ha podido identificar', false);
-                setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
-              });
-            } else {
-              // longitud nombre invalida
-              this.setModalVisible(true, 'Registro', 'El nombre debe tener entre 3 y 24 caracteres', false);
-              setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
-              this._textInputName.focus();
-            }
-          } else {
-            // los passwords no coinciden
-            this.setModalVisible(true, 'Registro', 'Las contraseñas no coiciden', false);
+          fetch(URL, {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: email,
+              password: hash.toString(),
+            })
+          }).then((response) => response.json())
+            .finally((responseData) => {
+              this.processLoginResponse(responseData);
+            }).catch((error) => {
+            console.error(error);
+            this.setModalVisible(true, 'Entrar', 'Lamentablemente no se ha podido iniciar sesión', false);
             setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
-          }
+          });
         } else {
-          // longitud password 1
-          this.setModalVisible(true, 'Registro', 'La contraseña debe contener entre 6 y 14 caracteres', false);
+          // longitud password
+          this.setModalVisible(true, 'Entrar', 'La contraseña debe contener entre 6 y 14 caracteres', false);
           setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
-          this._textInputPass1.focus();
+          this._textInputPass.focus();
         }
       } else {
         // email no valido
-        this.setModalVisible(true, 'Registro', 'El formato de email no es válido', false);
+        this.setModalVisible(true, 'Entrar', 'El formato de email no es válido', false);
         setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
         this._textInputEmail.focus();
       }
     } else {
       // email vacio ?
-      this.setModalVisible(true, 'Registro', 'El email no es válido', false);
+      this.setModalVisible(true, 'Entrar', 'El email no es válido', false);
       setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
       this._textInputEmail.focus();
     }
   }
 
-  navigateTo(route) {
-    this.props.navigator.resetTo({
-      name: route
+  navigateTo(route, reset) {
+    this.props.navigator.push({
+      name: route, reset: reset
     });
   }
 
@@ -234,7 +213,7 @@ class Register extends Component {
             <KeyboardAvoidingView behavior={'padding'} style={styles.viewBody}>
               <View style={styles.principalView}>
                 <Text style={styles.principalTitleText}>Tr<Animated.Text style={{color: letterOpacity}}>e</Animated.Text>nding <Text style={styles.principalTitleSecondText}>Series</Text></Text>
-                <Text style={styles.principalText}>Regístrate para poder acceder a la aplicación</Text>
+                <Text style={styles.principalText}>Inicia sesión para acceder a la aplicación</Text>
                 <View style={styles.inputView}>
                   <Ichigo
                     ref={component => this._textInputEmail = component}
@@ -253,12 +232,12 @@ class Register extends Component {
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
                     onChangeText={ (text) => this.setState({emailText: text}) }
-                    onSubmitEditing={() => this._textInputPass1.focus() }
+                    onSubmitEditing={() => this._textInputPass.focus() }
                   />
                 </View>
                 <View style={styles.inputView}>
                   <Ichigo
-                    ref={component => this._textInputPass1 = component}
+                    ref={component => this._textInputPass = component}
                     placeholder={'Contraseña'}
                     placeholderTextColor={'rgba(255,255,255,0.4)'}
                     selectionColor={'rgba(255,149,0,1)'}
@@ -275,60 +254,16 @@ class Register extends Component {
                     iconBackgroundColor={'transparent'}
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
-                    onChangeText={ (text) => this.setState({password1Text: text}) }
-                    onSubmitEditing={() => this._textInputPass2.focus() }
+                    onChangeText={ (text) => this.setState({passwordText: text}) }
+                    onSubmitEditing={() => this.onSubmit() }
                   />
                 </View>
-                <View style={styles.inputView}>
-                  <Ichigo
-                    ref={component => this._textInputPass2 = component}
-                    placeholder={'Confirma la contraseña'}
-                    placeholderTextColor={'rgba(255,255,255,0.4)'}
-                    selectionColor={'rgba(255,149,0,1)'}
-                    underlineColor={['rgba(255,255,255,0.5)', 'rgba(255,149,0,1)']}
-                    autoCapitalize={'none'}
-                    autoCorrect={false}
-                    keyboardType={'default'}
-                    returnKeyType={'next'}
-                    blurOnSubmit={false}
-                    secureTextEntry
-                    iconClass={Icon}
-                    iconName={(Platform.OS === 'ios') ? 'ios-lock-outline' : 'md-lock'}
-                    iconColor={'rgba(255,255,255,0.5)'}
-                    iconBackgroundColor={'transparent'}
-                    inputStyle={styles.input}
-                    clearButtonMode={'while-editing'}
-                    onChangeText={ (text) => this.setState({password2Text: text}) }
-                    onSubmitEditing={() => this._textInputName.focus() }
-                  />
-                </View>
-                <View style={styles.inputView}>
-                  <Ichigo
-                    ref={component => this._textInputName = component}
-                    placeholder={'Nombre'}
-                    placeholderTextColor={'rgba(255,255,255,0.4)'}
-                    selectionColor={'rgba(255,149,0,1)'}
-                    underlineColor={['rgba(255,255,255,0.5)', 'rgba(255,149,0,1)']}
-                    autoCapitalize={'words'}
-                    autoCorrect={false}
-                    keyboardType={'default'}
-                    returnKeyType={'go'}
-                    blurOnSubmit={false}
-                    iconClass={Icon}
-                    iconName={(Platform.OS === 'ios') ? 'ios-person-outline' : 'md-person'}
-                    iconColor={'rgba(255,255,255,0.5)'}
-                    iconBackgroundColor={'transparent'}
-                    inputStyle={styles.input}
-                    clearButtonMode={'while-editing'}
-                    onChangeText={ (text) => this.setState({nameText: text}) }
-                    onSubmitEditing={ () => this.onSubmit() }
-                  />
-                </View>
+
                 {(Platform.OS === 'ios') ?
                   <View style={styles.submitButtonView}>
                     <TouchableHighlight style={styles.submitButton}
                              onPress={ () => { this.onSubmit() }} underlayColor={'rgba(255,179,0,1)'}>
-                      <Text style={styles.principalButtonText}>Registrarse</Text>
+                      <Text style={styles.principalButtonText}>Entrar</Text>
                     </TouchableHighlight>
                   </View>
                 :
@@ -338,7 +273,7 @@ class Register extends Component {
                       delayPressIn={0}
                       background={TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true)}>
                       <View style={styles.submitButton}>
-                        <Text style={styles.principalButtonText}>Registrarse</Text>
+                        <Text style={styles.principalButtonText}>Entrar</Text>
                       </View>
                     </TouchableNativeFeedback>
                   </View>
@@ -347,8 +282,8 @@ class Register extends Component {
             </KeyboardAvoidingView>
 
             <View style={styles.bottomView}>
-              <Text style={styles.bottomText}>¿Ya tienes cuenta?</Text>
-              <Text style={styles.bottomButtonText} onPress={ () => this.navigateTo('login')}>Entrar</Text>
+              <Text style={styles.bottomText}>¿No tienes cuenta?</Text>
+              <Text style={styles.bottomButtonText} onPress={ () => this.navigateTo('register')}>Regístrate</Text>
             </View>
           </View>
           <View style={styles.separator} />
@@ -536,4 +471,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Register;
+export default Login;
