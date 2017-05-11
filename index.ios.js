@@ -8,6 +8,7 @@ import {
 import CustomComponents from 'react-native-deprecated-custom-components';
 
 import Root from './root';
+import Login from './login';
 import Register from './register';
 import Search from './search';
 import TvShow from './tvshow';
@@ -20,6 +21,9 @@ export default class TrendingSeriesClient extends Component {
 
     if (route.name === 'root') {
       return <Root navigator={navigator} />
+    }
+    if (route.name === 'login') {
+      return <Login navigator={navigator} />
     }
     if (route.name === 'register') {
       return <Register navigator={navigator} />
