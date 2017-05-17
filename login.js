@@ -94,7 +94,7 @@ class Login extends Component {
       this.setModalVisible(true, 'Entrar', 'Has iniciado sesión correctamente', false);
       setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
       // navegamos a la app, TODO: resetear navigator stack
-      setTimeout(() => this.navigateTo('root'), 2100);
+      setTimeout(() => this.navigateTo('root', true), 2100);
     } else {
       this.setModalVisible(true, 'Entrar', 'Ha habido un error, inténtalo más tarde', false);
       setTimeout(() => this.setModalVisible(false, '', '', false), 2000);

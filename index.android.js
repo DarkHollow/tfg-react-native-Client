@@ -132,11 +132,14 @@ export default class TrendingSeriesClient extends Component {
         <View style={styles.container}>
           <StatusBar animated backgroundColor={'#2f3e9e'}/>
           <CustomComponents.Navigator
-            style={{backgroundColor: 'rgba(80,80,80,1)'}}
+            ref={component => this._navigator = component}
+            style={{backgroundColor: '#1d1d1d'}}
             initialRoute={{name: this.state.initialRoute}}
             renderScene={this.renderScene.bind(this)}
             configureScene={(route) => {
-              if (route.name === 'register') {
+              if (route.name === 'login' || route.name === 'root') {
+                return CustomComponents.Navigator.SceneConfigs.FadeAndroid;
+              } else if (route.name === 'register') {
                 return CustomComponents.Navigator.SceneConfigs.FloatFromRightAndroid;
               } else if (route.name === 'search') {
                 return CustomComponents.Navigator.SceneConfigs.FadeAndroid;
@@ -144,6 +147,11 @@ export default class TrendingSeriesClient extends Component {
                 return CustomComponents.Navigator.SceneConfigs.FloatFromBottomAndroid;
               } else {
                 return CustomComponents.Navigator.SceneConfigs.FloatFromBottomAndroid;
+              }
+            }}
+            onDidFocus={ (route) => {
+              if (route.reset) {
+                this._navigator.immediatelyResetRouteStack([ {name: route.name} ]);
               }
             }}
           />
@@ -156,7 +164,6 @@ export default class TrendingSeriesClient extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#eeeeee',
   }
 });
 

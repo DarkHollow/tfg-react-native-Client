@@ -9,9 +9,10 @@ import {
 } from 'react-native';
 
 class Root extends Component {
-  navigate(routeName) {
+
+  navigateTo(route, reset) {
     this.props.navigator.push({
-      name: routeName
+      name: route, reset: reset
     });
   }
 
@@ -21,8 +22,8 @@ class Root extends Component {
       await AsyncStorage.removeItem('jwt').then(() => {
         console.log('Storage \'jwt\' eliminado');
       }).done();
-      // token borrado, navegamos a login, TODO: resetear navigator stack
-      this.navigate('login');
+      // token borrado, navegamos a login
+      this.navigateTo('login', true);
     } catch (error) {
       console.log('AsyncStorage error: ' + error.message);
     }
@@ -39,7 +40,7 @@ class Root extends Component {
           <Text style={styles.buttonText}>Cerrar sesión</Text>
         </TouchableHighlight>
 
-        <TouchableHighlight onPress={this.navigate.bind(this, 'search')}
+        <TouchableHighlight onPress={this.navigateTo.bind(this, 'search', false)}
           style={styles.button} >
           <Text style={styles.buttonText}>Buscar</Text>
         </TouchableHighlight>
