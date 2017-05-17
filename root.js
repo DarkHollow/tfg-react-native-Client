@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {
+  AsyncStorage,
   StyleSheet,
   Text,
   View,
@@ -8,10 +9,24 @@ import {
 } from 'react-native';
 
 class Root extends Component {
-  navigate(routeName) {
+
+  navigateTo(route, reset) {
     this.props.navigator.push({
-      name: routeName
+      name: route, reset: reset
     });
+  }
+
+  async logout() {
+    console.log("logout");
+    try {
+      await AsyncStorage.removeItem('jwt').then(() => {
+        console.log('Storage \'jwt\' eliminado');
+      }).done();
+      // token borrado, navegamos a login
+      this.navigateTo('login', true);
+    } catch (error) {
+      console.log('AsyncStorage error: ' + error.message);
+    }
   }
 
   render() {
@@ -20,12 +35,12 @@ class Root extends Component {
         <StatusBar animated />
         <Text style={styles.title}>Trending Series</Text>
 
-        <TouchableHighlight onPress={this.navigate.bind(this, 'login')}
+        <TouchableHighlight onPress={ () => this.logout().done()}
                             style={styles.button} >
-          <Text style={styles.buttonText}>Login</Text>
+          <Text style={styles.buttonText}>Cerrar sesión</Text>
         </TouchableHighlight>
 
-        <TouchableHighlight onPress={this.navigate.bind(this, 'search')}
+        <TouchableHighlight onPress={this.navigateTo.bind(this, 'search', false)}
           style={styles.button} >
           <Text style={styles.buttonText}>Buscar</Text>
         </TouchableHighlight>

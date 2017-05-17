@@ -12,6 +12,7 @@ import {
   Easing,
   Modal,
   ActivityIndicator,
+  AsyncStorage,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import CustomComponents from 'react-native-deprecated-custom-components';
@@ -70,6 +71,14 @@ class Login extends Component {
     this.setState({modalVisible: visible});
   }
 
+  async storeToken(item, value) {
+    try {
+      await AsyncStorage.setItem(item, value);
+    } catch (error) {
+      console.log('AsyncStorage error: ' + error.message);
+    }
+  }
+
   // procesamos los datos que nos devuelve la API
   processLoginResponse(data) {
     console.log('processLoginResponse');
@@ -79,10 +88,13 @@ class Login extends Component {
       this.setModalVisible(true, 'Entrar', data.message, false);
       setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
     } else if (data.ok !== undefined) {
-      // se ha hecho login, redirigimos a vista princial
+      // se ha hecho login
+      // guardamos token
+      this.storeToken('jwt', data.Authorization).done();
       this.setModalVisible(true, 'Entrar', 'Has iniciado sesión correctamente', false);
       setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
-      //TODO principal -> setTimeout(() => this.navigateTo('principal'), 3100);
+      // navegamos a la app, TODO: resetear navigator stack
+      setTimeout(() => this.navigateTo('root', true), 2100);
     } else {
       this.setModalVisible(true, 'Entrar', 'Ha habido un error, inténtalo más tarde', false);
       setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
