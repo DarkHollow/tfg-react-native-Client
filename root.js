@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {
+  AsyncStorage,
   StyleSheet,
   Text,
   View,
@@ -14,15 +15,28 @@ class Root extends Component {
     });
   }
 
+  async logout() {
+    console.log("logout");
+    try {
+      await AsyncStorage.removeItem('jwt').then(() => {
+        console.log('Storage \'jwt\' eliminado');
+      }).done();
+      // token borrado, navegamos a login, TODO: resetear navigator stack
+      this.navigate('login');
+    } catch (error) {
+      console.log('AsyncStorage error: ' + error.message);
+    }
+  }
+
   render() {
     return (
       <View style={styles.container}>
         <StatusBar animated />
         <Text style={styles.title}>Trending Series</Text>
 
-        <TouchableHighlight onPress={this.navigate.bind(this, 'login')}
+        <TouchableHighlight onPress={ () => this.logout().done()}
                             style={styles.button} >
-          <Text style={styles.buttonText}>Login</Text>
+          <Text style={styles.buttonText}>Cerrar sesión</Text>
         </TouchableHighlight>
 
         <TouchableHighlight onPress={this.navigate.bind(this, 'search')}
