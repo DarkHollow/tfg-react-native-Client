@@ -13,6 +13,7 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  AsyncStorage,
 } from 'react-native';
 import CustomComponents from 'react-native-deprecated-custom-components';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -24,6 +25,8 @@ class RequestTvShow extends Component {
 
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state = {
+      userId: 0,
+      userName: '',
       searchText: this.props.searchText,
       searchedText: '',
       showProgress: false,
@@ -34,6 +37,16 @@ class RequestTvShow extends Component {
       listviewOpacity: new Animated.Value(0),
       notFoundOpacity: new Animated.Value(0),
     }
+  }
+
+  async getUserId() {
+    await AsyncStorage.multiGet(['userId', 'userName']).then((userData) => {
+      this.setState({userId: userData[0][1], userName: userData[1][1]});
+    });
+  }
+
+  componentWillMount() {
+    this.getUserId();
   }
 
   /* mensaje popUp */
@@ -171,7 +184,7 @@ class RequestTvShow extends Component {
               },
               body: JSON.stringify({
                 tvdbId: rowData.tvdbId,
-                userId: 1,
+                userId: this.state.userId,
               })
             }).then((response) => response.json())
               .finally((responseData) => {

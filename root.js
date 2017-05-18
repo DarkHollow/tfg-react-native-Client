@@ -19,8 +19,8 @@ class Root extends Component {
   async logout() {
     console.log("logout");
     try {
-      await AsyncStorage.removeItem('jwt').then(() => {
-        console.log('Storage \'jwt\' eliminado');
+      await AsyncStorage.multiRemove(['jwt', 'userId', 'userName']).then(() => {
+        console.log('Storage sesión eliminada');
       }).done();
       // token borrado, navegamos a login
       this.navigateTo('login', true);
