@@ -71,9 +71,13 @@ class Login extends Component {
     this.setState({modalVisible: visible});
   }
 
-  async storeToken(item, value) {
+  async storeSession(data) {
     try {
-      await AsyncStorage.setItem(item, value);
+      await AsyncStorage.multiSet([
+        ['jwt', data.Authorization],
+        ['userId', data.userId.toString()],
+        ['userName', data.userName]
+      ]);
     } catch (error) {
       console.log('AsyncStorage error: ' + error.message);
     }
@@ -90,11 +94,12 @@ class Login extends Component {
     } else if (data.ok !== undefined) {
       // se ha hecho login
       // guardamos token
-      this.storeToken('jwt', data.Authorization).done();
-      this.setModalVisible(true, 'Entrar', 'Has iniciado sesión correctamente', false);
-      setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
-      // navegamos a la app, TODO: resetear navigator stack
-      setTimeout(() => this.navigateTo('root', true), 2100);
+      this.storeSession(data).then(() => {
+        this.setModalVisible(true, 'Entrar', 'Has iniciado sesión correctamente', false);
+        setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+        // navegamos a la app
+        setTimeout(() => this.navigateTo('root', true), 2100);
+      });
     } else {
       this.setModalVisible(true, 'Entrar', 'Ha habido un error, inténtalo más tarde', false);
       setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
