@@ -25,6 +25,8 @@ export default class TrendingSeriesClient extends Component {
     this.state = {
       initialRoute: '',
       loading: true,
+      userId: 0,
+      userName: '',
     };
   }
 
@@ -59,10 +61,15 @@ export default class TrendingSeriesClient extends Component {
           }).then((response) => response.json())
           .finally((responseData) => {
             if (this.processCheckJWTResponse(responseData)) {
-              // token correcto, vamos a la app
-              this.setInitialRoute('root');
+              // token correcto
+              // cargamos datos usuario y vamos a la app
+              AsyncStorage.multiGet(['userId', 'userName']).then((userData) => {
+                this.setState({userId: userData[0][1], userName: userData[1][1]});
+                this.setInitialRoute('root');
+              });
             } else {
               // token incorrecto, vamos a login
+              this.setState({userId: 0, userName: ''});
               this.setInitialRoute('login');
             }
           }).catch((error) => {
@@ -122,7 +129,7 @@ export default class TrendingSeriesClient extends Component {
           <CustomComponents.Navigator
             ref={component => this._navigator = component}
             style={{backgroundColor: '#1d1d1d'}}
-            initialRoute={{ name: this.state.initialRoute}}
+            initialRoute={{ name: this.state.initialRoute }}
             renderScene={this.renderScene.bind(this)}
             configureScene={(route) => {
               if (route.name === 'login' || route.name === 'root') {
