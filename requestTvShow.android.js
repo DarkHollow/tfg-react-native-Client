@@ -55,8 +55,12 @@ class RequestTvShow extends Component {
       if (searchText.length >= 3) {
         // guardamos el termino buscado
         this.setState({searchedText: searchText});
+
+        // encodeamos URI
+        uri = encodeURI(searchText);
+
         // hacemos fetch a la API
-        fetch('http://192.168.1.13:9000/api/search/TVDB/' + searchText, {method: "GET"})
+        fetch('http://192.168.1.13:9000/api/search/TVDB/' + uri, {method: "GET"})
           .then((response) => response.json())
           .then((responseData) => {
             this.processData(responseData);
@@ -162,7 +166,7 @@ class RequestTvShow extends Component {
         [
           {text: 'Sí', onPress: () => {
             // solicitar serie
-            fetch('http://192.168.1.13:9000/api/tvshow/request', {
+            fetch('http://192.168.1.13:9000/api/tvshows/requests', {
               method: 'POST',
               headers: {
                 'Accept': 'application/json',
