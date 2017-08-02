@@ -166,7 +166,7 @@ class RequestTvShow extends Component {
         [
           {text: 'Sí', onPress: () => {
             // solicitar serie
-            fetch('http://192.168.1.13:9000/api/tvshow/request', {
+            fetch('http://192.168.1.13:9000/api/tvshows/requests', {
               method: 'POST',
               headers: {
                 'Accept': 'application/json',
