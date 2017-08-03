@@ -208,23 +208,6 @@ class TvShow extends Component {
       extrapolate: 'clamp',
     });
 
-    let videoPlayer = this.state.showVideoPlayer && Platform.OS === 'ios' ?
-      (
-        <Animated.View style={[styles.youtubeView, {opacity: this.state.youtubeOpacity}]}>
-          <YouTube
-            videoId={(this.state.tvShowData.trailer) ? this.state.tvShowData.trailer : 'novideo'}
-            play={this.state.isPlaying}
-            hidden={false}
-            playsInline={true}
-            onReady={(e)=>{this.setState({isReady: true})}}
-            onChangeState={(e)=>{this.setState({status: e.state})}}
-            onChangeQuality={(e)=>{this.setState({quality: e.quality})}}
-            onError={(e)=>{this.setState({error: e.error})}}
-            style={styles.youtube}
-          />
-        </Animated.View>
-      ) : ( <View /> );
-
     let overview = this.state.fetchEnded ? (
       <ReadMore numberOfLines={3}
                 renderTruncatedFooter={this.overviewTruncatedFooter}
@@ -238,7 +221,6 @@ class TvShow extends Component {
 
     return (
       <View style={styles.containerDark}>
-        {videoPlayer}
 
         <Animated.View style={[styles.topBarOverlay, {opacity: topBarOpacity}]} />
         <View style={styles.fanArtOverlay} />
