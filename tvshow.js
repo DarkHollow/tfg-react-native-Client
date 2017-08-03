@@ -9,26 +9,28 @@ import {
   Alert,
   ScrollView,
   Animated,
+  TouchableHighlight
 } from 'react-native';
 import CustomComponents from 'react-native-deprecated-custom-components';
 import Icon from 'react-native-vector-icons/Ionicons';
-import CircularButton from './components/circularButton';
-import SeasonButton from './components/seasonButton';
+import ReadMore from '@expo/react-native-read-more-text';
+
+//import CircularButton from './components/circularButton';
+//import SeasonButton from './components/seasonButton';
 
 const TouchableNativeFeedback = Platform.select({
   android: () => require('TouchableNativeFeedback'),
   ios: () => null,
 })();
 
-const YouTube = Platform.select({
-  android: () => null,
-  ios: () => require('react-native-youtube'),
-})();
-
 /* Constantes efecto Parallax */
 const HEADER_MAX_HEIGHT = 200;
 const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? 60 : 73;
 const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
+
+/* Constantes de URLs */
+const URLSERVER = (Platform.OS === 'ios') ?
+  'http://localhost:9000/' : 'http://192.168.1.13:9000/';
 
 class TvShow extends Component {
   constructor(props) {
@@ -103,13 +105,30 @@ class TvShow extends Component {
       // mostramos error y volvemos atrás
       this.errorAndPop();
     } else {
+      // procesamos URLs imagenes
+      data.fanart = this.formatImageUri(data.fanart);
+      data.poster = this.formatImageUri(data.poster);
+      data.banner = this.formatImageUri(data.banner);
+
       // cargamos datos en el state
       this.setState({tvShowData: data});
       // procesamos los generos
-      this.setState({tvShowGenres : data.genre.join(', ')});
+      this.setState({tvShowGenres : data.genre.join(', ').replace(/"/g, '')});
       // procesamos la nota media
-      this.setState({imdbRating: (data.imdbRating).toFixed(1)});
+      //this.setState({imdbRating: (data.imdbRating).toFixed(1)});
     }
+  }
+
+  // process image uri
+  formatImageUri(uri) {
+    result = uri;
+
+    if (uri !== null && uri !== undefined) {
+      if (uri.length > 2) {
+        result = URLSERVER + uri.substring(2);
+      }
+    }
+    return result;
   }
 
   /* animaciones */
@@ -206,6 +225,17 @@ class TvShow extends Component {
         </Animated.View>
       ) : ( <View /> );
 
+    let overview = this.state.fetchEnded ? (
+      <ReadMore numberOfLines={3}
+                renderTruncatedFooter={this.overviewTruncatedFooter}
+                renderRevealedFooter={this.overviewRevealedFooter}
+                onReady={this.overviewReady}>
+        <Text style={styles.overview}>{this.state.tvShowData.overview}</Text>
+      </ReadMore>
+    ) : (
+      null
+    );
+
     return (
       <View style={styles.containerDark}>
         {videoPlayer}
@@ -217,7 +247,7 @@ class TvShow extends Component {
             {transform: [{translateY: imageTranslate}]},
             {opacity: this.state.fanartOpacity},
           ]}
-          source={{uri: this.state.tvShowData.fanart}}
+          source={this.state.tvShowData.fanart !== null ? {uri: this.state.tvShowData.fanart} : require('./img/placeholderFanart.png')}
           onLoadEnded={this.onFanartLoadEnded()}
         />
 
@@ -230,28 +260,33 @@ class TvShow extends Component {
           <View style={styles.scrollViewContent}>
             <View style={styles.zIndexFix} />
             <View style={styles.headerContent}>
-              <Animated.Image style={[styles.poster, {opacity: this.state.posterOpacity}]} source={{uri: this.state.tvShowData.poster}} onLoadEnded={this.onPosterLoadEnded()} />
-              <View style={styles.tvShowTitleSubtitleGenre}>
+              <Animated.Image style={[styles.poster, {opacity: this.state.posterOpacity}]} source={this.state.tvShowData.poster !== null ? {uri: this.state.tvShowData.poster} : require('./img/placeholderPoster.png')} onLoadEnded={this.onPosterLoadEnded()} />
+              <View style={styles.headerData}>
                 <Text style={styles.tvShowTitle} numberOfLines={1}>{this.state.tvShowData.name}</Text>
-                <Text style={styles.tvShowSubtitle}>{new Date(this.state.tvShowData.firstAired).getFullYear()}   <Text numberOfLines={1}>{this.state.tvShowData.rating}</Text></Text>
-                <Text style={styles.tvShowGenre} numberOfLines={1}>{this.state.tvShowGenres}</Text>
+                <View style={styles.tvShowSubtitle}>
+                  <View style={styles.tvShowSubtitleLeft}>
+                    <Text style={styles.tvShowYearRating}>{new Date(this.state.tvShowData.firstAired).getFullYear()}   <Text numberOfLines={1}>{this.state.tvShowData.rating}</Text></Text>
+                    <Text style={styles.tvShowGenre} numberOfLines={1}>{this.state.tvShowGenres}</Text>
+                  </View>
+                  <View style={styles.subtitleRight}>
+                    {/*<Text style={styles.ratingText}>
+                      <Icon name={(Platform.OS === 'ios') ? 'ios-star' : 'md-star'} style={styles.ratingIcon}/> {this.state.imdbRating}
+                    </Text>*/}
+                    <Text style={styles.runtimeText} numberOfLines={1}>
+                      <Icon name={(Platform.OS === 'ios') ? 'ios-time-outline' : 'md-time'} /> {this.state.tvShowData.runtime} min
+                    </Text>
+                    <Text style={styles.networkText} numberOfLines={1}>
+                      <Icon name={(Platform.OS === 'ios') ? 'ios-desktop' : 'md-desktop'} /> {this.state.tvShowData.network}
+                    </Text>
+                  </View>
+                </View>
               </View>
-              <View style={styles.ratingAndRuntimeView}>
-                <Text style={styles.ratingText}>
-                  <Icon name={(Platform.OS === 'ios') ? 'ios-star' : 'md-star'} style={styles.ratingIcon}/> {this.state.imdbRating}
-                </Text>
-                <Text style={styles.runtimeText} numberOfLines={1}>
-                  <Icon name={(Platform.OS === 'ios') ? 'ios-time-outline' : 'md-time'} /> {this.state.tvShowData.runtime} min
-                </Text>
-                <Text style={styles.networkText} numberOfLines={1}>
-                  <Icon name={(Platform.OS === 'ios') ? 'ios-desktop' : 'md-desktop'} /> {this.state.tvShowData.network}
-                </Text>
-              </View>
+
             </View>
 
             <View style={styles.bodyContent}>
 
-              <View style={styles.principalButtons}>
+              {/*<View style={styles.principalButtons}>
                 <CircularButton
                   size={(Platform.OS === 'ios') ? 35 : 40}
                   backgroundColor={'transparent'}
@@ -281,25 +316,24 @@ class TvShow extends Component {
                   iconColor={(Platform.OS === 'ios') ? '#aaaaaa' : '#bbbbc1'}
                   style={{marginLeft: 30}}
                 />
-              </View>
-
-              <Text numberOfLines={3} style={styles.overview}>{this.state.tvShowData.overview}</Text>
+              </View>*/}
+              { overview }
             </View>
 
             <View style={styles.footerContent}>
               <View style={styles.footerTitleView}>
-                <Text style={styles.footerTitle}>Guionista/s</Text>
-                <Text style={styles.footerTitle}>Reparto</Text>
+                {/*<Text style={styles.footerTitle}>Guionista/s</Text>
+                <Text style={styles.footerTitle}>Reparto</Text>*/}
                 <Text style={styles.footerTitle}>Estado</Text>
               </View>
               <View style={styles.footerDataView}>
-                <Text style={styles.footerData} numberOfLines={1}>{this.state.tvShowData.writer}</Text>
-                <Text style={styles.footerData} numberOfLines={1}>{this.state.tvShowData.actors}</Text>
+                {/*<Text style={styles.footerData} numberOfLines={1}>{this.state.tvShowData.writer}</Text>
+                <Text style={styles.footerData} numberOfLines={1}>{this.state.tvShowData.actors}</Text>*/}
                 <Text style={styles.footerData}>{(this.state.tvShowData.status === 'Ended' ? 'Finalizada' : 'Continuada')}</Text>
               </View>
             </View>
 
-            <View style={styles.seasonsContent}>
+            {/*<View style={styles.seasonsContent}>
               <ScrollView horizontal style={styles.scrollH}>
 
                 <SeasonButton
@@ -372,7 +406,7 @@ class TvShow extends Component {
                   subtitleColor={'#bbbbc1'}
                 />
               </ScrollView>
-            </View>
+            </View>*/}
           </View>
           {(Platform.OS === 'android') ?
             <View style={styles.scrollPaddingBottom} /> : null}
@@ -380,6 +414,57 @@ class TvShow extends Component {
       </View>
     );
   }
+
+  // pie del resumen de la serie (leer mas)
+  overviewReady = () => {
+    console.log('ready');
+  };
+
+  overviewTruncatedFooter = (handlePress) => {
+    return (
+      (Platform.OS === 'ios') ?
+        <View style={styles.readMoreView}>
+          <TouchableHighlight style={styles.readMoreButton}
+                              onPress={ handlePress } underlayColor={'rgba(255,179,0,0.5)'}>
+            <Text style={styles.readMoreText}>LEER MÁS</Text>
+          </TouchableHighlight>
+        </View>
+        :
+        <View style={styles.readMoreView}>
+          <TouchableNativeFeedback
+            onPress={ handlePress }
+            delayPressIn={0}
+            background={TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true)}>
+            <View style={styles.readMoreButton}>
+              <Text style={styles.readMoreText}>LEER MÁS</Text>
+            </View>
+          </TouchableNativeFeedback>
+        </View>
+    );
+  };
+
+  overviewRevealedFooter = (handlePress) => {
+    return (
+      (Platform.OS === 'ios') ?
+        <View style={styles.readMoreView}>
+          <TouchableHighlight style={styles.readMoreButton}
+                              onPress={ handlePress } underlayColor={'rgba(255,179,0,0.5)'}>
+            <Text style={styles.readMoreText}>LEER MENOS</Text>
+          </TouchableHighlight>
+        </View>
+        :
+        <View style={styles.readMoreView}>
+          <TouchableNativeFeedback
+            onPress={ handlePress }
+            delayPressIn={0}
+            background={TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true)}>
+            <View style={styles.readMoreButton}>
+              <Text style={styles.readMoreText}>LEER MENOS</Text>
+            </View>
+          </TouchableNativeFeedback>
+        </View>
+    );
+  };
 
 }
 
@@ -492,6 +577,7 @@ const styles = StyleSheet.create({
     top: 0,
     right: 0,
     backgroundColor: 'black',
+    elevation: 2,
     width: null,
     ...Platform.select({
       ios: {
@@ -574,37 +660,51 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   // vista donde estan el titulo, año, content rating y generos del tv show
-  tvShowTitleSubtitleGenre: {
+  headerData: {
     flex: 1,
     flexDirection: 'column',
     padding: 12,
     paddingTop: 0,
+    paddingRight: 0,
     ...Platform.select({
       ios: {
         marginTop: -2
       },
       android: {
-        marginTop: -10,
+        marginTop: -8,
       }
     }),
   },
   tvShowTitle: {
+    alignSelf: 'stretch',
+    height: 22,
+    fontSize: 17,
     color: '#eaeaea',
     backgroundColor: 'transparent',
     ...Platform.select({
       ios: {
-        fontSize: 17,
         fontWeight: '500',
         opacity: 0.9,
       },
       android: {
         fontFamily: 'Roboto-Medium',
-        fontSize: 20,
         opacity: 0.8,
       }
     }),
   },
   tvShowSubtitle: {
+    flexDirection: 'row',
+    ...Platform.select({
+      android: {
+        marginTop: 3,
+      }
+    }),
+  },
+  tvShowSubtitleLeft: {
+    flexDirection: 'column',
+    maxWidth: 160,
+  },
+  tvShowYearRating: {
     color: '#bbbbc1',
     ...Platform.select({
       ios: {
@@ -633,20 +733,15 @@ const styles = StyleSheet.create({
     }),
   },
   // vista donde están la puntuacion, runtime y network del tv show
-  ratingAndRuntimeView: {
-    ...Platform.select({
-      ios: {
-        marginTop: 1,
-      },
-      android: {
-        marginTop: -4,
-      }
-    }),
+  subtitleRight: {
+    flex: 1,
+    flexDirection: 'column',
+    marginTop: -1
   },
   ratingText: {
     color: '#eaeaea',
     backgroundColor: 'transparent',
-    textAlign: 'right',
+    alignSelf: 'flex-end',
     ...Platform.select({
       ios: {
         fontSize: 14,
@@ -700,8 +795,9 @@ const styles = StyleSheet.create({
   // contenido del cuerpo debajo de la cabecera
   bodyContent: {
     flex: 1,
-    paddingLeft: 20,
-    paddingRight: 20,
+    paddingLeft: 14,
+    paddingRight: 14,
+    paddingTop: 6,
     backgroundColor: '#212121',
   },
   principalButtons: {
@@ -738,26 +834,51 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
   },
   overview: {
-    color: '#bbbbc1',
     backgroundColor: '#212121',
-    paddingBottom: 20,
+    fontSize: 14,
+    lineHeight: 18,
+    color: '#dadade',
     ...Platform.select({
-      ios: {
-        fontSize: 14,
-      },
       android: {
         fontFamily: 'Roboto-Regular',
-        fontSize: 16,
-        lineHeight: 24,
+        lineHeight: 22,
       }
+    }),
+  },
+  readMoreView: {
+    marginTop: 2,
+    marginBottom: 4,
+    alignSelf: 'center',
+    borderRadius: 5
+  },
+  readMoreButton: {
+    borderRadius: 5,
+    paddingTop: 4,
+    paddingRight: 6,
+    paddingBottom: 4,
+    paddingLeft: 6
+  },
+  readMoreText: {
+    color: 'rgba(255,149,0,1)',
+    textAlign: 'center',
+    fontSize: 15,
+    ...Platform.select({
+      ios: {
+        fontWeight: '600',
+      },
+      android: {
+        fontFamily: 'Roboto-Medium',
+      },
     }),
   },
   // contenido del pie: reparto, estado del tv show, y por ultimo, temporadas?
   footerContent: {
     flex: 1,
     flexDirection: 'row',
+    marginTop: 10,
     paddingLeft: 20,
     paddingRight: 20,
+    paddingBottom: 20,
     backgroundColor: '#212121',
   },
   footerTitleView: {
@@ -782,7 +903,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   footerData: {
-    color: '#bbbbc1',
+    color: '#dadade',
     ...Platform.select({
       ios: {
         fontSize: 14,
