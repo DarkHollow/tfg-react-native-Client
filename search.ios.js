@@ -18,6 +18,10 @@ import CustomComponents from 'react-native-deprecated-custom-components';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Hideo } from 'react-native-textinput-effects';
 
+/* Constantes de URLs */
+const URLSERVER = (Platform.OS === 'ios') ?
+  'http://localhost:9000/' : 'http://192.168.1.13:9000/';
+
 class Search extends Component {
   constructor() {
     super();
@@ -92,6 +96,18 @@ class Search extends Component {
       this.setState({dataSource: this.state.dataSource.cloneWithRows(data)});
       this.listviewAnimationShow(0);
     }
+  }
+
+  // process image uri
+  formatImageUri(uri) {
+    result = uri;
+
+    if (uri !== null && uri !== undefined) {
+      if (uri.length > 2) {
+        result = URLSERVER + uri.substring(2);
+      }
+    }
+    return result;
   }
 
   /* redirige a la vista de ficha del tv show */
@@ -181,7 +197,7 @@ class Search extends Component {
         <View style={styles.row}>
           <View style={styles.rowTop}>
             <Image style={styles.rowImage}
-              source={{uri: rowData.banner}}
+              source={ rowData.banner !== null ? {uri: this.formatImageUri(rowData.banner)} : require('./img/placeholderBanner.png')}
             />
           </View>
           <View style={styles.rowBottom}>
