@@ -124,7 +124,7 @@ class RequestTvShow extends Component {
   processRequestResponse(tvdbId, data) {
     if (data.error) {
       if (data.error === 'This user requested this TV Show already') {
-        this.popUp('Error', 'Ya has solicitado esta serie');
+        this.popUp('Error', 'Esta serie ya ha sido solicitada');
       } else if (data.error === 'This user doesn\'t exist') {
         this.popUp('Error', 'Fallo en la solicitud');
       } else if (data.error === 'TV Show is on local already') {
@@ -149,8 +149,9 @@ class RequestTvShow extends Component {
         firstAired: data[index].firstAired,
         banner: data[index].banner,
         local: data[index].local,
-        requested: true,
+        requestStatus: 'Requested',
       };
+
       this.setState({dataSource: this.state.dataSource.cloneWithRows(newArray)});
       this.popUp('Serie solicitada', 'La serie ha sido solicitada y será revisada por un administrador');
     }
@@ -158,7 +159,7 @@ class RequestTvShow extends Component {
 
   /* abre o solicita la serie (segun si la tenemos en local o no) */
   openOrRequest(rowData) {
-    console.log('Ver o solicitar tv show con id de TVDB:' + rowData.id);
+    console.log('Ver o solicitar tv show con id de TVDB: ' + rowData.tvdbId);
 
     // si la tenemos en local, abrir
     if (rowData.local) {
@@ -169,9 +170,17 @@ class RequestTvShow extends Component {
           backButtonText: 'Solicitar'
         }
       });
-    } else if (rowData.requested) {
+    } else if (rowData.requestStatus) {
       // si está solicitada, mostrar mensaje
-      Alert.alert('Solicitar nueva serie', 'Esta serie ya ha sido solicitada')
+      let requestMessage;
+      if (rowData.requestStatus === "Requested") {
+        requestMessage = "Esta serie ya ha sido solicitada";
+      } else if (rowData.requestStatus === "Processing") {
+        requestMessage = "Esta serie ha sido aceptada y está siendo procesada";
+      } else if (rowData.requestStatus === "Rejected") {
+        requestMessage = "Esta serie ha sido rechazada";
+      }
+      Alert.alert('Solicitar nueva serie', requestMessage);
     } else {
       // si no esta, seguro que quiere solicitarla ?
       Alert.alert(
@@ -260,6 +269,8 @@ class RequestTvShow extends Component {
 
   /* contenido de cada elemento del listview */
   renderRow(rowData) {
+    let requestSpinner = <ActivityIndicator style={styles.requestLoader} size={'small'} color={'#fe3f80'} />;
+
     return (
       <TouchableOpacity style={styles.rowTouch} onPress={ () => this.openOrRequest(rowData)}>
         <View style={styles.row}>
@@ -289,12 +300,30 @@ class RequestTvShow extends Component {
                   </View>
                 </View>
             ) : (
-              rowData.requested ? (
+              rowData.requestStatus ? (
                 <View style={styles.rowBottomRightRequested}>
-                  <View style={styles.requested}>
-                    <Icon name='ios-time-outline' style={styles.requestedIcon} />
-                    <Text style={styles.requestedText}>Solicitada</Text>
-                  </View>
+                      {rowData.requestStatus === "Requested" ? (
+                        <View style={styles.requested}>
+                          <Icon name='ios-time-outline' style={styles.requestedIcon} />
+                          <Text style={styles.requestedText}>Solicitada</Text>
+                        </View>
+                      ) : (
+                        rowData.requestStatus === "Processing" ? (
+                          <View style={styles.requested}>
+                            {requestSpinner}
+                            <Text style={styles.requestedText}>Procesando</Text>
+                          </View>
+                        ) : (
+                          rowData.requestStatus === "Rejected" ? (
+                            <View style={styles.requested}>
+                              <Icon name='ios-alert-outline' style={styles.requestedIcon} />
+                              <Text style={styles.requestedText}>Rechazada</Text>
+                            </View>
+                          ) : (
+                            null
+                          )
+                        )
+                      )}
                 </View>
               ) : (
                 <View style={styles.rowBottomRightRequest}>
@@ -606,7 +635,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#aaaaaa',
     marginRight: 3,
-    marginTop: 3
+    marginTop: 3,
+    paddingBottom: 3
   },
   requestedIcon: {
     fontSize: 20,
@@ -618,6 +648,9 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     marginRight: 14,
     marginBottom: 20
+  },
+  requestLoader: {
+    marginRight: 4,
   },
   notFound: {
     flex: 1,
