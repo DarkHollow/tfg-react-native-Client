@@ -9,7 +9,8 @@ import {
   Alert,
   ScrollView,
   Animated,
-  TouchableHighlight
+  TouchableHighlight,
+  AsyncStorage,
 } from 'react-native';
 import CustomComponents from 'react-native-deprecated-custom-components';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -38,6 +39,9 @@ class TvShow extends Component {
 
     (Platform.OS === 'ios') ? (
       this.state = {
+        userId: 0,
+        userName: '',
+        jwt: '',
         tvShowId: this.props.tvShowId,
         fetchEnded: false,
         tvShowData: {},
@@ -56,6 +60,9 @@ class TvShow extends Component {
       }
     ) : (
       this.state = {
+        userId: 0,
+        userName: '',
+        jwt: '',
         tvShowId: this.props.tvShowId,
         fetchEnded: false,
         tvShowData: {},
@@ -68,6 +75,45 @@ class TvShow extends Component {
     )
   }
 
+  // obtener datos usuario
+  async getUserDataAndFetchTvShow() {
+    await AsyncStorage.multiGet(['userId', 'userName', 'jwt']).then((userData) => {
+      this.setState({
+        userId: userData[0][1],
+        userName: userData[1][1],
+        jwt: userData[2][1]
+      });
+
+      this.getTvShow();
+    });
+  }
+
+  getTvShow() {
+    // segun la plataforma, url
+    const URL = (Platform.OS === 'ios') ?
+      'http://localhost:9000/api/tvshow/' : 'http://192.168.1.13:9000/api/tvshow/';
+    
+    // hacemos fetch a la API
+    fetch(URL + this.state.tvShowId, {
+      method: "GET",
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + this.state.jwt,
+      }
+    }).then((response) => response.json())
+      .then((responseData) => {
+        // procesamos datos
+        this.processData(responseData);
+      }).then( () => {
+      // indicamos que fetch ha terminado
+      this.setState({fetchEnded: true});
+    }).catch((error) => {
+      console.log(error.stack);
+      this.errorAndPop();
+    });
+  }
+
   errorAndPop() {
     Alert.alert('Error', 'Lamentablemente no se han podido cargar los datos del tv show');
     this.props.navigator.pop();
@@ -75,23 +121,7 @@ class TvShow extends Component {
 
   componentWillMount() {
     console.log('Consulta tv show id: ' + this.state.tvShowId);
-    // segun la plataforma, url
-    const URL = (Platform.OS === 'ios') ?
-      'http://localhost:9000/api/tvshow/' : 'http://192.168.1.13:9000/api/tvshow/';
-
-    // hacemos fetch a la API
-    fetch(URL + this.state.tvShowId, {method: "GET"})
-    .then((response) => response.json())
-    .then((responseData) => {
-      // procesamos datos
-      this.processData(responseData);
-    }).then( () => {
-      // indicamos que fetch ha terminado
-      this.setState({fetchEnded: true});
-    }).catch((error) => {
-      console.log(error.stack);
-      this.errorAndPop();
-    });
+    this.getUserDataAndFetchTvShow();
   }
 
   processData(data) {
@@ -103,6 +133,7 @@ class TvShow extends Component {
         // otro tipo de error interno
       }
       // mostramos error y volvemos atrás
+      console.log(data);
       this.errorAndPop();
     } else {
       // procesamos URLs imagenes

@@ -14,6 +14,7 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  AsyncStorage,
 } from 'react-native';
 import CustomComponents from 'react-native-deprecated-custom-components';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -28,6 +29,9 @@ class Search extends Component {
     super();
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state = {
+      userId: 0,
+      userName: '',
+      jwt: '',
       searchText: '',
       searchedText: '',
       showProgress: false,
@@ -37,6 +41,21 @@ class Search extends Component {
       listviewOpacity: new Animated.Value(0),
       notFoundOpacity: new Animated.Value(0),
     }
+  }
+
+  // obtener datos usuario
+  async getUserData() {
+    await AsyncStorage.multiGet(['userId', 'userName', 'jwt']).then((userData) => {
+      this.setState({
+        userId: userData[0][1],
+        userName: userData[1][1],
+        jwt: userData[2][1]
+      });
+    });
+  }
+
+  componentWillMount() {
+    this.getUserData();
   }
 
   /* mensaje popUp */
@@ -58,8 +77,14 @@ class Search extends Component {
       this.setState({searchedText: this.state.searchText});
 
       // hacemos fetch a la API
-      fetch('http://192.168.1.13:9000/api/search/tvshows/' + this.state.searchText, {method: "GET"})
-      .then((response) => response.json())
+      fetch('http://192.168.1.13:9000/api/search/tvshows/' + this.state.searchText, {
+        method: "GET",
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + this.state.jwt,
+        }
+      }).then((response) => response.json())
       .then((responseData) => {
         this.processData(responseData);
       }).then( () => {

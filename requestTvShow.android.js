@@ -13,7 +13,8 @@ import {
   Text,
   TouchableNativeFeedback,
   TouchableOpacity,
-  View
+  View,
+  AsyncStorage,
 } from "react-native";
 import CustomComponents from 'react-native-deprecated-custom-components';
 import Icon from "react-native-vector-icons/Ionicons";
@@ -24,6 +25,9 @@ class RequestTvShow extends Component {
     super(props);
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state = {
+      userId: 0,
+      userName: '',
+      jwt: '',
       searchText: this.props.searchText,
       searchedText: '',
       showProgress: false,
@@ -36,9 +40,24 @@ class RequestTvShow extends Component {
     }
   }
 
+  // obtener datos usuario
+  async getUserId() {
+    await AsyncStorage.multiGet(['userId', 'userName', 'jwt']).then((userData) => {
+      this.setState({
+        userId: userData[0][1],
+        userName: userData[1][1],
+        jwt: userData[2][1]
+      });
+    });
+  }
+
   /* mensaje popUp */
   popUp(title, message) {
     Alert.alert(title, message);
+  }
+
+  componentWillMount() {
+    this.getUserId();
   }
 
   /* submit buscar */
@@ -60,8 +79,14 @@ class RequestTvShow extends Component {
         uri = encodeURI(searchText);
 
         // hacemos fetch a la API
-        fetch('http://192.168.1.13:9000/api/search/TVDB/' + uri, {method: "GET"})
-          .then((response) => response.json())
+        fetch('http://192.168.1.13:9000/api/search/TVDB/' + uri, {
+          method: "GET",
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + this.state.jwt,
+          }
+        }).then((response) => response.json())
           .then((responseData) => {
             this.processData(responseData);
           }).then( () => {
@@ -135,7 +160,7 @@ class RequestTvShow extends Component {
         firstAired: data[index].firstAired,
         banner: data[index].banner,
         local: data[index].local,
-        requested: true,
+        requestStatus: 'Requested',
       };
       this.setState({dataSource: this.state.dataSource.cloneWithRows(newArray)});
       this.popUp('Serie solicitada', 'La serie ha sido solicitada y será revisada por un administrador');
@@ -174,19 +199,23 @@ class RequestTvShow extends Component {
         [
           {text: 'Sí', onPress: () => {
             // solicitar serie
-            fetch('http://192.168.1.13:9000/api/tvshows/requests', {
-              method: 'POST',
-              headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                tvdbId: rowData.tvdbId,
-                userId: 1,
-              })
-            }).then((response) => response.json())
-              .finally((responseData) => {
-                this.processRequestResponse(rowData.tvdbId, responseData);
+            return AsyncStorage.getItem("jwt")
+              .then((jwt) => {
+                fetch('http://192.168.1.13:9000/api/tvshows/requests', {
+                  method: 'POST',
+                  headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + this.state.jwt,
+                  },
+                  body: JSON.stringify({
+                    tvdbId: rowData.tvdbId,
+                    userId: this.state.userId,
+                  })
+                }).then((response) => response.json())
+                  .finally((responseData) => {
+                    this.processRequestResponse(rowData.tvdbId, responseData);
+                  });
               });
           }},
           {text: 'Cancelar', onPress: () => console.log('Cancelar')},
