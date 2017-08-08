@@ -27,6 +27,7 @@ class RequestTvShow extends Component {
     this.state = {
       userId: 0,
       userName: '',
+      jwt: '',
       searchText: this.props.searchText,
       searchedText: '',
       showProgress: false,
@@ -39,9 +40,14 @@ class RequestTvShow extends Component {
     }
   }
 
+  // obtener datos usuario
   async getUserId() {
-    await AsyncStorage.multiGet(['userId', 'userName']).then((userData) => {
-      this.setState({userId: userData[0][1], userName: userData[1][1]});
+    await AsyncStorage.multiGet(['userId', 'userName', 'jwt']).then((userData) => {
+      this.setState({
+        userId: userData[0][1],
+        userName: userData[1][1],
+        jwt: userData[2][1]
+      });
     });
   }
 
@@ -73,8 +79,14 @@ class RequestTvShow extends Component {
         uri = encodeURI(searchText);
 
         // hacemos fetch a la API
-        fetch('http://localhost:9000/api/search/TVDB/' + uri, {method: "GET"})
-          .then((response) => response.json())
+        fetch('http://localhost:9000/api/search/TVDB/' + uri, {
+          method: "GET",
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + this.state.jwt,
+          }
+        }).then((response) => response.json())
           .then((responseData) => {
             this.processData(responseData);
           }).then( () => {
@@ -189,19 +201,23 @@ class RequestTvShow extends Component {
         [
           {text: 'Sí', onPress: () => {
             // solicitar serie
-            fetch('http://localhost:9000/api/tvshows/requests', {
-              method: 'POST',
-              headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                tvdbId: rowData.tvdbId,
-                userId: this.state.userId,
-              })
-            }).then((response) => response.json())
-              .finally((responseData) => {
-                this.processRequestResponse(rowData.tvdbId, responseData);
+            return AsyncStorage.getItem("jwt")
+              .then((jwt) => {
+                fetch('http://localhost:9000/api/tvshows/requests', {
+                  method: 'POST',
+                  headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + this.state.jwt,
+                  },
+                  body: JSON.stringify({
+                    tvdbId: rowData.tvdbId,
+                    userId: this.state.userId,
+                  })
+                }).then((response) => response.json())
+                  .finally((responseData) => {
+                    this.processRequestResponse(rowData.tvdbId, responseData);
+                  });
               });
           }},
           {text: 'Cancelar', onPress: () => console.log('Cancelar')},
