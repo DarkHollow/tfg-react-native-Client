@@ -180,35 +180,22 @@ class RequestTvShow extends Component {
           backButtonText: 'Solicitar'
         }
       });
-    }
-
-    // estados de serie que no pueden ser pedidas
-    if (rowData.requestStatus && (rowData.requestStatus === "Requested" || rowData.requestStatus === "Processing")) {
+    } else if (rowData.requestStatus) {
+      // si está solicitada, mostrar mensaje
       let requestMessage;
-      if (rowData.requestStatus === 'Requested') {
-        requestMessage = 'Esta serie ya ha sido solicitada';
-      } else if (rowData.requestStatus === 'Processing') {
-        requestMessage = 'Esta serie ha sido aceptada y está siendo procesada';
+      if (rowData.requestStatus === "Requested") {
+        requestMessage = "Esta serie ya ha sido solicitada";
+      } else if (rowData.requestStatus === "Processing") {
+        requestMessage = "Esta serie ha sido aceptada y está siendo procesada";
+      } else if (rowData.requestStatus === "Rejected") {
+        requestMessage = "Esta serie ha sido rechazada";
       }
       Alert.alert('Solicitar nueva serie', requestMessage);
-      return false;
-    }
-
-
-    // estados de serie que pueden ser pedidas
-    let requestTitle = 'Solicitar serie nueva';
-    if (rowData.requestStatus && (rowData.requestStatus === 'Rejected' || rowData.requestStatus === 'Deleted')) {
-      if (rowData.requestStatus === 'Rejected') {
-        requestTitle = 'Solicitar serie rechazada';
-      } else if (rowData.requestStatus === 'Deleted') {
-        requestTitle = 'Solicitar reaprobación de serie eliminada';
-      }
-    }
-
-    // seguro que quiere solicitarla ?
-    Alert.alert(
-      requestTitle,
-      '¿Seguro que deseas solicitar la serie \'' + rowData.name + '\'?',
+    } else {
+      // si no esta, seguro que quiere solicitarla ?
+      Alert.alert(
+        'Solicitar nueva serie',
+        '¿Seguro que deseas solicitar la serie \'' + rowData.name + '\'?',
         [
           {text: 'Sí', onPress: () => {
             // solicitar serie
@@ -233,8 +220,9 @@ class RequestTvShow extends Component {
           }},
           {text: 'Cancelar', onPress: () => console.log('Cancelar')},
         ]
-      );
+      )
     }
+  }
 
   /* animaciones */
 
@@ -336,26 +324,19 @@ class RequestTvShow extends Component {
                       <Text style={styles.requestedText}>Solicitada</Text>
                     </View>
                   ) : (
-                    rowData.requestStatus === "Deleted" ? (
+                    rowData.requestStatus === "Processing" ? (
                       <View style={styles.requested}>
-                        <Icon name='md-trash' style={styles.requestedIcon} />
-                        <Text style={styles.requestedText}>Eliminada</Text>
+                        {requestSpinner}
+                        <Text style={styles.requestedText}>Procesando</Text>
                       </View>
                     ) : (
-                      rowData.requestStatus === "Processing" ? (
+                      rowData.requestStatus === "Rejected" ? (
                         <View style={styles.requested}>
-                          {requestSpinner}
-                          <Text style={styles.requestedText}>Procesando</Text>
+                          <Icon name='md-alert' style={styles.requestedIcon} />
+                          <Text style={styles.requestedText}>Rechazada</Text>
                         </View>
                       ) : (
-                        rowData.requestStatus === "Rejected" ? (
-                          <View style={styles.requested}>
-                            <Icon name='md-alert' style={styles.requestedIcon} />
-                            <Text style={styles.requestedText}>Rechazada</Text>
-                          </View>
-                        ) : (
-                          null
-                        )
+                        null
                       )
                     )
                   )}
