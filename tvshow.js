@@ -46,7 +46,8 @@ class TvShow extends Component {
         fetchEnded: false,
         tvShowData: {},
         tvShowGenres: '',
-        imdbRating: 0,
+        scoreAvg: 0,
+        scorePersonal: 0,
         scrollY: new Animated.Value(0),
         posterOpacity: new Animated.Value(0),
         fanartOpacity: new Animated.Value(0),
@@ -67,7 +68,8 @@ class TvShow extends Component {
         fetchEnded: false,
         tvShowData: {},
         tvShowGenres: '',
-        imdbRating: 0,
+        scoreAvg: 0,
+        scorePersonal: 0,
         scrollY: new Animated.Value(0),
         posterOpacity: new Animated.Value(0),
         fanartOpacity: new Animated.Value(0),
@@ -114,6 +116,39 @@ class TvShow extends Component {
     });
   }
 
+  getTvShowVote() {
+    // segun la plataforma, url
+    const userId = this.state.userId;
+    const tvShowId = this.state.tvShowId;
+    const route = 'api/tvshows/' + tvShowId + '/tvshowvotes/users/' + userId;
+    const URL = (Platform.OS === 'ios') ?
+      'http://localhost:9000/' + route : 'http://192.168.1.13:9000/' + route;
+
+    // hacemos fetch a la API
+    fetch(URL, {
+      method: "GET",
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + this.state.jwt,
+      }
+    }).then((response) => response.json())
+      .then((responseData) => {
+        // procesamos datos
+        if (responseData.error) {
+          // ponemos null
+          console.log(responseData);
+          this.setState({scorePersonal: null});
+        } else {
+          // ponemos nota del usuario
+          this.setState({scorePersonal: responseData.tvShowVote.score});
+        }
+      }).catch((error) => {
+      console.log(error.stack);
+      this.errorAndPop();
+    });
+  }
+
   errorAndPop() {
     Alert.alert('Error', 'Lamentablemente no se han podido cargar los datos del tv show');
     this.props.navigator.pop();
@@ -141,12 +176,14 @@ class TvShow extends Component {
       data.poster = this.formatImageUri(data.poster);
       data.banner = this.formatImageUri(data.banner);
 
-      // cargamos datos en el state
-      this.setState({tvShowData: data});
       // procesamos los generos
       this.setState({tvShowGenres : data.genre.join(', ').replace(/"/g, '')});
-      // procesamos la nota media
-      //this.setState({imdbRating: (data.imdbRating).toFixed(1)});
+
+      // procesamos la nota personal del usuario
+      this.getTvShowVote();
+
+      // cargamos datos en el state
+      this.setState({tvShowData: data});
     }
   }
 
@@ -298,6 +335,30 @@ class TvShow extends Component {
             </View>
 
             <View style={styles.bodyContent}>
+              <View style={styles.scores}>
+                  {(this.state.tvShowData.voteCount === 0) ?
+                    <View style={styles.scoreAvg}>
+                      <View style={styles.iconView}><Icon style={styles.scoreAvgStar} name={(Platform.OS === 'ios') ? 'ios-star-outline' : 'md-star-outline'} /></View>
+                      <Text style={styles.scoreAvgTextNull}>Sin votos</Text>
+                    </View>
+                    :
+                    <View style={styles.scoreAvg}>
+                      <View style={styles.iconView}><Icon style={styles.scoreAvgStar} name={(Platform.OS === 'ios') ? 'ios-star' : 'md-star'} /></View>
+                      <Text style={styles.scoreAvgText}> {this.state.tvShowData.score} <Text style={styles.scoreAvgTextNull}>({this.state.tvShowData.voteCount})</Text></Text>
+                    </View>
+                  }
+                  {(this.state.scorePersonal === null) ?
+                    <View style={styles.scorePersonal}>
+                      <View style={styles.iconView}><Icon style={styles.scorePersonalStarNull} name={(Platform.OS === 'ios') ? 'ios-star-outline' : 'md-star-outline'} /></View>
+                      <Text style={styles.scorePersonalTextNull}>Vota</Text>
+                    </View>
+                    :
+                    <View style={styles.scorePersonal}>
+                      <View style={styles.iconView}><Icon style={styles.scorePersonalStar} name={(Platform.OS === 'ios') ? 'ios-star' : 'md-star'} /></View>
+                      <Text style={styles.scorePersonalText}>{this.state.scorePersonal}</Text>
+                    </View>
+                  }
+              </View>
 
               {/*<View style={styles.principalButtons}>
                 <CircularButton
@@ -812,6 +873,51 @@ const styles = StyleSheet.create({
     paddingRight: 14,
     paddingTop: 6,
     backgroundColor: '#212121',
+  },
+  scores: {
+    flex: 1,
+    flexDirection: 'row',
+    marginBottom: 10,
+  },
+  scoreAvg: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  scoreAvgText: {
+    color: 'rgba(255,255,255,0.9)',
+  },
+  scoreAvgTextNull: {
+    color: 'rgba(255,255,255,0.4)'
+  },
+  iconView: {
+    alignItems: 'center',
+    marginRight: 8
+  },
+  scoreAvgStar: {
+    fontSize: 24,
+    color: 'rgba(255,204,0,1)',
+  },
+  scorePersonal: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  scorePersonalText: {
+    color: 'rgba(255,255,255,0.9)'
+  },
+  scorePersonalTextNull:{
+    color: 'rgba(255,255,255,0.4)'
+  },
+  scorePersonalStar: {
+    fontSize: 24,
+    color: 'rgba(90,200,250,1)'
+  },
+  scorePersonalStarNull: {
+    fontSize: 24,
+    color: 'rgba(255,255,255,0.3)'
   },
   principalButtons: {
     backgroundColor: '#212121',
