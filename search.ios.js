@@ -234,7 +234,7 @@ class Search extends Component {
             </View>
             <View style={styles.rowBottomRight}>
               <View style={styles.rating}>
-                <Text style={styles.ratingText}>4,7</Text>
+                <Text style={styles.ratingText}>{(rowData.voteCount === 0) ? 'Sin votos' : rowData.score}</Text>
                 <Icon name='ios-star' style={styles.ratingIcon} />
                 <Icon name='ios-arrow-forward' style={styles.forwardIcon} />
               </View>
