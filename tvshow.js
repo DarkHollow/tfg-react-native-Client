@@ -85,7 +85,6 @@ class TvShow extends Component {
         userName: userData[1][1],
         jwt: userData[2][1]
       });
-
       this.getTvShow();
     });
   }
@@ -137,7 +136,6 @@ class TvShow extends Component {
         // procesamos datos
         if (responseData.error) {
           // ponemos null
-          console.log(responseData);
           this.setState({scorePersonal: null});
         } else {
           // ponemos nota del usuario
@@ -185,6 +183,10 @@ class TvShow extends Component {
       // cargamos datos en el state
       this.setState({tvShowData: data});
     }
+  }
+
+  voteTvShow() {
+
   }
 
   // process image uri
@@ -336,28 +338,65 @@ class TvShow extends Component {
 
             <View style={styles.bodyContent}>
               <View style={styles.scores}>
-                  {(this.state.tvShowData.voteCount === 0) ?
+                  {(this.state.tvShowData.voteCount === 0) ? (
                     <View style={styles.scoreAvg}>
                       <View style={styles.iconView}><Icon style={styles.scoreAvgStar} name={(Platform.OS === 'ios') ? 'ios-star-outline' : 'md-star-outline'} /></View>
                       <Text style={styles.scoreAvgTextNull}>Sin votos</Text>
                     </View>
-                    :
+                    ) : (
                     <View style={styles.scoreAvg}>
                       <View style={styles.iconView}><Icon style={styles.scoreAvgStar} name={(Platform.OS === 'ios') ? 'ios-star' : 'md-star'} /></View>
                       <Text style={styles.scoreAvgText}> {this.state.tvShowData.score} <Text style={styles.scoreAvgTextNull}>({this.state.tvShowData.voteCount})</Text></Text>
                     </View>
-                  }
-                  {(this.state.scorePersonal === null) ?
-                    <View style={styles.scorePersonal}>
-                      <View style={styles.iconView}><Icon style={styles.scorePersonalStarNull} name={(Platform.OS === 'ios') ? 'ios-star-outline' : 'md-star-outline'} /></View>
-                      <Text style={styles.scorePersonalTextNull}>Vota</Text>
-                    </View>
-                    :
-                    <View style={styles.scorePersonal}>
-                      <View style={styles.iconView}><Icon style={styles.scorePersonalStar} name={(Platform.OS === 'ios') ? 'ios-star' : 'md-star'} /></View>
-                      <Text style={styles.scorePersonalText}>{this.state.scorePersonal}</Text>
-                    </View>
-                  }
+                  )}
+
+                  {(this.state.scorePersonal === null) ? (
+                    (Platform.OS === 'ios') ? (
+                      <View style={styles.scorePersonal}>
+                        <TouchableHighlight style={styles.scorePersonal} onPress={ this.voteTvShow } underlayColor={'rgba(255,179,0,0.5)'}>
+                          <View style={styles.insideButton}>
+                            <View style={styles.iconView}><Icon style={styles.scorePersonalStarNull} name={'ios-star-outline'} /></View>
+                            <Text style={styles.scorePersonalTextNull}>Vota</Text>
+                          </View>
+                        </TouchableHighlight>
+                      </View>
+                    ) : (
+                      <View style={styles.scorePersonal}>
+                        <TouchableNativeFeedback
+                          onPress={ this.voteTvShow }
+                          delayPressIn={0}
+                          background={TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true)}>
+                          <View style={styles.insideButton}>
+                            <View style={styles.iconView}><Icon style={styles.scorePersonalStarNull} name={'md-star-outline'} /></View>
+                            <Text style={styles.scorePersonalTextNull}>Vota</Text>
+                          </View>
+                        </TouchableNativeFeedback>
+                      </View>
+                    )
+                  ) : (
+                    (Platform.OS === 'ios') ? (
+                      <View style={styles.scorePersonal}>
+                        <TouchableHighlight style={styles.scorePersonal} onPress={ this.voteTvShow } underlayColor={'rgba(255,179,0,0.5)'}>
+                          <View style={styles.insideButton}>
+                            <View style={styles.iconView}><Icon style={styles.scorePersonalStar} name={'ios-star'} /></View>
+                            <Text style={styles.scorePersonalText}>{this.state.scorePersonal}</Text>
+                          </View>
+                        </TouchableHighlight>
+                      </View>
+                    ) : (
+                        <View style={styles.scorePersonal}>
+                          <TouchableNativeFeedback
+                            onPress={ this.voteTvShow }
+                            delayPressIn={0}
+                            background={TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true)}>
+                            <View style={styles.insideButton}>
+                              <View style={styles.iconView}><Icon style={styles.scorePersonalStar} name={'md-star'} /></View>
+                              <Text style={styles.scorePersonalText}>{this.state.scorePersonal}</Text>
+                            </View>
+                          </TouchableNativeFeedback>
+                        </View>
+                      )
+                  )}
               </View>
 
               {/*<View style={styles.principalButtons}>
@@ -877,7 +916,7 @@ const styles = StyleSheet.create({
   scores: {
     flex: 1,
     flexDirection: 'row',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   scoreAvg: {
     flex: 1,
@@ -901,9 +940,14 @@ const styles = StyleSheet.create({
   },
   scorePersonal: {
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  insideButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    padding: 8
   },
   scorePersonalText: {
     color: 'rgba(255,255,255,0.9)'
