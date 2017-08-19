@@ -310,7 +310,45 @@ class TvShow extends Component {
 
   deleteVote = (e) => {
     console.log('borrar votación');
+    // bloqueamos botones de guardar y eliminar votación
+    if (this.state.voteButtonsDisabled) {
+      // botones bloqueados
+      console.log('Botones bloqueados');
+    } else {
+      // bloqueamos botones y mostramos activity indicator
+      this.setState({ voteButtonsDisabled: true, voteModalLoading: true, voteModalBottomMessage: null});
 
+      const route = 'api/tvshows/' + this.state.tvShowId + '/vote';
+      const URL = (Platform.OS === 'ios') ?
+        'http://localhost:9000/' + route : 'http://192.168.1.13:9000/' + route;
+
+      // hacemos fetch a la API
+      fetch(URL, {
+        method: "DELETE",
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + this.state.jwt,
+        },
+      }).then((response) => response.json())
+        .then((responseData) => {
+          // procesamos datos
+          if (responseData.ok !== undefined && responseData.ok !== null) {
+            this.setState({ scorePersonal: null });
+            // actualizamos datos serie
+            this.getTvShow();
+          }
+        }).then( () => {
+        // terminado
+        this.setState({ voteButtonsDisabled: false, voteModalLoading: false, voteModalBottomMessage: 'Votación eliminada'});
+        this.showVoteModalBottomMessage();
+        console.log('votación eliminada');
+      }).catch((error) => {
+        console.log(error.stack);
+        this.setState({ voteButtonsDisabled: false, voteModalLoading: false, voteModalBottomMessage: 'Ha habido un error eliminando la votación' });
+        setTimeout(() => { this.setState({ voteModalBottomMessage: ' ' })}, 2000);
+      });
+    }
   };
 
   // process image uri
