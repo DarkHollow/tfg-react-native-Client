@@ -5,16 +5,21 @@ import {
   Text,
   View,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   StatusBar,
   Alert,
   ScrollView,
   Animated,
   TouchableHighlight,
   AsyncStorage,
+  Modal,
+  ActivityIndicator,
+  Image,
 } from 'react-native';
 import CustomComponents from 'react-native-deprecated-custom-components';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ReadMore from '@expo/react-native-read-more-text';
+import StarRatingBar from 'react-native-star-rating-view/StarRatingBar';
 
 //import CircularButton from './components/circularButton';
 //import SeasonButton from './components/seasonButton';
@@ -44,6 +49,8 @@ class TvShow extends Component {
         jwt: '',
         tvShowId: this.props.tvShowId,
         fetchEnded: false,
+        moreTextReady: false,
+        viewOpacity: 0,
         tvShowData: {},
         tvShowGenres: '',
         scoreAvg: 0,
@@ -53,11 +60,17 @@ class TvShow extends Component {
         fanartOpacity: new Animated.Value(0),
         youtubeOpacity: new Animated.Value(0),
         showVideoPlayer: false,
-        isReady: false,
         status: null,
         quality: null,
         error: null,
         isPlaying: false,
+        voteModalVisible: false,
+        starSize: 20,
+        starValue: null,
+        voteButtonsDisabled: false,
+        voteModalBottomMessage: ' ',
+        voteModalBottomMessageOpacity: new Animated.Value(0),
+        voteModalLoading: false,
       }
     ) : (
       this.state = {
@@ -66,6 +79,8 @@ class TvShow extends Component {
         jwt: '',
         tvShowId: this.props.tvShowId,
         fetchEnded: false,
+        moreTextReady: false,
+        viewOpacity: 0,
         tvShowData: {},
         tvShowGenres: '',
         scoreAvg: 0,
@@ -73,8 +88,15 @@ class TvShow extends Component {
         scrollY: new Animated.Value(0),
         posterOpacity: new Animated.Value(0),
         fanartOpacity: new Animated.Value(0),
+        voteModalVisible: false,
+        starSize: 20,
+        starValue: null,
+        voteButtonsDisabled: false,
+        voteModalBottomMessage: ' ',
+        voteModalBottomMessageOpacity: new Animated.Value(0),
+        voteModalLoading: false,
       }
-    )
+    );
   }
 
   // obtener datos usuario
@@ -136,10 +158,11 @@ class TvShow extends Component {
         // procesamos datos
         if (responseData.error) {
           // ponemos null
-          this.setState({scorePersonal: null});
+          this.setState({scorePersonal: null, starValue: null});
+          this.setState({})
         } else {
           // ponemos nota del usuario
-          this.setState({scorePersonal: responseData.tvShowVote.score});
+          this.setState({scorePersonal: responseData.tvShowVote.score, starValue: responseData.tvShowVote.score});
         }
       }).catch((error) => {
       console.log(error.stack);
@@ -185,9 +208,110 @@ class TvShow extends Component {
     }
   }
 
-  voteTvShow() {
-
+  // mostrar u ocultar modal: mostrar/ocultar, titulo, mensaje, mostrar/ocultar spinner
+  setVoteModalVisible(visible, loading) {
+    this.setState({voteModalVisible: visible, voteModalBottomMessage: ' ', voteModalLoading: loading});
   }
+
+  dismissVoteModal() {
+    //e.preventDefault();
+    console.log("cancelar modal");
+    this.setVoteModalVisible(false, false);
+  };
+
+  showVoteModal = (e) => {
+    //e.preventDefault();
+    console.log('mostrando modal');
+    this.setVoteModalVisible(true, false);
+    // ponemos nota de usuario
+    this.setState({starValue: this.state.scorePersonal })
+  };
+
+  hideVoteModalBottomMessage() {
+    if (this.state.voteModalBottomMessageOpacity !== 0) {
+      Animated.timing(this.state.voteModalBottomMessageOpacity, {
+        toValue: 0,
+        duration: 500
+      }).start(() => { this.setState({ voteModalBottomMessage: ' ' }) });
+    }
+  }
+
+ showVoteModalBottomMessage() {
+    if (this.state.voteModalBottomMessageOpacity !== 1) {
+      Animated.timing(this.state.voteModalBottomMessageOpacity, {
+        toValue: 1,
+        duration: 500
+      }).start( () => setTimeout( () => { this.hideVoteModalBottomMessage() }, 2000) );
+    }
+  }
+
+  setStarsSpacing = (e) => {
+    console.log('Calculando spacing entre estrellas');
+    const {x, y, width, height} = e.nativeEvent.layout;
+    let modalWidth = width - 100 - 40; // anchura vista menos paddings
+    const starWidth = this.state.starSize; // anchura estrellas
+    let starSpacing = (modalWidth - (10 * starWidth)) / 10;
+    this.setState({ starSpacing: starSpacing});
+  };
+
+  onStarValueChanged = (e) => {
+    if (e !== this.state.value && e >= 0 && e <= 10) {
+      this.setState({ starValue: e });
+    }
+  };
+
+  saveVote = (e) => {
+    console.log('guardar votación');
+    // bloqueamos botones de guardar y eliminar votación
+    if (this.state.voteButtonsDisabled) {
+      // botones bloqueados
+      console.log('Botones bloqueados');
+    } else {
+      // bloqueamos botones y mostramos activity indicator
+      this.setState({ voteButtonsDisabled: true, voteModalLoading: true, voteModalBottomMessage: null});
+
+      const route = 'api/tvshows/' + this.state.tvShowId + '/vote';
+      const URL = (Platform.OS === 'ios') ?
+        'http://localhost:9000/' + route : 'http://192.168.1.13:9000/' + route;
+
+      let data = JSON.stringify({
+        score: this.state.starValue,
+      });
+
+      // hacemos fetch a la API
+      fetch(URL, {
+        method: "PUT",
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + this.state.jwt,
+        },
+        body: data,
+      }).then((response) => response.json())
+        .then((responseData) => {
+          // procesamos datos
+          if (responseData.ok !== undefined && responseData.ok !== null) {
+            this.setState({ scorePersonal: responseData.tvShowVote.score });
+            // actualizamos datos serie
+            this.getTvShow();
+          }
+        }).then( () => {
+        // terminado
+        this.setState({ voteButtonsDisabled: false, voteModalLoading: false, voteModalBottomMessage: 'Votación guardada'});
+        this.showVoteModalBottomMessage();
+        console.log('votación guardada');
+      }).catch((error) => {
+        console.log(error.stack);
+        this.setState({ voteButtonsDisabled: false, voteModalLoading: false, voteModalBottomMessage: 'Ha habido un error guardando la votación' });
+        setTimeout(() => { this.setState({ voteModalBottomMessage: ' ' })}, 2000);
+      });
+    }
+  };
+
+  deleteVote = (e) => {
+    console.log('borrar votación');
+
+  };
 
   // process image uri
   formatImageUri(uri) {
@@ -210,10 +334,12 @@ class TvShow extends Component {
   }
 
   onFanartLoadEnded() {
-    Animated.timing(this.state.fanartOpacity, {
-      toValue: 1,
-      duration: 500
-    }).start();
+    if (this.state.fanartOpacity !== 1) {
+      Animated.timing(this.state.fanartOpacity, {
+        toValue: 1,
+        duration: 500
+      }).start();
+    }
   }
 
   playTrailer() {
@@ -290,103 +416,183 @@ class TvShow extends Component {
     );
 
     return (
-      <View style={styles.containerDark}>
+      (this.state.fetchEnded) ? (
+        <View style={[styles.container, {opacity: this.state.viewOpacity}]} onLayout={ this.setStarsSpacing }>{/* contenedor total incluyendo modals, etc */}
 
-        <Animated.View style={[styles.topBarOverlay, {opacity: topBarOpacity}]} />
-        <View style={styles.fanArtOverlay} />
-        <Animated.Image style={[
-            styles.fanArt,
-            {transform: [{translateY: imageTranslate}]},
-            {opacity: this.state.fanartOpacity},
-          ]}
-          source={this.state.tvShowData.fanart !== null ? {uri: this.state.tvShowData.fanart} : require('./img/placeholderFanart.png')}
-          onLoadEnded={this.onFanartLoadEnded()}
-        />
-
-        <ScrollView style={styles.scrollViewV}
-          scrollEventThrottle={16}
-          onScroll={Animated.event(
-            [{nativeEvent: {contentOffset: {y: this.state.scrollY}}}]
-          )}
-        >
-          <View style={styles.scrollViewContent}>
-            <View style={styles.zIndexFix} />
-            <View style={styles.headerContent}>
-              <Animated.Image style={[styles.poster, {opacity: this.state.posterOpacity}]} source={this.state.tvShowData.poster !== null ? {uri: this.state.tvShowData.poster} : require('./img/placeholderPoster.png')} onLoadEnded={this.onPosterLoadEnded()} />
-              <View style={styles.headerData}>
-                <Text style={styles.tvShowTitle} numberOfLines={1}>{this.state.tvShowData.name}</Text>
-                <View style={styles.tvShowSubtitle}>
-                  <View style={styles.tvShowSubtitleLeft}>
-                    <Text style={styles.tvShowYearRating}>{new Date(this.state.tvShowData.firstAired).getFullYear()}   <Text numberOfLines={1}>{this.state.tvShowData.rating}</Text></Text>
-                    <Text style={styles.tvShowGenre} numberOfLines={1}>{this.state.tvShowGenres}</Text>
-                  </View>
-                  <View style={styles.subtitleRight}>
-                    {/*<Text style={styles.ratingText}>
-                      <Icon name={(Platform.OS === 'ios') ? 'ios-star' : 'md-star'} style={styles.ratingIcon}/> {this.state.imdbRating}
-                    </Text>*/}
-                    <Text style={styles.runtimeText} numberOfLines={1}>
-                      <Icon name={(Platform.OS === 'ios') ? 'ios-time-outline' : 'md-time'} /> {this.state.tvShowData.runtime} min
-                    </Text>
-                    <Text style={styles.networkText} numberOfLines={1}>
-                      <Icon name={(Platform.OS === 'ios') ? 'ios-desktop' : 'md-desktop'} /> {this.state.tvShowData.network}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-
-            </View>
-
-            <View style={styles.bodyContent}>
-              <View style={styles.scores}>
-                  {(this.state.tvShowData.voteCount === 0) ? (
-                    <View style={styles.scoreAvg}>
-                      <View style={styles.iconView}><Icon style={styles.scoreAvgStar} name={(Platform.OS === 'ios') ? 'ios-star-outline' : 'md-star-outline'} /></View>
-                      <Text style={styles.scoreAvgTextNull}>Sin votos</Text>
+          <Modal
+            animationType={'fade'}
+            transparent
+            onRequestClose={ this.dismissVoteModal }
+            visible={this.state.voteModalVisible}
+          >
+            <TouchableWithoutFeedback style={styles.voteModalOutside} onPress={ this.dismissVoteModal.bind(this) }>
+              <View style={styles.voteModal}>
+                <TouchableWithoutFeedback style={styles.voteInnerModalTouchable}>
+                  <View style={styles.voteInnerModal}>
+                    <Text style={styles.voteModalTitle}>Votar serie</Text>
+                    <Text style={styles.voteModalTitleName}>{this.state.tvShowData.name}</Text>
+                    <Image style={styles.voteModalPoster} source={this.state.tvShowData.poster !== null ? {uri: this.state.tvShowData.poster} : require('./img/placeholderPoster.png')} />
+                    <Text style={styles.voteModalMessage}>Tu valoración</Text>
+                    <Text style={styles.voteModalNumber}>{(this.state.starValue === null ? '-' : this.state.starValue)}</Text>
+                    <View style={styles.starRating}>
+                      <StarRatingBar
+                        readOnly={false}
+                        continuous={true}
+                        score={this.state.starValue}
+                        maximumValue={10}
+                        spacing={this.state.starSpacing}
+                        starStyle={{width: this.state.starSize, height: this.state.starSize}}
+                        tintColor={'rgba(90,200,250,1)'}
+                        onStarValueChanged={ this.onStarValueChanged }
+                      />
                     </View>
-                    ) : (
-                    <View style={styles.scoreAvg}>
-                      <View style={styles.iconView}><Icon style={styles.scoreAvgStar} name={(Platform.OS === 'ios') ? 'ios-star' : 'md-star'} /></View>
-                      <Text style={styles.scoreAvgText}> {this.state.tvShowData.score} <Text style={styles.scoreAvgTextNull}>({this.state.tvShowData.voteCount})</Text></Text>
-                    </View>
-                  )}
-
-                  {(this.state.scorePersonal === null) ? (
-                    (Platform.OS === 'ios') ? (
-                      <View style={styles.scorePersonal}>
-                        <TouchableHighlight style={styles.scorePersonal} onPress={ this.voteTvShow } underlayColor={'rgba(255,179,0,0.5)'}>
-                          <View style={styles.insideButton}>
-                            <View style={styles.iconView}><Icon style={styles.scorePersonalStarNull} name={'ios-star-outline'} /></View>
-                            <Text style={styles.scorePersonalTextNull}>Vota</Text>
-                          </View>
+                    {(Platform.OS === 'ios') ?
+                      <View style={styles.saveVoteButtonView}>
+                        <TouchableHighlight style={styles.saveVoteButton}
+                                            onPress={ this.saveVote } underlayColor={'rgba(255,179,0,1)'}>
+                          <Text style={styles.saveVoteButtonText}>Guardar voto</Text>
+                        </TouchableHighlight>
+                        <TouchableHighlight style={[styles.deleteVoteButton, styles.lastItem]}
+                                            onPress={ this.deleteVote } underlayColor={'rgba(255,179,0,0.6)'}>
+                          <Text style={styles.saveVoteButtonText}>Eliminar voto</Text>
                         </TouchableHighlight>
                       </View>
-                    ) : (
-                      <View style={styles.scorePersonal}>
+                      :
+                      <View style={styles.saveVoteButtonView}>
                         <TouchableNativeFeedback
-                          onPress={ this.voteTvShow }
+                          onPress={ this.saveVote }
                           delayPressIn={0}
                           background={TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true)}>
-                          <View style={styles.insideButton}>
-                            <View style={styles.iconView}><Icon style={styles.scorePersonalStarNull} name={'md-star-outline'} /></View>
-                            <Text style={styles.scorePersonalTextNull}>Vota</Text>
+                          <View style={styles.saveVoteButton}>
+                            <Text style={styles.saveVoteButtonText}>Guardar voto</Text>
+                          </View>
+                        </TouchableNativeFeedback>
+                        <TouchableNativeFeedback
+                          onPress={ this.deleteVote }
+                          delayPressIn={0}
+                          background={TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true)}>
+                          <View style={[styles.deleteVoteButton, styles.lastItem]}>
+                            <Text style={styles.saveVoteButtonText}>Eliminar voto</Text>
                           </View>
                         </TouchableNativeFeedback>
                       </View>
-                    )
-                  ) : (
-                    (Platform.OS === 'ios') ? (
-                      <View style={styles.scorePersonal}>
-                        <TouchableHighlight style={styles.scorePersonal} onPress={ this.voteTvShow } underlayColor={'rgba(255,179,0,0.5)'}>
-                          <View style={styles.insideButton}>
-                            <View style={styles.iconView}><Icon style={styles.scorePersonalStar} name={'ios-star'} /></View>
-                            <Text style={styles.scorePersonalText}>{this.state.scorePersonal}</Text>
+                    }
+                      <View style={styles.voteModalBottom}>
+                        {(this.state.voteModalLoading) ? (
+                          <View>
+                            <ActivityIndicator style={styles.modalLoader}
+                                             size={'small'} color={'rgba(255,149,0,1)'} />
+                            <Animated.Text style={styles.voteModalBottomMessage}>{this.state.voteModalBottomMessage}</Animated.Text>
                           </View>
-                        </TouchableHighlight>
+                        ) : (
+                          <Animated.Text style={[styles.voteModalBottomMessage, {opacity: this.state.voteModalBottomMessageOpacity}]}>{this.state.voteModalBottomMessage}</Animated.Text>
+                        )}
+                      </View>
+
+                  </View>
+                </TouchableWithoutFeedback>
+              </View>
+            </TouchableWithoutFeedback>
+          </Modal>
+
+          {/* contenedor de la vista */}
+          <View style={styles.containerDark}>
+
+            <Animated.View style={[styles.topBarOverlay, {opacity: topBarOpacity}]} />
+            <View style={styles.fanArtOverlay} />
+            <Animated.Image style={[
+              styles.fanArt,
+              {transform: [{translateY: imageTranslate}]},
+              {opacity: this.state.fanartOpacity},
+            ]}
+                            source={this.state.tvShowData.fanart !== null ? {uri: this.state.tvShowData.fanart} : require('./img/placeholderFanart.png')}
+                            onLoadEnded={this.onFanartLoadEnded()}
+            />
+
+            <ScrollView style={styles.scrollViewV}
+                        scrollEventThrottle={16}
+                        onScroll={Animated.event(
+                          [{nativeEvent: {contentOffset: {y: this.state.scrollY}}}]
+                        )}
+            >
+              <View style={styles.scrollViewContent}>
+                <View style={styles.zIndexFix} />
+                <View style={styles.headerContent}>
+                  <Animated.Image style={[styles.poster, {opacity: this.state.posterOpacity}]} source={this.state.tvShowData.poster !== null ? {uri: this.state.tvShowData.poster} : require('./img/placeholderPoster.png')} onLoadEnded={this.onPosterLoadEnded()} />
+                  <View style={styles.headerData}>
+                    <Text style={styles.tvShowTitle} numberOfLines={1}>{this.state.tvShowData.name}</Text>
+                    <View style={styles.tvShowSubtitle}>
+                      <View style={styles.tvShowSubtitleLeft}>
+                        <Text style={styles.tvShowYearRating}>{new Date(this.state.tvShowData.firstAired).getFullYear()}   <Text numberOfLines={1}>{this.state.tvShowData.rating}</Text></Text>
+                        <Text style={styles.tvShowGenre} numberOfLines={1}>{this.state.tvShowGenres}</Text>
+                      </View>
+                      <View style={styles.subtitleRight}>
+                        {/*<Text style={styles.ratingText}>
+                        <Icon name={(Platform.OS === 'ios') ? 'ios-star' : 'md-star'} style={styles.ratingIcon}/> {this.state.imdbRating}
+                      </Text>*/}
+                        <Text style={styles.runtimeText} numberOfLines={1}>
+                          <Icon name={(Platform.OS === 'ios') ? 'ios-time-outline' : 'md-time'} /> {this.state.tvShowData.runtime} min
+                        </Text>
+                        <Text style={styles.networkText} numberOfLines={1}>
+                          <Icon name={(Platform.OS === 'ios') ? 'ios-desktop' : 'md-desktop'} /> {this.state.tvShowData.network}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+
+                </View>
+
+                <View style={styles.bodyContent}>
+                  <View style={styles.scores}>
+                    {(this.state.tvShowData.voteCount === 0) ? (
+                      <View style={styles.scoreAvg}>
+                        <View style={styles.iconView}><Icon style={styles.scoreAvgStar} name={(Platform.OS === 'ios') ? 'ios-star-outline' : 'md-star-outline'} /></View>
+                        <Text style={styles.scoreAvgTextNull}>Sin votos</Text>
                       </View>
                     ) : (
+                      <View style={styles.scoreAvg}>
+                        <View style={styles.iconView}><Icon style={styles.scoreAvgStar} name={(Platform.OS === 'ios') ? 'ios-star' : 'md-star'} /></View>
+                        <Text style={styles.scoreAvgText}> {this.state.tvShowData.score} <Text style={styles.scoreAvgTextNull}>({this.state.tvShowData.voteCount})</Text></Text>
+                      </View>
+                    )}
+
+                    {(this.state.scorePersonal === null) ? (
+                      (Platform.OS === 'ios') ? (
+                        <View style={styles.scorePersonal}>
+                          <TouchableHighlight style={styles.scorePersonal} onPress={ this.showVoteModal } underlayColor={'rgba(255,179,0,0.5)'}>
+                            <View style={styles.insideButton}>
+                              <View style={styles.iconView}><Icon style={styles.scorePersonalStarNull} name={'ios-star-outline'} /></View>
+                              <Text style={styles.scorePersonalTextNull}>Vota</Text>
+                            </View>
+                          </TouchableHighlight>
+                        </View>
+                      ) : (
                         <View style={styles.scorePersonal}>
                           <TouchableNativeFeedback
-                            onPress={ this.voteTvShow }
+                            onPress={ this.showVoteModal }
+                            delayPressIn={0}
+                            background={TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true)}>
+                            <View style={styles.insideButton}>
+                              <View style={styles.iconView}><Icon style={styles.scorePersonalStarNull} name={'md-star-outline'} /></View>
+                              <Text style={styles.scorePersonalTextNull}>Vota</Text>
+                            </View>
+                          </TouchableNativeFeedback>
+                        </View>
+                      )
+                    ) : (
+                      (Platform.OS === 'ios') ? (
+                        <View style={styles.scorePersonal}>
+                          <TouchableHighlight style={styles.scorePersonal} onPress={ this.showVoteModal } underlayColor={'rgba(255,179,0,0.5)'}>
+                            <View style={styles.insideButton}>
+                              <View style={styles.iconView}><Icon style={styles.scorePersonalStar} name={'ios-star'} /></View>
+                              <Text style={styles.scorePersonalText}>{this.state.scorePersonal}</Text>
+                            </View>
+                          </TouchableHighlight>
+                        </View>
+                      ) : (
+                        <View style={styles.scorePersonal}>
+                          <TouchableNativeFeedback
+                            onPress={ this.showVoteModal }
                             delayPressIn={0}
                             background={TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true)}>
                             <View style={styles.insideButton}>
@@ -396,141 +602,149 @@ class TvShow extends Component {
                           </TouchableNativeFeedback>
                         </View>
                       )
-                  )}
-              </View>
+                    )}
+                  </View>
 
-              {/*<View style={styles.principalButtons}>
-                <CircularButton
-                  size={(Platform.OS === 'ios') ? 35 : 40}
-                  backgroundColor={'transparent'}
-                  opacityColor={'#fe3f80'}
-                  icon={(Platform.OS === 'ios') ? 'ios-film' : 'md-film'}
-                  iconSize={20}
-                  iconColor={(Platform.OS === 'ios') ? '#aaaaaa' : '#bbbbc1'}
-                  style={{marginRight: 30}}
-                  disabled={(!this.state.tvShowData.trailer)}
-                  link={ (Platform.OS !== 'ios') }
-                  onPress={ (Platform.OS === 'ios') ? () => this.playTrailer() : 'https://www.youtube.com/watch?v=' + this.state.tvShowData.trailer }
-                />
-                <CircularButton
-                  size={(Platform.OS === 'ios') ? 45 : 55}
-                  backgroundColor={'transparent'}
-                  opacityColor={'#fe3f80'}
-                  icon={(Platform.OS === 'ios') ? 'ios-eye' : 'md-eye'}
-                  iconSize={30}
-                  iconColor={(Platform.OS === 'ios') ? '#aaaaaa' : '#bbbbc1'}
-                />
-                <CircularButton
-                  size={(Platform.OS === 'ios') ? 35 : 40}
-                  backgroundColor={'transparent'}
-                  opacityColor={'#fe3f80'}
-                  icon={(Platform.OS === 'ios') ? 'ios-more' : 'md-more'}
-                  iconSize={20}
-                  iconColor={(Platform.OS === 'ios') ? '#aaaaaa' : '#bbbbc1'}
-                  style={{marginLeft: 30}}
-                />
+                  {/*<View style={styles.principalButtons}>
+                  <CircularButton
+                    size={(Platform.OS === 'ios') ? 35 : 40}
+                    backgroundColor={'transparent'}
+                    opacityColor={'#fe3f80'}
+                    icon={(Platform.OS === 'ios') ? 'ios-film' : 'md-film'}
+                    iconSize={20}
+                    iconColor={(Platform.OS === 'ios') ? '#aaaaaa' : '#bbbbc1'}
+                    style={{marginRight: 30}}
+                    disabled={(!this.state.tvShowData.trailer)}
+                    link={ (Platform.OS !== 'ios') }
+                    onPress={ (Platform.OS === 'ios') ? () => this.playTrailer() : 'https://www.youtube.com/watch?v=' + this.state.tvShowData.trailer }
+                  />
+                  <CircularButton
+                    size={(Platform.OS === 'ios') ? 45 : 55}
+                    backgroundColor={'transparent'}
+                    opacityColor={'#fe3f80'}
+                    icon={(Platform.OS === 'ios') ? 'ios-eye' : 'md-eye'}
+                    iconSize={30}
+                    iconColor={(Platform.OS === 'ios') ? '#aaaaaa' : '#bbbbc1'}
+                  />
+                  <CircularButton
+                    size={(Platform.OS === 'ios') ? 35 : 40}
+                    backgroundColor={'transparent'}
+                    opacityColor={'#fe3f80'}
+                    icon={(Platform.OS === 'ios') ? 'ios-more' : 'md-more'}
+                    iconSize={20}
+                    iconColor={(Platform.OS === 'ios') ? '#aaaaaa' : '#bbbbc1'}
+                    style={{marginLeft: 30}}
+                  />
+                </View>*/}
+                  { overview }
+                </View>
+
+                <View style={styles.footerContent}>
+                  <View style={styles.footerTitleView}>
+                    {/*<Text style={styles.footerTitle}>Guionista/s</Text>
+                  <Text style={styles.footerTitle}>Reparto</Text>*/}
+                    <Text style={styles.footerTitle}>Estado</Text>
+                  </View>
+                  <View style={styles.footerDataView}>
+                    {/*<Text style={styles.footerData} numberOfLines={1}>{this.state.tvShowData.writer}</Text>
+                  <Text style={styles.footerData} numberOfLines={1}>{this.state.tvShowData.actors}</Text>*/}
+                    <Text style={styles.footerData}>{(this.state.tvShowData.status === 'Ended' ? 'Finalizada' : 'Continuada')}</Text>
+                  </View>
+                </View>
+
+                {/*<View style={styles.seasonsContent}>
+                <ScrollView horizontal style={styles.scrollH}>
+
+                  <SeasonButton
+                    imageWidth={(Platform.OS === 'ios') ? 110 : 120}
+                    imageHeight={(Platform.OS === 'ios') ? 159 : 173}
+                    backgroundColor={'#212121'}
+                    opacityColor={'#fe3f80'}
+                    source={'https://thetvdb.com/banners/seasons/305288-1-3.jpg'}
+                    title={'Temporada 1'}
+                    titleSize={(Platform.OS === 'ios') ? 13 : 14}
+                    titleColor={'#dedede'}
+                    subtitle={'8 episodios'}
+                    subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
+                    subtitleColor={'#bbbbc1'}
+                  />
+
+                  <SeasonButton
+                    imageWidth={(Platform.OS === 'ios') ? 110 : 120}
+                    imageHeight={(Platform.OS === 'ios') ? 159 : 173}
+                    backgroundColor={'#212121'}
+                    opacityColor={'#fe3f80'}
+                    source={'https://thetvdb.com/banners/seasons/305288-1-3.jpg'}
+                    title={'Temporada 1'}
+                    titleSize={(Platform.OS === 'ios') ? 13 : 14}
+                    titleColor={'#dedede'}
+                    subtitle={'8 episodios'}
+                    subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
+                    subtitleColor={'#bbbbc1'}
+                  />
+
+                  <SeasonButton
+                    imageWidth={(Platform.OS === 'ios') ? 110 : 120}
+                    imageHeight={(Platform.OS === 'ios') ? 159 : 173}
+                    backgroundColor={'#212121'}
+                    opacityColor={'#fe3f80'}
+                    source={'https://thetvdb.com/banners/seasons/305288-1-3.jpg'}
+                    title={'Temporada 1'}
+                    titleSize={(Platform.OS === 'ios') ? 13 : 14}
+                    titleColor={'#dedede'}
+                    subtitle={'8 episodios'}
+                    subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
+                    subtitleColor={'#bbbbc1'}
+                  />
+
+                  <SeasonButton
+                    imageWidth={(Platform.OS === 'ios') ? 110 : 120}
+                    imageHeight={(Platform.OS === 'ios') ? 159 : 173}
+                    backgroundColor={'#212121'}
+                    opacityColor={'#fe3f80'}
+                    source={'https://thetvdb.com/banners/seasons/305288-1-3.jpg'}
+                    title={'Temporada 1'}
+                    titleSize={(Platform.OS === 'ios') ? 13 : 14}
+                    titleColor={'#dedede'}
+                    subtitle={'8 episodios'}
+                    subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
+                    subtitleColor={'#bbbbc1'}
+                  />
+
+                  <SeasonButton
+                    imageWidth={(Platform.OS === 'ios') ? 110 : 120}
+                    imageHeight={(Platform.OS === 'ios') ? 159 : 173}
+                    backgroundColor={'#212121'}
+                    opacityColor={'#fe3f80'}
+                    source={'https://thetvdb.com/banners/seasons/305288-1-3.jpg'}
+                    title={'Temporada 1'}
+                    titleSize={(Platform.OS === 'ios') ? 13 : 14}
+                    titleColor={'#dedede'}
+                    subtitle={'8 episodios'}
+                    subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
+                    subtitleColor={'#bbbbc1'}
+                  />
+                </ScrollView>
               </View>*/}
-              { overview }
-            </View>
-
-            <View style={styles.footerContent}>
-              <View style={styles.footerTitleView}>
-                {/*<Text style={styles.footerTitle}>Guionista/s</Text>
-                <Text style={styles.footerTitle}>Reparto</Text>*/}
-                <Text style={styles.footerTitle}>Estado</Text>
               </View>
-              <View style={styles.footerDataView}>
-                {/*<Text style={styles.footerData} numberOfLines={1}>{this.state.tvShowData.writer}</Text>
-                <Text style={styles.footerData} numberOfLines={1}>{this.state.tvShowData.actors}</Text>*/}
-                <Text style={styles.footerData}>{(this.state.tvShowData.status === 'Ended' ? 'Finalizada' : 'Continuada')}</Text>
-              </View>
-            </View>
-
-            {/*<View style={styles.seasonsContent}>
-              <ScrollView horizontal style={styles.scrollH}>
-
-                <SeasonButton
-                  imageWidth={(Platform.OS === 'ios') ? 110 : 120}
-                  imageHeight={(Platform.OS === 'ios') ? 159 : 173}
-                  backgroundColor={'#212121'}
-                  opacityColor={'#fe3f80'}
-                  source={'https://thetvdb.com/banners/seasons/305288-1-3.jpg'}
-                  title={'Temporada 1'}
-                  titleSize={(Platform.OS === 'ios') ? 13 : 14}
-                  titleColor={'#dedede'}
-                  subtitle={'8 episodios'}
-                  subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
-                  subtitleColor={'#bbbbc1'}
-                />
-
-                <SeasonButton
-                  imageWidth={(Platform.OS === 'ios') ? 110 : 120}
-                  imageHeight={(Platform.OS === 'ios') ? 159 : 173}
-                  backgroundColor={'#212121'}
-                  opacityColor={'#fe3f80'}
-                  source={'https://thetvdb.com/banners/seasons/305288-1-3.jpg'}
-                  title={'Temporada 1'}
-                  titleSize={(Platform.OS === 'ios') ? 13 : 14}
-                  titleColor={'#dedede'}
-                  subtitle={'8 episodios'}
-                  subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
-                  subtitleColor={'#bbbbc1'}
-                />
-
-                <SeasonButton
-                  imageWidth={(Platform.OS === 'ios') ? 110 : 120}
-                  imageHeight={(Platform.OS === 'ios') ? 159 : 173}
-                  backgroundColor={'#212121'}
-                  opacityColor={'#fe3f80'}
-                  source={'https://thetvdb.com/banners/seasons/305288-1-3.jpg'}
-                  title={'Temporada 1'}
-                  titleSize={(Platform.OS === 'ios') ? 13 : 14}
-                  titleColor={'#dedede'}
-                  subtitle={'8 episodios'}
-                  subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
-                  subtitleColor={'#bbbbc1'}
-                />
-
-                <SeasonButton
-                  imageWidth={(Platform.OS === 'ios') ? 110 : 120}
-                  imageHeight={(Platform.OS === 'ios') ? 159 : 173}
-                  backgroundColor={'#212121'}
-                  opacityColor={'#fe3f80'}
-                  source={'https://thetvdb.com/banners/seasons/305288-1-3.jpg'}
-                  title={'Temporada 1'}
-                  titleSize={(Platform.OS === 'ios') ? 13 : 14}
-                  titleColor={'#dedede'}
-                  subtitle={'8 episodios'}
-                  subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
-                  subtitleColor={'#bbbbc1'}
-                />
-
-                <SeasonButton
-                  imageWidth={(Platform.OS === 'ios') ? 110 : 120}
-                  imageHeight={(Platform.OS === 'ios') ? 159 : 173}
-                  backgroundColor={'#212121'}
-                  opacityColor={'#fe3f80'}
-                  source={'https://thetvdb.com/banners/seasons/305288-1-3.jpg'}
-                  title={'Temporada 1'}
-                  titleSize={(Platform.OS === 'ios') ? 13 : 14}
-                  titleColor={'#dedede'}
-                  subtitle={'8 episodios'}
-                  subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
-                  subtitleColor={'#bbbbc1'}
-                />
-              </ScrollView>
-            </View>*/}
+              {(Platform.OS === 'android') ?
+                <View style={styles.scrollPaddingBottom} /> : null}
+            </ScrollView>
           </View>
-          {(Platform.OS === 'android') ?
-            <View style={styles.scrollPaddingBottom} /> : null}
-        </ScrollView>
-      </View>
+
+        </View>
+      ) : (
+        <View style={{alignItems: 'center', justifyContent: 'center'}}>
+          <ActivityIndicator style={styles.loader} size={'large'} color={'rgba(255,149,0,1)'} />
+        </View>
+      )
     );
   }
 
   // pie del resumen de la serie (leer mas)
   overviewReady = () => {
     console.log('ready');
+    this.setState({ moreTextReady: true, viewOpacity: 1 });
   };
 
   overviewTruncatedFooter = (handlePress) => {
@@ -676,6 +890,10 @@ const styles = StyleSheet.create({
       }
     }),
 
+  },
+  // container total
+  container: {
+    flex: 1,
   },
   // vista escena
   containerDark: {
@@ -1075,6 +1293,144 @@ const styles = StyleSheet.create({
         fontFamily: 'Roboto-Regular',
         fontSize: 16,
       }
+    }),
+  },
+  voteModal: {
+    flex: 1,
+    padding: 50,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+  },
+  voteInnerModalTouchable: {
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  voteInnerModal: {
+    padding: 20,
+    borderRadius: 10,
+    backgroundColor: '#212121',
+    elevation: 3,
+  },
+  voteModalTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.7)',
+    ...Platform.select({
+      fontFamily: 'Roboto-Medium',
+    }),
+    marginBottom: 10,
+  },
+  voteModalTitleName: {
+    textAlign: 'center',
+    fontSize: 17,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,1)',
+    ...Platform.select({
+      android: {
+        fontFamily: 'Roboto-Medium',
+      },
+    }),
+  },
+  voteModalPoster: {
+    alignSelf: 'center',
+    height: 147,
+    width: 100,
+    marginVertical: 10,
+    resizeMode: 'contain',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  voteModalNumber: {
+    textAlign: 'center',
+    fontSize: 40,
+    color: 'white',
+    ...Platform.select({
+      android: {
+        fontFamily: 'Roboto-Medium',
+      },
+    }),
+  },
+  voteModalMessage: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.9)',
+    ...Platform.select({
+      android: {
+        fontFamily: 'Roboto-Medium',
+      },
+    }),
+    paddingHorizontal: 20,
+    textAlign: 'center',
+  },
+  voteModalBottom: {
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    padding: 4,
+    paddingTop: 10,
+    paddingBottom: 0,
+    marginBottom: -8,
+  },
+  voteModalBottomMessage: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.9)',
+    ...Platform.select({
+      android: {
+        fontFamily: 'Roboto-Regular',
+      },
+    }),
+  },
+  modalLoader: {
+    marginTop: 4,
+    paddingBottom: 0,
+    ...Platform.select({
+      android: {
+        marginBottom: -13,
+      }
+    }),
+  },
+  // slider de puntuación
+  starRating: {
+    flex: 0,
+    flexDirection: 'row',
+    height: 30,
+    paddingLeft: 3,
+  },
+  saveVoteButtonView: {
+    flexDirection: 'row',
+    marginTop: 8,
+    alignSelf: 'stretch',
+    borderRadius: 3,
+    elevation: 3,
+  },
+  saveVoteButton: {
+    flex: 1,
+    alignSelf: 'stretch',
+    borderRadius: 3,
+    padding: 8,
+    marginRight: 6,
+    backgroundColor: 'rgba(255,149,0,1)',
+  },
+  deleteVoteButton: {
+    flex: 1,
+    alignSelf: 'stretch',
+    borderRadius: 3,
+    padding: 8,
+    marginRight: 6,
+    backgroundColor: 'rgba(77,77,77,1)',
+  },
+  lastItem: {
+    marginRight: 0,
+  },
+  saveVoteButtonText: {
+    color: 'rgba(255,255,255,0.87)',
+    textAlign: 'center',
+    fontSize: 14,
+    ...Platform.select({
+      ios: {
+        fontWeight: '600',
+      },
+      android: {
+        fontFamily: 'Roboto-Medium',
+      },
     }),
   },
   // temporadas!
