@@ -225,7 +225,6 @@ class RequestTvShow extends Component {
                 },
                 body: JSON.stringify({
                   tvdbId: rowData.tvdbId,
-                  userId: this.state.userId,
                 })
               }).then((response) => response.json())
                 .finally((responseData) => {
