@@ -114,7 +114,7 @@ class TvShow extends Component {
   getTvShow() {
     // segun la plataforma, url
     const URL = (Platform.OS === 'ios') ?
-      'http://localhost:9000/api/tvshow/' : 'http://192.168.1.13:9000/api/tvshow/';
+      'http://localhost:9000/api/tvshows/' : 'http://192.168.1.13:9000/api/tvshows/';
     
     // hacemos fetch a la API
     fetch(URL + this.state.tvShowId, {
