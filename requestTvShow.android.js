@@ -214,7 +214,7 @@ class RequestTvShow extends Component {
             // solicitar serie
             return AsyncStorage.getItem("jwt")
               .then((jwt) => {
-                fetch('http://192.168.1.13:9000/api/tvshows/requests', {
+                fetch('http://192.168.1.13:9000/api/requests', {
                   method: 'POST',
                   headers: {
                     'Accept': 'application/json',
