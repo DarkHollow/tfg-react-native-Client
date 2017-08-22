@@ -115,7 +115,7 @@ class TvShow extends Component {
     // segun la plataforma, url
     const URL = (Platform.OS === 'ios') ?
       'http://localhost:9000/api/tvshows/' : 'http://192.168.1.13:9000/api/tvshows/';
-    
+
     // hacemos fetch a la API
     fetch(URL + this.state.tvShowId, {
       method: "GET",
@@ -157,7 +157,6 @@ class TvShow extends Component {
         if (responseData.error) {
           // ponemos null
           this.setState({scorePersonal: null, starValue: null});
-          this.setState({})
         } else {
           // ponemos nota del usuario
           this.setState({scorePersonal: responseData.tvShowVote.score, starValue: responseData.tvShowVote.score});
@@ -234,7 +233,7 @@ class TvShow extends Component {
     }
   }
 
- showVoteModalBottomMessage() {
+  showVoteModalBottomMessage() {
     if (this.state.voteModalBottomMessageOpacity !== 1) {
       Animated.timing(this.state.voteModalBottomMessageOpacity, {
         toValue: 1,
@@ -285,19 +284,20 @@ class TvShow extends Component {
           'Authorization': 'Bearer ' + this.state.jwt,
         },
         body: data,
-      }).then((response) => response.json())
-        .then((responseData) => {
-          // procesamos datos
-          if (responseData.ok !== undefined && responseData.ok !== null) {
-            this.setState({ scorePersonal: responseData.tvShowVote.score });
-            // actualizamos datos serie
-            this.getTvShow();
-          }
-        }).then( () => {
-        // terminado
-        this.setState({ voteButtonsDisabled: false, voteModalLoading: false, voteModalBottomMessage: 'Votación guardada'});
-        this.showVoteModalBottomMessage();
-        console.log('votación guardada');
+      }).then((response) => response.json()
+      ).then((responseData) => {
+        // procesamos datos
+        if (responseData.ok !== undefined && responseData.ok !== null) {
+          this.setState({ scorePersonal: responseData.tvShowVote.score });
+          // actualizamos datos serie
+          this.getTvShow();
+          this.setState({ voteButtonsDisabled: false, voteModalLoading: false, voteModalBottomMessage: 'Votación guardada'});
+          this.showVoteModalBottomMessage();
+        } else {
+          // no se ha podido votar
+          this.setState({ voteButtonsDisabled: false, voteModalLoading: false, voteModalBottomMessage: 'Ha habido un error guardando la votación'});
+          this.showVoteModalBottomMessage();
+        }
       }).catch((error) => {
         console.log(error.stack);
         this.setState({ voteButtonsDisabled: false, voteModalLoading: false, voteModalBottomMessage: 'Ha habido un error guardando la votación' });
@@ -316,7 +316,7 @@ class TvShow extends Component {
       // bloqueamos botones y mostramos activity indicator
       this.setState({ voteButtonsDisabled: true, voteModalLoading: true, voteModalBottomMessage: null});
 
-      const route = 'api/tvshows/' + this.state.tvShowId + '/vote';
+      const route = 'api/tvshows/' + this.state.tvShowId + '/rating';
       const URL = (Platform.OS === 'ios') ?
         'http://localhost:9000/' + route : 'http://192.168.1.13:9000/' + route;
 
@@ -328,19 +328,22 @@ class TvShow extends Component {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + this.state.jwt,
         },
-      }).then((response) => response.json())
-        .then((responseData) => {
-          // procesamos datos
-          if (responseData.ok !== undefined && responseData.ok !== null) {
-            this.setState({ scorePersonal: null });
-            // actualizamos datos serie
-            this.getTvShow();
-          }
-        }).then( () => {
-        // terminado
-        this.setState({ voteButtonsDisabled: false, voteModalLoading: false, voteModalBottomMessage: 'Votación eliminada'});
-        this.showVoteModalBottomMessage();
-        console.log('votación eliminada');
+      }).then((response) => response.json()
+      ).then((responseData) => {
+        // procesamos datos
+        if (responseData.ok !== undefined && responseData.ok !== null) {
+          this.setState({ scorePersonal: null });
+          // actualizamos datos serie
+          this.getTvShow();
+          // terminado
+          this.setState({ voteButtonsDisabled: false, voteModalLoading: false, voteModalBottomMessage: 'Votación eliminada'});
+          this.showVoteModalBottomMessage();
+          console.log('votación eliminada');
+        } else {
+          // no se ha podido eliminar
+          this.setState({ voteButtonsDisabled: false, voteModalLoading: false, voteModalBottomMessage: 'Ha habido un error eliminando la votación'});
+          this.showVoteModalBottomMessage();
+        }
       }).catch((error) => {
         console.log(error.stack);
         this.setState({ voteButtonsDisabled: false, voteModalLoading: false, voteModalBottomMessage: 'Ha habido un error eliminando la votación' });
@@ -484,46 +487,46 @@ class TvShow extends Component {
                     </View>
                     {(Platform.OS === 'ios') ?
                       <View style={styles.saveVoteButtonView}>
-                        <TouchableHighlight style={styles.saveVoteButton}
-                                            onPress={ this.saveVote } underlayColor={'rgba(255,179,0,1)'}>
+                        <TouchableHighlight style={(this.state.starValue !== null ? styles.saveVoteButton : styles.saveVoteButtonDisabled)}
+                                            onPress={(this.state.starValue !== null ? this.saveVote : null)} underlayColor={'rgba(255,179,0,1)'}>
                           <Text style={styles.saveVoteButtonText}>Guardar voto</Text>
                         </TouchableHighlight>
-                        <TouchableHighlight style={[styles.deleteVoteButton, styles.lastItem]}
-                                            onPress={ this.deleteVote } underlayColor={'rgba(255,179,0,0.6)'}>
+                        <TouchableHighlight style={[(this.state.scorePersonal !== null ? styles.deleteVoteButton : styles.deleteVoteButtonDisabled), styles.lastItem]}
+                                            onPress={(this.state.scorePersonal !== null ? this.deleteVote : null)} underlayColor={'rgba(255,179,0,0.6)'}>
                           <Text style={styles.saveVoteButtonText}>Eliminar voto</Text>
                         </TouchableHighlight>
                       </View>
                       :
                       <View style={styles.saveVoteButtonView}>
                         <TouchableNativeFeedback
-                          onPress={ this.saveVote }
+                          onPress={(this.state.starValue !== null ? this.saveVote : null)}
                           delayPressIn={0}
-                          background={TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true)}>
-                          <View style={styles.saveVoteButton}>
+                          background={(this.state.starValue !== null ? TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true) : TouchableNativeFeedback.Ripple('rgba(255,224,130,0)', true))}>
+                          <View style={(this.state.starValue !== null ? styles.saveVoteButton : styles.saveVoteButtonDisabled)}>
                             <Text style={styles.saveVoteButtonText}>Guardar voto</Text>
                           </View>
                         </TouchableNativeFeedback>
                         <TouchableNativeFeedback
-                          onPress={ this.deleteVote }
+                          onPress={(this.state.scorePersonal !== null ? this.deleteVote : null)}
                           delayPressIn={0}
-                          background={TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true)}>
-                          <View style={[styles.deleteVoteButton, styles.lastItem]}>
+                          background={(this.state.starValue !== null ? TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true) : TouchableNativeFeedback.Ripple('rgba(255,224,130,0)', true))}>
+                          <View style={[(this.state.scorePersonal !== null ? styles.deleteVoteButton : styles.deleteVoteButtonDisabled), styles.lastItem]}>
                             <Text style={styles.saveVoteButtonText}>Eliminar voto</Text>
                           </View>
                         </TouchableNativeFeedback>
                       </View>
                     }
-                      <View style={styles.voteModalBottom}>
-                        {(this.state.voteModalLoading) ? (
-                          <View>
-                            <ActivityIndicator style={styles.modalLoader}
+                    <View style={styles.voteModalBottom}>
+                      {(this.state.voteModalLoading) ? (
+                        <View>
+                          <ActivityIndicator style={styles.modalLoader}
                                              size={'small'} color={'rgba(255,149,0,1)'} />
-                            <Animated.Text style={styles.voteModalBottomMessage}>{this.state.voteModalBottomMessage}</Animated.Text>
-                          </View>
-                        ) : (
-                          <Animated.Text style={[styles.voteModalBottomMessage, {opacity: this.state.voteModalBottomMessageOpacity}]}>{this.state.voteModalBottomMessage}</Animated.Text>
-                        )}
-                      </View>
+                          <Animated.Text style={styles.voteModalBottomMessage}>{this.state.voteModalBottomMessage}</Animated.Text>
+                        </View>
+                      ) : (
+                        <Animated.Text style={[styles.voteModalBottomMessage, {opacity: this.state.voteModalBottomMessageOpacity}]}>{this.state.voteModalBottomMessage}</Animated.Text>
+                      )}
+                    </View>
 
                   </View>
                 </TouchableWithoutFeedback>
@@ -836,7 +839,7 @@ let NavigationBarRouteMapper = props => ({
     return (
       <View style={styles.backButtonView}>
         <TouchableOpacity style={styles.backButton}
-            onPress={() => (props.state.showVideoPlayer && Platform.OS === 'ios') ? props.hideVideoPlayer() : navigator.parentNavigator.pop()}>
+                          onPress={() => (props.state.showVideoPlayer && Platform.OS === 'ios') ? props.hideVideoPlayer() : navigator.parentNavigator.pop()}>
           <Icon
             name={(Platform.OS === 'ios') ? 'ios-arrow-back' : 'md-arrow-back'}
             style={styles.backIcon}
@@ -1445,6 +1448,15 @@ const styles = StyleSheet.create({
     marginRight: 6,
     backgroundColor: 'rgba(255,149,0,1)',
   },
+  saveVoteButtonDisabled: {
+    flex: 1,
+    alignSelf: 'stretch',
+    borderRadius: 3,
+    padding: 8,
+    marginRight: 6,
+    backgroundColor: 'rgba(255,149,0,1)',
+    opacity: 0.4
+  },
   deleteVoteButton: {
     flex: 1,
     alignSelf: 'stretch',
@@ -1452,6 +1464,15 @@ const styles = StyleSheet.create({
     padding: 8,
     marginRight: 6,
     backgroundColor: 'rgba(77,77,77,1)',
+  },
+  deleteVoteButtonDisabled: {
+    flex: 1,
+    alignSelf: 'stretch',
+    borderRadius: 3,
+    padding: 8,
+    marginRight: 6,
+    backgroundColor: 'rgba(77,77,77,1)',
+    opacity: 0.4
   },
   lastItem: {
     marginRight: 0,
