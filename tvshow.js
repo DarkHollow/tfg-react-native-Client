@@ -268,7 +268,7 @@ class TvShow extends Component {
       // bloqueamos botones y mostramos activity indicator
       this.setState({ voteButtonsDisabled: true, voteModalLoading: true, voteModalBottomMessage: null});
 
-      const route = 'api/tvshows/' + this.state.tvShowId + '/vote';
+      const route = 'api/tvshows/' + this.state.tvShowId + '/rating';
       const URL = (Platform.OS === 'ios') ?
         'http://localhost:9000/' + route : 'http://192.168.1.13:9000/' + route;
 
@@ -301,7 +301,7 @@ class TvShow extends Component {
       }).catch((error) => {
         console.log(error.stack);
         this.setState({ voteButtonsDisabled: false, voteModalLoading: false, voteModalBottomMessage: 'Ha habido un error guardando la votación' });
-        setTimeout(() => { this.setState({ voteModalBottomMessage: ' ' })}, 2000);
+        this.showVoteModalBottomMessage();
       });
     }
   };
@@ -344,7 +344,7 @@ class TvShow extends Component {
       }).catch((error) => {
         console.log(error.stack);
         this.setState({ voteButtonsDisabled: false, voteModalLoading: false, voteModalBottomMessage: 'Ha habido un error eliminando la votación' });
-        setTimeout(() => { this.setState({ voteModalBottomMessage: ' ' })}, 2000);
+        this.showVoteModalBottomMessage();
       });
     }
   };
