@@ -139,9 +139,8 @@ class TvShow extends Component {
 
   getTvShowVote() {
     // segun la plataforma, url
-    const userId = this.state.userId;
     const tvShowId = this.state.tvShowId;
-    const route = 'api/tvshows/' + tvShowId + '/tvshowvotes/users/' + userId;
+    const route = 'api/tvshows/' + tvShowId + '/rating';
     const URL = (Platform.OS === 'ios') ?
       'http://localhost:9000/' + route : 'http://192.168.1.13:9000/' + route;
 
@@ -150,7 +149,6 @@ class TvShow extends Component {
       method: "GET",
       headers: {
         'Accept': 'application/json',
-        'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + this.state.jwt,
       }
     }).then((response) => response.json())
