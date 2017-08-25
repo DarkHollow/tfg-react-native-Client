@@ -79,7 +79,7 @@ class RequestTvShow extends Component {
         uri = encodeURI(searchText);
 
         // hacemos fetch a la API
-        fetch('http://localhost:9000/api/search/TVDB/' + uri, {
+        fetch('http://localhost:9000/api/tvshows?search=' + uri + '&tvdb=1', {
           method: "GET",
           headers: {
             'Accept': 'application/json',

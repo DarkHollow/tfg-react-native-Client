@@ -76,7 +76,7 @@ class Search extends Component {
       this.setState({searchedText: this.state.searchText});
 
       // hacemos fetch a la API
-      fetch('http://localhost:9000/api/search/tvshows/' + this.state.searchText, {
+      fetch('http://localhost:9000/api/tvshows?search=' + this.state.searchText, {
         method: "GET",
         headers: {
           'Accept': 'application/json',
@@ -94,6 +94,7 @@ class Search extends Component {
         Keyboard.dismiss();
       }).catch((error) => {
         this.setState({showProgress: false});
+        console.log(error);
         this.popUp('Error', 'Lamentablemente no se ha podido realizar la búsqueda');
       });
     } else {
