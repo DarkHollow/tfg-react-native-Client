@@ -101,7 +101,7 @@ class Login extends Component {
         setTimeout(() => this.navigateTo('root', true), 2100);
       });
     } else {
-      this.setModalVisible(true, 'Entrar', 'Ha habido un error, inténtalo más tarde', false);
+      this.setModalVisible(true, 'Entrar', data.message, false);
       setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
     }
   }
