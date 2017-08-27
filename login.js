@@ -212,8 +212,8 @@ class Login extends Component {
               <Text style={styles.modalMessage}>{this.state.modalMessage}</Text>
               {(this.state.modalLoading) ? (
                 <View style={styles.modalBottom}>
-                  <ActivityIndicator style={styles.loader}
-                                     size={'small'} color={'#fe3f80'} />
+                  <ActivityIndicator style={styles.modalLoader}
+                                     size={'small'} color={'rgba(255,149,0,1)'} />
                 </View>
               ) : ( null )}
             </View>
@@ -376,14 +376,12 @@ const styles = StyleSheet.create({
     marginLeft: -12,
     height: 46,
     alignSelf: 'stretch',
-    //borderBottomWidth: 0.5,
-    //borderColor: 'rgba(255,255,255,0.5)',
   },
   input: {
     marginLeft: -20,
     height: 36,
     marginTop: 7,
-    backgroundColor: 'transparent',//backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: 'transparent',
     color: 'rgba(255,255,255,0.8)',
     fontSize: 14,
     borderRadius: 5,
@@ -458,33 +456,60 @@ const styles = StyleSheet.create({
   modal: {
     flex: 1,
     padding: 50,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(23,23,23,0.9)',
     justifyContent: 'center',
   },
   innerModal: {
     paddingTop: 20,
     borderRadius: 10,
     alignItems: 'center',
-    backgroundColor: 'white',
-    elevation: 3,
+    backgroundColor: '#212121',
+    ...Platform.select({
+      ios: {
+        shadowColor: 'rgba(0,0,0,1)',
+        shadowOffset: { width: 0, height: 0},
+        shadowOpacity: 0.4,
+        shadowRadius: 20,
+      },
+      android: {
+        elevation: 6,
+      }
+    }),
   },
   modalTitle: {
     fontSize: 17,
     fontWeight: '600',
+    color: 'rgba(255,255,255,0.7)',
+    ...Platform.select({
+      android: {
+        fontFamily: 'Roboto-Medium',
+      },
+    }),
     marginBottom: 3,
   },
   modalMessage: {
     fontSize: 13,
-    marginBottom: 20,
+    color: 'rgba(255,255,255,0.9)',
+    ...Platform.select({
+      android: {
+        fontFamily: 'Roboto-Medium',
+      },
+    }),
     paddingHorizontal: 20,
+    paddingBottom: 20,
     textAlign: 'center',
   },
   modalBottom: {
     alignSelf: 'stretch',
-    paddingTop: 12,
-    paddingBottom: 12,
-    borderTopWidth: 0.5,
-    borderColor: '#dddddd'
+    alignItems: 'center',
+    paddingBottom: 40,
+    borderColor: 'rgba(245,245,245,0.05)',
+    borderTopWidth: 0.5
+  },
+  modalLoader: {
+    position: 'absolute',
+    marginTop: 10,
+    padding: 0,
   },
 });
 
