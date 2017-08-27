@@ -79,7 +79,7 @@ class RequestTvShow extends Component {
         uri = encodeURI(searchText);
 
         // hacemos fetch a la API
-        fetch('http://localhost:9000/api/search/TVDB/' + uri, {
+        fetch('http://localhost:9000/api/tvshows?search=' + uri + '&tvdb=1', {
           method: "GET",
           headers: {
             'Accept': 'application/json',
@@ -182,60 +182,59 @@ class RequestTvShow extends Component {
           backButtonText: 'Solicitar'
         }
       });
-    }
-
-    // estados de serie que no pueden ser pedidas
-    if (rowData.requestStatus && (rowData.requestStatus === "Requested" || rowData.requestStatus === "Processing")) {
-      let requestMessage;
-      if (rowData.requestStatus === 'Requested') {
-        requestMessage = 'Esta serie ya ha sido solicitada';
-      } else if (rowData.requestStatus === 'Processing') {
-        requestMessage = 'Esta serie ha sido aceptada y está siendo procesada';
+    } else {
+      // estados de serie que no pueden ser pedidas
+      if (rowData.requestStatus && (rowData.requestStatus === "Requested" || rowData.requestStatus === "Processing")) {
+        let requestMessage;
+        if (rowData.requestStatus === 'Requested') {
+          requestMessage = 'Esta serie ya ha sido solicitada';
+        } else if (rowData.requestStatus === 'Processing') {
+          requestMessage = 'Esta serie ha sido aceptada y está siendo procesada';
+        }
+        Alert.alert('Solicitar nueva serie', requestMessage);
+        return false;
       }
-      Alert.alert('Solicitar nueva serie', requestMessage);
-      return false;
-    }
 
 
-    // estados de serie que pueden ser pedidas
-    let requestTitle = 'Solicitar serie nueva';
-    if (rowData.requestStatus && (rowData.requestStatus === 'Rejected' || rowData.requestStatus === 'Deleted')) {
-      if (rowData.requestStatus === 'Rejected') {
-        requestTitle = 'Solicitar serie rechazada';
-      } else if (rowData.requestStatus === 'Deleted') {
-        requestTitle = 'Solicitar reaprobación de serie eliminada';
+      // estados de serie que pueden ser pedidas
+      let requestTitle = 'Solicitar serie nueva';
+      if (rowData.requestStatus && (rowData.requestStatus === 'Rejected' || rowData.requestStatus === 'Deleted')) {
+        if (rowData.requestStatus === 'Rejected') {
+          requestTitle = 'Solicitar serie rechazada';
+        } else if (rowData.requestStatus === 'Deleted') {
+          requestTitle = 'Solicitar reaprobación de serie eliminada';
+        }
       }
-    }
 
-    // seguro que quiere solicitarla ?
-    Alert.alert(
-      requestTitle,
-      '¿Seguro que deseas solicitar la serie \'' + rowData.name + '\'?',
-      [
-        {text: 'Sí', onPress: () => {
-          // solicitar serie
-          return AsyncStorage.getItem("jwt")
-            .then((jwt) => {
-              fetch('http://localhost:9000/api/tvshows/requests', {
-                method: 'POST',
-                headers: {
-                  'Accept': 'application/json',
-                  'Content-Type': 'application/json',
-                  'Authorization': 'Bearer ' + this.state.jwt,
-                },
-                body: JSON.stringify({
-                  tvdbId: rowData.tvdbId,
-                  userId: this.state.userId,
-                })
-              }).then((response) => response.json())
-                .finally((responseData) => {
-                  this.processRequestResponse(rowData.tvdbId, responseData);
-                });
-            });
-        }},
-        {text: 'Cancelar', onPress: () => console.log('Cancelar')},
-      ]
-    );
+      // seguro que quiere solicitarla ?
+      Alert.alert(
+        requestTitle,
+        '¿Seguro que deseas solicitar la serie \'' + rowData.name + '\'?',
+        [
+          {text: 'Sí', onPress: () => {
+            // solicitar serie
+            return AsyncStorage.getItem("jwt")
+              .then((jwt) => {
+                fetch('http://localhost:9000/api/requests', {
+                  method: 'POST',
+                  headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + this.state.jwt,
+                  },
+                  body: JSON.stringify({
+                    tvdbId: rowData.tvdbId,
+                  })
+                }).then((response) => response.json())
+                  .finally((responseData) => {
+                    this.processRequestResponse(rowData.tvdbId, responseData);
+                  });
+              });
+          }},
+          {text: 'Cancelar', onPress: () => console.log('Cancelar')},
+        ]
+      );
+    }
   }
 
   /* animaciones */

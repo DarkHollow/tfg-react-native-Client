@@ -77,7 +77,7 @@ class Search extends Component {
       this.setState({searchedText: this.state.searchText});
 
       // hacemos fetch a la API
-      fetch('http://192.168.1.13:9000/api/search/tvshows/' + this.state.searchText, {
+      fetch('http://192.168.1.13:9000/api/tvshows?search=' + this.state.searchText, {
         method: "GET",
         headers: {
           'Accept': 'application/json',
