@@ -295,12 +295,12 @@ class TvShow extends Component {
           this.showVoteModalBottomMessage();
         } else {
           // no se ha podido votar
-          this.setState({ voteButtonsDisabled: false, voteModalLoading: false, voteModalBottomMessage: 'Ha habido un error guardando la votación'});
+          this.setState({ voteButtonsDisabled: false, voteModalLoading: false, voteModalBottomMessage: 'Error guardando la votación'});
           this.showVoteModalBottomMessage();
         }
       }).catch((error) => {
         console.log(error.stack);
-        this.setState({ voteButtonsDisabled: false, voteModalLoading: false, voteModalBottomMessage: 'Ha habido un error guardando la votación' });
+        this.setState({ voteButtonsDisabled: false, voteModalLoading: false, voteModalBottomMessage: 'Error guardando la votación' });
         this.showVoteModalBottomMessage();
       });
     }
@@ -415,6 +415,7 @@ class TvShow extends Component {
           translucent
           barStyle="light-content"
           backgroundColor={'transparent'}
+          hidden
         />
         <CustomComponents.Navigator
           renderScene={this.renderScene.bind(this)}
@@ -1337,7 +1338,7 @@ const styles = StyleSheet.create({
   voteModal: {
     flex: 1,
     padding: 50,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(23,23,23,0.9)',
     justifyContent: 'center',
   },
   voteInnerModalTouchable: {
@@ -1348,14 +1349,26 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     backgroundColor: '#212121',
-    elevation: 3,
+    ...Platform.select({
+      ios: {
+        shadowColor: 'rgba(0,0,0,1)',
+        shadowOffset: { width: 0, height: 0},
+        shadowOpacity: 0.4,
+        shadowRadius: 20,
+      },
+      android: {
+        elevation: 6,
+      }
+    }),
   },
   voteModalTitle: {
     fontSize: 17,
     fontWeight: '600',
     color: 'rgba(255,255,255,0.7)',
     ...Platform.select({
-      fontFamily: 'Roboto-Medium',
+      android: {
+        fontFamily: 'Roboto-Medium',
+      },
     }),
     marginBottom: 10,
   },
@@ -1403,12 +1416,11 @@ const styles = StyleSheet.create({
   voteModalBottom: {
     alignSelf: 'stretch',
     alignItems: 'center',
-    padding: 4,
-    paddingTop: 10,
-    paddingBottom: 0,
-    marginBottom: -8,
+    marginTop: 9,
+    paddingBottom: 8
   },
   voteModalBottomMessage: {
+    position: 'absolute',
     fontSize: 13,
     color: 'rgba(255,255,255,0.9)',
     ...Platform.select({
@@ -1418,13 +1430,8 @@ const styles = StyleSheet.create({
     }),
   },
   modalLoader: {
-    marginTop: 4,
-    paddingBottom: 0,
-    ...Platform.select({
-      android: {
-        marginBottom: -13,
-      }
-    }),
+    position: 'absolute',
+    padding: 0,
   },
   // slider de puntuación
   starRating: {
