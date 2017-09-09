@@ -49,7 +49,7 @@ export default class TrendingSeriesClient extends Component {
           // verificar token
           console.log("Verificando token");
           const URL = (Platform.OS === 'ios') ?
-            'http://localhost:9000/api/user/session' : 'http://192.168.1.13:9000/api/user/session';
+            'http://localhost:9000/api/users/session' : 'http://192.168.1.13:9000/api/users/session';
 
           fetch(URL, {
             method: 'GET',
