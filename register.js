@@ -96,7 +96,7 @@ class Register extends Component {
     this.setModalVisible(true, 'Registro', 'Registrando usuario...', true);
 
     const URL = (Platform.OS === 'ios') ?
-      'http://localhost:9000/api/user/' : 'http://192.168.1.13:9000/api/user/';
+      'http://localhost:9000/api/users/' : 'http://192.168.1.13:9000/api/users/';
 
     let email = this.state.emailText;
     let password1 = this.state.password1Text;

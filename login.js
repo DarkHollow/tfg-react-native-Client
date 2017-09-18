@@ -111,7 +111,7 @@ class Login extends Component {
     this.setModalVisible(true, 'Entrar', 'Iniciando sesión...', true);
 
     const URL = (Platform.OS === 'ios') ?
-      'http://localhost:9000/api/user/session' : 'http://192.168.1.13:9000/api/user/session';
+      'http://localhost:9000/api/users/session' : 'http://192.168.1.13:9000/api/users/session';
 
     let email = this.state.emailText;
     let password = this.state.passwordText;
