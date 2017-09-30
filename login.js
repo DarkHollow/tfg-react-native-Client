@@ -71,6 +71,11 @@ class Login extends Component {
     this.setState({modalVisible: visible});
   }
 
+  showAndHideModal(visible, title, message, loading) {
+    this.setModalVisible(visible, title, message, loading);
+    setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+  }
+
   async storeSession(data) {
     try {
       await AsyncStorage.multiSet([
@@ -86,23 +91,19 @@ class Login extends Component {
   // procesamos los datos que nos devuelve la API
   processLoginResponse(data) {
     console.log('processLoginResponse');
-
     // si la API nos devuelve error
     if (data.error) {
-      this.setModalVisible(true, 'Entrar', data.message, false);
-      setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+      this.showAndHideModal(true, 'Entrar', data.message, false);
     } else if (data.ok !== undefined) {
       // se ha hecho login
       // guardamos token
       this.storeSession(data).then(() => {
-        this.setModalVisible(true, 'Entrar', 'Has iniciado sesión correctamente', false);
-        setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+        this.showAndHideModal(true, 'Entrar', 'Has iniciado sesión correctamente', false);
         // navegamos a la app
         setTimeout(() => this.navigateTo('root', true), 2100);
       });
     } else {
-      this.setModalVisible(true, 'Entrar', data.message, false);
-      setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+      this.showAndHideModal(true, 'Entrar', 'Prueba de nuevo más tarde', false);
     }
   }
 
@@ -136,30 +137,30 @@ class Login extends Component {
               email: email,
               password: hash.toString(),
             })
-          }).then((response) => response.json())
-            .finally((responseData) => {
-              this.processLoginResponse(responseData);
-            }).catch((error) => {
-            console.error(error);
-            this.setModalVisible(true, 'Entrar', 'Lamentablemente no se ha podido iniciar sesión', false);
-            setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+          }).then((response) => {
+            if (response.ok) {
+              return response.json();
+            } else {
+              console.log("not ok");
+            }
+          }).then((responseData) => {
+            this.processLoginResponse(responseData);
+          }).catch((error) => {
+            this.showAndHideModal(true, 'Entrar', 'Lamentablemente no se ha podido iniciar sesión', false);
           });
         } else {
           // longitud password
-          this.setModalVisible(true, 'Entrar', 'La contraseña debe contener entre 6 y 14 caracteres', false);
-          setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+          this.showAndHideModal(true, 'Entrar', 'La contraseña debe contener entre 6 y 14 caracteres', false);
           this._textInputPass.focus();
         }
       } else {
         // email no valido
-        this.setModalVisible(true, 'Entrar', 'El formato de email no es válido', false);
-        setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+        this.showAndHideModal(true, 'Entrar', 'El formato de email no es válido', false);
         this._textInputEmail.focus();
       }
     } else {
       // email vacio ?
-      this.setModalVisible(true, 'Entrar', 'El email no es válido', false);
-      setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+      this.showAndHideModal(true, 'Entrar', 'El email no es válido', false);
       this._textInputEmail.focus();
     }
   }
