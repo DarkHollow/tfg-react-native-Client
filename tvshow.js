@@ -212,13 +212,11 @@ class TvShow extends Component {
 
   dismissVoteModal() {
     //e.preventDefault();
-    console.log("cancelar modal");
     this.setVoteModalVisible(false, false);
   };
 
   showVoteModal = (e) => {
     //e.preventDefault();
-    console.log('mostrando modal');
     this.setVoteModalVisible(true, false);
     // ponemos nota de usuario
     this.setState({starValue: this.state.scorePersonal })
@@ -783,7 +781,7 @@ class TvShow extends Component {
 
   // pie del resumen de la serie (leer mas)
   overviewReady = () => {
-    console.log('ready');
+    console.log('overview ready');
     this.setState({ moreTextReady: true, viewOpacity: 1 });
   };
 
