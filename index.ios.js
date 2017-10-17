@@ -135,7 +135,7 @@ export default class TrendingSeriesClient extends Component {
               if (route.name === 'login' || route.name === 'root') {
                 return CustomComponents.Navigator.SceneConfigs.FadeAndroid;
               } else if (route.name === 'search') {
-                return CustomComponents.Navigator.SceneConfigs.PushFromRight;
+                return CustomComponents.Navigator.SceneConfigs.FadeAndroid;
               } else if (route.name === 'tvshow') {
                 return CustomComponents.Navigator.SceneConfigs.FloatFromBottom;
               } else if (route.name === 'requestTvShow') {
