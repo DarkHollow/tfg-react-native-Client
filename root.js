@@ -16,7 +16,6 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 
 const InitialNavBarElementsOpacity = 1;
-const InitialSearchMarginTop = 10;
 const InitialSearchMarginRight = 50;
 const InitialSearchHeight = 30;
 const InitialSearchWidth = 170;
@@ -28,7 +27,6 @@ class Root extends Component {
     super();
     this.state = {
       navBarElementsOpacity: new Animated.Value(InitialNavBarElementsOpacity),
-      searchMarginTop: new Animated.Value(InitialSearchMarginTop),
       searchMarginRight: new Animated.Value(InitialSearchMarginRight),
       searchHeight: new Animated.Value(InitialSearchHeight),
       searchWidth: new Animated.Value(InitialSearchWidth),
@@ -64,18 +62,13 @@ class Root extends Component {
         easing: Easing.bouce,
         duration: 200
       }),
-      Animated.timing(this.state.searchMarginTop, {
-        toValue: 0,
-        easing: Easing.bouce,
-        duration: 200
-      }),
       Animated.timing(this.state.searchMarginRight, {
         toValue: 0,
         easing: Easing.bouce,
         duration: 200
       }),
       Animated.timing(this.state.searchHeight, {
-        toValue: 50,
+        toValue: 56,
         easing: Easing.bouce,
         duration: 200
       }),
@@ -95,7 +88,6 @@ class Root extends Component {
       setTimeout(() => {
         this.setState({
           navBarElementsOpacity: new Animated.Value(InitialNavBarElementsOpacity),
-          searchMarginTop: new Animated.Value(InitialSearchMarginTop),
           searchMarginRight: new Animated.Value(InitialSearchMarginRight),
           searchHeight: new Animated.Value(InitialSearchHeight),
           searchWidth: new Animated.Value(InitialSearchWidth),
@@ -106,7 +98,7 @@ class Root extends Component {
   }
 
   render() {
-    let { navBarElementsOpacity, searchHeight, searchWidth, searchMarginTop, searchMarginRight, searchBorderRadius } = this.state;
+    let { navBarElementsOpacity, searchHeight, searchWidth, searchMarginRight, searchBorderRadius } = this.state;
 
     return (
       <View style={styles.container}>
@@ -121,7 +113,7 @@ class Root extends Component {
         <View style={styles.navBarView}>
           <Animated.Text style={[styles.navBarTitle, {opacity: navBarElementsOpacity}]}>Principal</Animated.Text>
           <Animated.View style={[styles.searchView,
-                                  {height: searchHeight, width: searchWidth, top: searchMarginTop, right: searchMarginRight, borderRadius: searchBorderRadius}
+                                  {height: searchHeight, width: searchWidth, right: searchMarginRight, borderRadius: searchBorderRadius}
                                 ]}>
             <Icon style={styles.searchIcon}
                   name={(Platform.OS === 'ios') ? 'ios-search-outline' : 'md-search'} />
@@ -169,7 +161,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#212121',
   },
   navBarView: {
-    height: 50,
+    height: 56,
     alignSelf: 'stretch',
     flexDirection: 'row',
     alignItems: 'center',
@@ -230,68 +222,6 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  button: {
-    height: 40,
-    backgroundColor: '#48BBEC',
-    alignSelf: 'stretch',
-    alignItems: 'center',
-    marginTop: 10,
-    justifyContent: 'center'
-  },
-  buttonText: {
-    fontSize: 20,
-    color: '#FFF',
-    alignSelf: 'center'
-  },
-  inputView: {
-    marginLeft: -12,
-    height: 46,
-    alignSelf: 'stretch',
-  },
-  input: {
-    marginLeft: -20,
-    height: 36,
-    marginTop: 7,
-    backgroundColor: 'transparent',
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: 14,
-    borderRadius: 5,
-    ...Platform.select({
-      android: {
-        fontFamily: 'Roboto-Light',
-        fontSize: 16,
-      },
-    }),
-  },
-  submitButtonView: {
-    marginTop: 30,
-    alignSelf: 'stretch',
-    borderRadius: 5,
-    elevation: 3,
-  },
-  submitButton: {
-    alignSelf: 'stretch',
-    borderRadius: 5,
-    padding: 8,
-    backgroundColor: 'rgba(255,149,0,1)',
-  },
-  principalButtonText: {
-    color: 'rgba(0,0,0,0.87)',
-    textAlign: 'center',
-    fontSize: 17,
-    ...Platform.select({
-      ios: {
-        fontWeight: '600',
-      },
-      android: {
-        fontFamily: 'Roboto-Medium',
-      },
-    }),
-  },
-  buttonPrueba: {
-    color: 'red',
-    backgroundColor: 'green'
-  }
 });
 
 export default Root;
