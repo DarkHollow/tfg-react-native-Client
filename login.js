@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
   },
   inputView: {
     marginLeft: -12,
-    height: 46,
+    height: 47,
     alignSelf: 'stretch',
   },
   input: {
