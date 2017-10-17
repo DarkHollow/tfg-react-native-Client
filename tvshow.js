@@ -227,7 +227,10 @@ class TvShow extends Component {
       Animated.timing(this.state.voteModalBottomMessageOpacity, {
         toValue: 0,
         duration: 500
-      }).start(() => { this.setState({ voteModalBottomMessage: ' ' }) });
+      }).start(() => {
+        this.setState({ voteModalBottomMessage: ' ' });
+        this.dismissVoteModal();
+      });
     }
   }
 
@@ -460,13 +463,16 @@ class TvShow extends Component {
           <Modal
             animationType={'fade'}
             transparent
-            onRequestClose={ this.dismissVoteModal }
+            onRequestClose={ this.dismissVoteModal.bind(this) }
             visible={this.state.voteModalVisible}
           >
             <TouchableWithoutFeedback style={styles.voteModalOutside} onPress={ this.dismissVoteModal.bind(this) }>
               <View style={styles.voteModal}>
                 <TouchableWithoutFeedback style={styles.voteInnerModalTouchable}>
                   <View style={styles.voteInnerModal}>
+                    <Icon style={styles.closeModal}
+                          name={(Platform.OS === 'ios') ? 'ios-close-outline' : 'md-close'}
+                          onPress={ this.dismissVoteModal.bind(this) } />
                     <Text style={styles.voteModalTitle}>Votar serie</Text>
                     <Text style={styles.voteModalTitleName}>{this.state.tvShowData.name}</Text>
                     <Image style={styles.voteModalPoster} source={this.state.tvShowData.poster !== null ? {uri: this.state.tvShowData.poster} : require('./img/placeholderPoster.png')} />
@@ -1357,6 +1363,20 @@ const styles = StyleSheet.create({
       android: {
         elevation: 6,
       }
+    }),
+  },
+  closeModal: {
+    position: 'absolute',
+    right: 20,
+    top: 16,
+    zIndex: 2,
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontSize: 26,
+    ...Platform.select({
+      android: {
+        top: 22,
+        fontSize: 20,
+      },
     }),
   },
   voteModalTitle: {
