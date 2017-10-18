@@ -240,7 +240,7 @@ class Register extends Component {
                     ref={component => this._textInputEmail = component}
                     placeholder={'Correo electrónico'}
                     placeholderTextColor={'rgba(255,255,255,0.4)'}
-                    selectionColor={'rgba(255,149,0,1)'}
+                    selectionColor={(Platform.OS === 'ios') ? 'rgba(255,149,0,1)' : 'rgba(255,149,0,0.5)'}
                     underlineColor={['rgba(255,255,255,0.5)', 'rgba(255,149,0,1)']}
                     autoCapitalize={'none'}
                     autoCorrect={false}
@@ -261,7 +261,7 @@ class Register extends Component {
                     ref={component => this._textInputPass1 = component}
                     placeholder={'Contraseña'}
                     placeholderTextColor={'rgba(255,255,255,0.4)'}
-                    selectionColor={'rgba(255,149,0,1)'}
+                    selectionColor={(Platform.OS === 'ios') ? 'rgba(255,149,0,1)' : 'rgba(255,149,0,0.5)'}
                     underlineColor={['rgba(255,255,255,0.5)', 'rgba(255,149,0,1)']}
                     autoCapitalize={'none'}
                     autoCorrect={false}
@@ -284,7 +284,7 @@ class Register extends Component {
                     ref={component => this._textInputPass2 = component}
                     placeholder={'Confirma la contraseña'}
                     placeholderTextColor={'rgba(255,255,255,0.4)'}
-                    selectionColor={'rgba(255,149,0,1)'}
+                    selectionColor={(Platform.OS === 'ios') ? 'rgba(255,149,0,1)' : 'rgba(255,149,0,0.5)'}
                     underlineColor={['rgba(255,255,255,0.5)', 'rgba(255,149,0,1)']}
                     autoCapitalize={'none'}
                     autoCorrect={false}
@@ -307,7 +307,7 @@ class Register extends Component {
                     ref={component => this._textInputName = component}
                     placeholder={'Nombre'}
                     placeholderTextColor={'rgba(255,255,255,0.4)'}
-                    selectionColor={'rgba(255,149,0,1)'}
+                    selectionColor={(Platform.OS === 'ios') ? 'rgba(255,149,0,1)' : 'rgba(255,149,0,0.5)'}
                     underlineColor={['rgba(255,255,255,0.5)', 'rgba(255,149,0,1)']}
                     autoCapitalize={'words'}
                     autoCorrect={false}
