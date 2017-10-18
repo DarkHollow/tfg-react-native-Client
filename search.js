@@ -18,7 +18,6 @@ import {
   Dimensions,
   TextInput,
   Easing,
-  TouchableHighlight,
   Button,
 } from 'react-native';
 import CustomComponents from 'react-native-deprecated-custom-components';
@@ -102,9 +101,9 @@ class Search extends Component {
           'Authorization': 'Bearer ' + this.state.jwt,
         }
       }).then((response) => response.json())
-      .then((responseData) => {
-        this.processData(responseData);
-      }).then( () => {
+        .then((responseData) => {
+          this.processData(responseData);
+        }).then( () => {
         // ocultamos spinner
         this.setState({showProgress: false});
       }).then( () => {
@@ -197,16 +196,6 @@ class Search extends Component {
       })
     ]).start( () => {
       navigator.parentNavigator.pop();
-
-      setTimeout(() => {
-        this.setState({
-          navBarElementsOpacity: new Animated.Value(InitialNavBarElementsOpacity),
-          searchMarginRight: new Animated.Value(InitialSearchMarginRight),
-          searchHeight: new Animated.Value(InitialSearchHeight),
-          searchWidth: new Animated.Value(InitialSearchWidth),
-          searchBorderRadius: new Animated.Value(InitialSearchBorderRadius),
-        });
-      }, 500);
     });
   }
 
@@ -304,7 +293,7 @@ class Search extends Component {
             </View>
           </View>
         </TouchableOpacity>
-        ) : (
+      ) : (
         <View style={styles.rowTouch} onPress={ this.openTvShow.bind(this, rowData.id) }>
           <TouchableNativeFeedback
             onPress={ () => this.openTvShow(rowData.id) }
@@ -381,7 +370,7 @@ class Search extends Component {
   renderScene(route, navigator) {
     let spinner = this.state.showProgress ? (
       <ActivityIndicator style={styles.loader}
-        size={'small'} color={'#fe3f80'} />
+                         size={'small'} color={'#fe3f80'} />
     ) : ( null );
 
     let notFound = this.state.showNotFound ? (
