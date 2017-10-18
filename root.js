@@ -13,6 +13,7 @@ import {
   Dimensions,
   Easing,
 } from 'react-native';
+import CustomComponents from 'react-native-deprecated-custom-components';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 const InitialNavBarElementsOpacity = 1;
@@ -98,10 +99,8 @@ class Root extends Component {
   }
 
   render() {
-    let { navBarElementsOpacity, searchHeight, searchWidth, searchMarginRight, searchBorderRadius } = this.state;
-
     return (
-      <View style={styles.container}>
+      <View style={styles.nav}>
         <StatusBar
           animated
           translucent
@@ -109,12 +108,24 @@ class Root extends Component {
           backgroundColor={'transparent'}
           hidden
         />
+        <CustomComponents.Navigator
+          renderScene={this.renderScene.bind(this)}
+          navigator={this.props.navigator}
+        />
+      </View>
+    );
+  }
 
+  renderScene(route, navigator) {
+    let { navBarElementsOpacity, searchHeight, searchWidth, searchMarginRight, searchBorderRadius } = this.state;
+
+    return (
+      <View style={styles.container}>
         <View style={styles.navBarView}>
           <Animated.Text style={[styles.navBarTitle, {opacity: navBarElementsOpacity}]}>Principal</Animated.Text>
           <Animated.View style={[styles.searchView,
-                                  {height: searchHeight, width: searchWidth, right: searchMarginRight, borderRadius: searchBorderRadius}
-                                ]}>
+            {height: searchHeight, width: searchWidth, right: searchMarginRight, borderRadius: searchBorderRadius}
+          ]}>
             <Icon style={styles.searchIcon}
                   name={(Platform.OS === 'ios') ? 'ios-search-outline' : 'md-search'} />
             <TextInput
@@ -145,20 +156,21 @@ class Root extends Component {
             </Animated.View>
           }
         </View>
-
-
       </View>
-    );
+    )
   }
 
 }
 
 const styles = StyleSheet.create({
+  nav: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    backgroundColor: '#212121',
+    backgroundColor: '#1e1e1e',
   },
   navBarView: {
     height: 56,
@@ -166,7 +178,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingLeft: 10,
-    backgroundColor: '#2d2d2d',
+    backgroundColor: '#282828',
     elevation: 1,
   },
   navBarTitle: {
@@ -195,7 +207,7 @@ const styles = StyleSheet.create({
     flex: 1,
     margin: 0,
     padding: 0,
-    paddingLeft: 38,
+    paddingLeft: 46,
     color: 'white',
     paddingTop: 0,
   },
