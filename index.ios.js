@@ -128,7 +128,7 @@ export default class TrendingSeriesClient extends Component {
           <StatusBar animated/>
           <CustomComponents.Navigator
             ref={component => this._navigator = component}
-            style={{backgroundColor: 'transparent'}}
+            style={{backgroundColor: '#1e1e1e'}}
             sceneStyle={{backgroundColor: 'transparent'}}
             initialRoute={{ name: this.state.initialRoute }}
             renderScene={this.renderScene.bind(this)}
