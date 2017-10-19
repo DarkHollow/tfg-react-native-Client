@@ -6,7 +6,6 @@ import {
   TouchableNativeFeedback,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
   ListView,
   Image,
   Animated,
@@ -19,6 +18,7 @@ import {
   TextInput,
   Easing,
   Button,
+  Modal,
 } from 'react-native';
 import CustomComponents from 'react-native-deprecated-custom-components';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -56,6 +56,7 @@ class Search extends Component {
       searchHeight: new Animated.Value(InitialSearchHeight),
       searchWidth: new Animated.Value(InitialSearchWidth),
       searchBorderRadius: new Animated.Value(InitialSearchBorderRadius),
+      modalVisible: false,
     }
   }
 
@@ -74,14 +75,25 @@ class Search extends Component {
     this.getUserData();
   }
 
-  /* mensaje popUp */
-  popUp(title, message) {
-    Alert.alert(title, message);
+  // mostrar u ocultar modal: mostrar/ocultar, titulo, mensaje, mostrar/ocultar spinner
+  setModalVisible(visible, title, message, loading, buttons) {
+    this.setState({modalTitle: title});
+    this.setState({modalMessage: message});
+    this.setState({modalLoading: loading});
+    this.setState({modalButtons: buttons});
+    this.setState({modalVisible: visible});
+  }
+
+  showAndHideModal(title, message, loading) {
+    this.setModalVisible(true, title, message, loading, null);
+    setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
   }
 
   /* submit buscar */
   onSubmit() {
     console.log('Buscar ' + this.state.searchText);
+
+    //this.showButtonsModal('Cerrar sesión', '¿Seguro que quieres cerrar sesión?', 'sign-out');
 
     this.setState({showProgress: true});
     this.notFoundAnimationHide(0);
@@ -112,11 +124,11 @@ class Search extends Component {
       }).catch((error) => {
         console.log(error.stack);
         this.setState({showProgress: false});
-        this.popUp('Error', 'Lamentablemente no se ha podido realizar la búsqueda');
+        this.showAndHideModal('Error', 'Lamentablemente no se ha podido realizar la búsqueda', false);
       });
     } else {
       this.setState({showProgress: false});
-      this.popUp('Buscar', 'Introduce como mínimo 3 caracteres');
+      this.showAndHideModal('Buscar', 'Introduce como mínimo 3 caracteres', false);
     }
   }
 
@@ -129,10 +141,10 @@ class Search extends Component {
         this.notFoundAnimationShow(0);
       } else if (data.error === 'Bad request') {
         // error bad request por introducir menos de 3 caracteres
-        this.popUp('Buscar', 'Introduce como mínimo 3 caracteres');
+        this.showAndHideModal('Buscar', 'Introduce como mínimo 3 caracteres', false);
       } else {
         // otro tipo de error interno
-        this.popUp('Error', 'Lamentablemente no se ha podido realizar la búsqueda');
+        this.showAndHideModal('Error', 'Lamentablemente no se ha podido realizar la búsqueda', false);
       }
     } else {
       // cargamos datos en el datasource
@@ -358,7 +370,7 @@ class Search extends Component {
   render() {
     return(
       <View style={styles.statusBarAndNavView}>
-        <StatusBar animated backgroundColor={'#2f3e9e'} />
+        <StatusBar hidden />
         <CustomComponents.Navigator
           renderScene={this.renderScene.bind(this)}
           navigator={this.props.navigator}
@@ -404,8 +416,41 @@ class Search extends Component {
 
     let { navBarElementsOpacity, searchHeight, searchWidth, searchMarginRight, searchBorderRadius } = this.state;
 
+    // definición de los botones de los Modal
+
+    // botones del Modal
+    let modalButtons = null;
+
     return (
       <View style={styles.container}>
+        <Modal
+          animationType={'fade'}
+          transparent
+          onRequestClose={() => {}}
+          visible={this.state.modalVisible}
+        >
+          <View style={styles.modal}>
+            <View style={styles.innerModal}>
+              <Text style={styles.modalTitle}>{this.state.modalTitle}</Text>
+              <Text style={styles.modalMessage}>{this.state.modalMessage}</Text>
+              {(this.state.modalLoading || this.state.modalButtons !== null) ? (
+                <View style={styles.modalBottom}>
+                  <View style={styles.modalBottomTopBorder} />
+                  {(this.state.modalLoading) ? (
+                    <ActivityIndicator style={styles.modalLoader}
+                                       size={'small'} color={'rgba(255,149,0,1)'} />
+                  ) : (
+                    <View style={{flexDirection: 'row'}}>
+                      { modalButtons }
+                    </View>
+                  )}
+
+                </View>
+              ) : ( null )}
+            </View>
+          </View>
+        </Modal>
+
         <View style={styles.navBarView}>
           <Animated.Text style={[styles.navBarTitle, {opacity: navBarElementsOpacity}]}>Principal</Animated.Text>
           <Animated.View style={[styles.searchView,
@@ -702,6 +747,92 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   principalButtonText: {
+    color: 'rgba(255,149,0,1)',
+    ...Platform.select({
+      android: {
+        fontFamily: 'Roboto-Medium',
+      },
+    }),
+    fontSize: 14,
+  },
+  modal: {
+    flex: 1,
+    padding: 50,
+    backgroundColor: 'rgba(23,23,23,0.9)',
+    justifyContent: 'center',
+  },
+  innerModal: {
+    paddingTop: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    backgroundColor: '#212121',
+    ...Platform.select({
+      ios: {
+        shadowColor: 'rgba(0,0,0,1)',
+        shadowOffset: { width: 0, height: 0},
+        shadowOpacity: 0.4,
+        shadowRadius: 20,
+      },
+      android: {
+        elevation: 6,
+      }
+    }),
+  },
+  modalTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.7)',
+    ...Platform.select({
+      android: {
+        fontFamily: 'Roboto-Medium',
+      },
+    }),
+    marginBottom: 3,
+  },
+  modalMessage: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.9)',
+    ...Platform.select({
+      android: {
+        fontFamily: 'Roboto-Medium',
+      },
+    }),
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    textAlign: 'center',
+  },
+  modalBottom: {
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+    ...Platform.select({
+      ios: {
+        paddingLeft: 10,
+        paddingRight: 10,
+      },
+    }),
+  },
+  modalBottomTopBorder: {
+    borderTopWidth: 1,
+    borderColor: 'rgba(245,245,245,0.05)',
+    alignSelf: 'stretch'
+  },
+  modalLoader: {
+    marginTop: 10,
+    paddingBottom: 10,
+  },
+  modalBottomButtonView: {
+    flex: 1,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+  },
+  modalBottomButton: {
+    padding: 10,
+    alignSelf: 'stretch',
+  },
+  modalBottomButtonText: {
+    alignSelf: 'center',
     color: 'rgba(255,149,0,1)',
     ...Platform.select({
       android: {
