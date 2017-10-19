@@ -12,6 +12,8 @@ import {
   Animated,
   Dimensions,
   Easing,
+  Modal,
+  Button
 } from 'react-native';
 import CustomComponents from 'react-native-deprecated-custom-components';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -32,6 +34,7 @@ class Root extends Component {
       searchHeight: new Animated.Value(InitialSearchHeight),
       searchWidth: new Animated.Value(InitialSearchWidth),
       searchBorderRadius: new Animated.Value(InitialSearchBorderRadius),
+      modalVisible: false,
     }
   }
 
@@ -52,6 +55,37 @@ class Root extends Component {
     } catch (error) {
       console.log('AsyncStorage error: ' + error.message);
     }
+  }
+
+  onDoLogout() {
+    this.dismissModal();
+    this.logout().done();
+  }
+
+  onLogoutPress() {
+    this.showButtonsModal('Cerrar sesión', '¿Seguro que quieres cerrar sesión?', 'log-out');
+  }
+
+  // mostrar u ocultar modal: mostrar/ocultar, titulo, mensaje, mostrar/ocultar spinner
+  setModalVisible(visible, title, message, loading, buttons) {
+    this.setState({modalTitle: title});
+    this.setState({modalMessage: message});
+    this.setState({modalLoading: loading});
+    this.setState({modalButtons: buttons});
+    this.setState({modalVisible: visible});
+  }
+
+  showAndHideModal(visible, title, message, loading) {
+    this.setModalVisible(visible, title, message, loading);
+    setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+  }
+
+  showButtonsModal(title, message, buttons) {
+    this.setModalVisible(true, title, message, null, buttons)
+  }
+
+  dismissModal() {
+    this.setModalVisible(false, '', '', false, null);
   }
 
   onSearchFocus() {
@@ -117,10 +151,95 @@ class Root extends Component {
   }
 
   renderScene(route, navigator) {
+
+    // definición de los botones de los Modal
+
+    // botones del Modal
+    let modalButtons = null;
+    if (this.state.modalButtons !== null && this.state.modalButtons !== undefined) {
+      modalButtons = [];
+      switch (this.state.modalButtons) {
+        case 'log-out':
+          modalButtons.push(
+            (Platform.OS === 'ios') ? (
+              <View style={styles.modalBottomButtonView} key={1}>
+                <Button
+                  onPress={ this.onDoLogout.bind(this) }
+                  title={'Sí'.toUpperCase()}
+                  color={'rgba(255,149,0,1)'}
+                />
+              </View>
+            ) : (
+              <View style={styles.modalBottomButtonView} key={1}>
+                <TouchableNativeFeedback
+                  onPress={ this.onDoLogout.bind(this) }
+                  background={TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true)}>
+                  <View style={styles.modalBottomButton}>
+                    <Text style={styles.modalBottomButtonText}>{'Sí'.toUpperCase()}</Text>
+                  </View>
+                </TouchableNativeFeedback>
+              </View>
+            )
+          );
+          modalButtons.push(
+            (Platform.OS === 'ios') ? (
+              <View style={styles.modalBottomButtonView} key={2}>
+                <Button
+                  onPress={ this.dismissModal.bind(this) }
+                  title={'Cancelar'.toUpperCase()}
+                  color={'rgba(255,149,0,1)'}
+                  bold
+                />
+              </View>
+            ) : (
+              <View style={styles.modalBottomButtonView} key={2}>
+                <TouchableNativeFeedback
+                  onPress={ this.dismissModal.bind(this) }
+                  background={TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true)}>
+                  <View style={styles.modalBottomButton}>
+                    <Text style={styles.modalBottomButtonText}>{'Cancelar'.toUpperCase()}</Text>
+                  </View>
+                </TouchableNativeFeedback>
+              </View>
+            )
+          );
+          break;
+        default:
+      }
+    }
+
     let { navBarElementsOpacity, searchHeight, searchWidth, searchMarginRight, searchBorderRadius } = this.state;
 
     return (
       <View style={styles.container}>
+        <Modal
+          animationType={'fade'}
+          transparent
+          onRequestClose={() => {}}
+          visible={this.state.modalVisible}
+        >
+          <View style={styles.modal}>
+            <View style={styles.innerModal}>
+              <Text style={styles.modalTitle}>{this.state.modalTitle}</Text>
+              <Text style={styles.modalMessage}>{this.state.modalMessage}</Text>
+              {(this.state.modalLoading || this.state.modalButtons !== null) ? (
+                <View style={styles.modalBottom}>
+                  <View style={styles.modalBottomTopBorder} />
+                  {(this.state.modalLoading) ? (
+                    <ActivityIndicator style={styles.modalLoader}
+                                       size={'small'} color={'rgba(255,149,0,1)'} />
+                  ) : (
+                    <View style={{flexDirection: 'row'}}>
+                      { modalButtons }
+                    </View>
+                  )}
+
+                </View>
+              ) : ( null )}
+            </View>
+          </View>
+        </Modal>
+
         <View style={styles.navBarView}>
           <Animated.Text style={[styles.navBarTitle, {opacity: navBarElementsOpacity}]}>Principal</Animated.Text>
           <Animated.View style={[styles.searchView,
@@ -139,14 +258,14 @@ class Root extends Component {
           </Animated.View>
           {(Platform.OS === 'ios') ?
             <Animated.View style={[styles.accountButtonView, {opacity: navBarElementsOpacity}]}>
-              <TouchableHighlight onPress={ () => this.logout().done() } underlayColor={'rgba(255,179,0,1)'}>
+              <TouchableHighlight onPress={ this.onLogoutPress.bind(this) } underlayColor={'rgba(255,179,0,1)'}>
                 <Icon style={styles.accountButtonIcon} name={'ios-log-out'} />
               </TouchableHighlight>
             </Animated.View>
             :
             <Animated.View style={[styles.accountButtonView, {opacity: navBarElementsOpacity}]}>
               <TouchableNativeFeedback
-                onPress={ () => this.logout().done() }
+                onPress={ this.onLogoutPress.bind(this) }
                 delayPressIn={0}
                 background={TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true)}>
                 <View>
@@ -233,6 +352,92 @@ const styles = StyleSheet.create({
         fontSize: 20,
       },
     }),
+  },
+  modal: {
+    flex: 1,
+    padding: 50,
+    backgroundColor: 'rgba(23,23,23,0.9)',
+    justifyContent: 'center',
+  },
+  innerModal: {
+    paddingTop: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    backgroundColor: '#212121',
+    ...Platform.select({
+      ios: {
+        shadowColor: 'rgba(0,0,0,1)',
+        shadowOffset: { width: 0, height: 0},
+        shadowOpacity: 0.4,
+        shadowRadius: 20,
+      },
+      android: {
+        elevation: 6,
+      }
+    }),
+  },
+  modalTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.7)',
+    ...Platform.select({
+      android: {
+        fontFamily: 'Roboto-Medium',
+      },
+    }),
+    marginBottom: 3,
+  },
+  modalMessage: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.9)',
+    ...Platform.select({
+      android: {
+        fontFamily: 'Roboto-Medium',
+      },
+    }),
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    textAlign: 'center',
+  },
+  modalBottom: {
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+    ...Platform.select({
+      ios: {
+        paddingLeft: 10,
+        paddingRight: 10,
+      },
+    }),
+  },
+  modalBottomTopBorder: {
+    borderTopWidth: 1,
+    borderColor: 'rgba(245,245,245,0.05)',
+    alignSelf: 'stretch'
+  },
+  modalLoader: {
+    marginTop: 10,
+    paddingBottom: 10,
+  },
+  modalBottomButtonView: {
+    flex: 1,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+  },
+  modalBottomButton: {
+    padding: 10,
+    alignSelf: 'stretch',
+  },
+  modalBottomButtonText: {
+    alignSelf: 'center',
+    color: 'rgba(255,149,0,1)',
+    ...Platform.select({
+      android: {
+        fontFamily: 'Roboto-Medium',
+      },
+    }),
+    fontSize: 14,
   },
 });
 
