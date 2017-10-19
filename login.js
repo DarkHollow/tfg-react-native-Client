@@ -64,16 +64,21 @@ class Login extends Component {
   };
 
   // mostrar u ocultar modal: mostrar/ocultar, titulo, mensaje, mostrar/ocultar spinner
-  setModalVisible(visible, title, message, loading) {
+  setModalVisible(visible, title, message, loading, buttons) {
     this.setState({modalTitle: title});
     this.setState({modalMessage: message});
     this.setState({modalLoading: loading});
+    this.setState({modalButtons: buttons});
     this.setState({modalVisible: visible});
   }
 
   showAndHideModal(visible, title, message, loading) {
     this.setModalVisible(visible, title, message, loading);
     setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+  }
+
+  showButtonsModal(title, message, buttons) {
+    this.setModalVisible(true, title, message, null, buttons)
   }
 
   async storeSession(data) {
