@@ -16,6 +16,7 @@ import {
   ActivityIndicator,
   Image,
 } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import CustomComponents from 'react-native-deprecated-custom-components';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ReadMore from '@expo/react-native-read-more-text';
@@ -407,6 +408,10 @@ class TvShow extends Component {
     });
   }
 
+  onBackPress(navigator) {
+    navigator.parentNavigator.pop();
+  }
+
   /* render */
   render() {
     return (
@@ -421,11 +426,6 @@ class TvShow extends Component {
         <CustomComponents.Navigator
           renderScene={this.renderScene.bind(this)}
           navigator={this.props.navigator}
-          navigationBar={
-            <CustomComponents.Navigator.NavigationBar
-              routeMapper={NavigationBarRouteMapper(this)}
-              style={styles.nav} />
-          }
         />
       </View>
     );
@@ -455,6 +455,8 @@ class TvShow extends Component {
     ) : (
       null
     );
+
+    const LinearGradientAnimated = Animated.createAnimatedComponent(LinearGradient);
 
     return (
       (this.state.fetchEnded) ? (
@@ -541,8 +543,18 @@ class TvShow extends Component {
 
           {/* contenedor de la vista */}
           <View style={styles.containerDark}>
+            <Icon style={styles.backIcon} onPress={ this.onBackPress.bind(this, navigator) }
+                  name={(Platform.OS === 'ios') ? 'ios-arrow-back-outline' : 'md-arrow-back'} />
 
-            <Animated.View style={[styles.topBarOverlay, {opacity: topBarOpacity}]} />
+            <View style={styles.navButtons}>
+
+              <View style={styles.linearGradientContainer}>
+                <LinearGradientAnimated style={[styles.topBarOverlay, {opacity: topBarOpacity}]}
+                                        colors={['#000', 'transparent']} />
+              </View>
+
+            </View>
+
             <View style={styles.fanArtOverlay} />
             <Animated.Image style={[
               styles.fanArt,
@@ -839,40 +851,6 @@ class TvShow extends Component {
 
 }
 
-let NavigationBarRouteMapper = props => ({
-  LeftButton(route, navigator, index, navState) {
-    return (
-      <View style={styles.backButtonView}>
-        <TouchableOpacity style={styles.backButton}
-                          onPress={() => (props.state.showVideoPlayer && Platform.OS === 'ios') ? props.hideVideoPlayer() : navigator.parentNavigator.pop()}>
-          <Icon
-            name={(Platform.OS === 'ios') ? 'ios-arrow-back' : 'md-arrow-back'}
-            style={styles.backIcon}
-          />
-          {/*<Text style={styles.backButtonText}>
-            Atrás
-          </Text>*/}
-        </TouchableOpacity>
-      </View>
-    );
-  },
-  /**
-   * @return {null}
-   */
-  RightButton(route, navigator, index, navState) {
-    return null;
-  },
-  Title(route, navigator, index, navState) {
-    return (
-      <View style={styles.titleView}>
-        <Text style={styles.titleText}>
-
-        </Text>
-      </View>
-    );
-  }
-});
-
 const styles = StyleSheet.create({
   // StatusBar y Navigator
   statusBarAndNavView: {
@@ -882,58 +860,41 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: {},
       android: {
-        marginTop: 24,
+        marginTop: 2,
       }
     }),
   },
-  backButtonView: {
+  linearGradientContainer: {
     flex: 1,
-    justifyContent: 'center',
   },
-  backButton: {
+  topBarOverlay: {
     flex: 1,
+  },
+  navButtons: {
+    position: 'absolute',
+    height: 56,
+    left: 0,
+    top: 0,
+    right: 0,
     flexDirection: 'row',
-    justifyContent: 'center',
-    ...Platform.select({
-      ios: {
-        padding: 8.5,
-        paddingTop: 5.5,
-      },
-      android: {
-        padding: 14,
-      }
-    }),
+    backgroundColor: 'transparent',
+    zIndex: 2,
   },
   backIcon: {
-    color: '#dddddd',
+    position: 'absolute',
+    zIndex: 3,
+    paddingTop: 16,
+    paddingLeft: 14,
+    paddingRight: 10,
+    backgroundColor: 'transparent',
+    fontSize: 24,
+    color: '#ddd',
     ...Platform.select({
       ios: {
+        paddingTop: 11,
         fontSize: 33,
-        shadowColor: '#000000',
-        shadowOffset: {
-        },
-        shadowOpacity: 0.8,
       },
-      android: {
-        fontSize: 24,
-        elevation: 2,
-      }
     }),
-  },
-
-  backButtonText: {
-    color: '#dddddd',
-    fontSize: 17,
-    ...Platform.select({
-      ios: {
-        marginTop: 6,
-        marginLeft: 6,
-      },
-      android: {
-        marginLeft: 4,
-      }
-    }),
-
   },
   // container total
   container: {
@@ -944,25 +905,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-start',
     backgroundColor: '#212121',
-  },
-  // barra superior (simulando navigator)
-  topBarOverlay: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    right: 0,
-    backgroundColor: 'black',
-    elevation: 2,
-    width: null,
-    ...Platform.select({
-      ios: {
-        height: 64,
-      },
-      android: {
-        height: 77,
-      }
-    }),
-    zIndex: 1,
   },
   // overlay oscuro para la imagen de cabecera grande
   fanArtOverlay: {
