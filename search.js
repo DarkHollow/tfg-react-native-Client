@@ -467,6 +467,7 @@ class Search extends Component {
               underlineColorAndroid={'transparent'}
               autoCorrect={false}
               clearButtonMode={'always'}
+              returnKeyType={'search'}
               onChangeText={ (text)=> this.setState({searchText: text}) }
               onSubmitEditing={ this.onSubmit.bind(this) }
             />
@@ -702,7 +703,6 @@ const styles = StyleSheet.create({
   },
   notFound: {
     flex: 1,
-    marginTop: -60,
     alignItems: 'center',
     justifyContent: 'center',
   },
