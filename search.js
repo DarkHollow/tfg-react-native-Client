@@ -490,7 +490,7 @@ class Search extends Component {
 
         <KeyboardAvoidingView behavior={'padding'} style={styles.viewBody}>
           {(this.state.showListView) ? (
-            <Animated.View style={{opacity: this.state.listviewOpacity}}>
+            <Animated.View style={[styles.listViewContainer, {opacity: this.state.listviewOpacity}]}>
               <ListView
                 style={styles.listView}
                 dataSource={this.state.dataSource}
@@ -606,6 +606,12 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     zIndex: -1,
   },
+  listViewContainer: {
+    flex: 1,
+  },
+  listView: {
+    flex: 1,
+  },
   listHeader: {
     backgroundColor: '#282828',
     padding: 14,
@@ -653,7 +659,7 @@ const styles = StyleSheet.create({
   rowBottom: {
     flex: 1,
     flexDirection: 'row',
-    padding: 14
+    padding: 14,
   },
   rowBottomLeft: {
     flex: 1,
@@ -704,8 +710,17 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   separatorView: {
+    flex: 1,
+    alignSelf: 'stretch',
     marginTop: 20,
-    marginBottom: 48,
+    ...Platform.select({
+      ios: {
+        paddingBottom: 10,
+      },
+      android: {
+        paddingBottom: 54,
+      },
+    }),
   },
   loader: {
     marginTop: 20
