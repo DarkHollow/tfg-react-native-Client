@@ -711,7 +711,6 @@ const styles = StyleSheet.create({
   },
   separatorView: {
     flex: 1,
-    alignSelf: 'stretch',
     marginTop: 20,
     ...Platform.select({
       ios: {
