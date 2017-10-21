@@ -43,61 +43,29 @@ class TvShow extends Component {
   constructor(props) {
     super(props);
 
-    (Platform.OS === 'ios') ? (
-      this.state = {
-        userId: 0,
-        userName: '',
-        jwt: '',
-        tvShowId: this.props.tvShowId,
-        fetchEnded: false,
-        moreTextReady: false,
-        viewOpacity: 0,
-        tvShowData: {},
-        tvShowGenres: '',
-        scoreAvg: 0,
-        scorePersonal: 0,
-        scrollY: new Animated.Value(0),
-        posterOpacity: new Animated.Value(0),
-        fanartOpacity: new Animated.Value(0),
-        youtubeOpacity: new Animated.Value(0),
-        showVideoPlayer: false,
-        status: null,
-        quality: null,
-        error: null,
-        isPlaying: false,
-        voteModalVisible: false,
-        starSize: 20,
-        starValue: null,
-        voteButtonsDisabled: false,
-        voteModalBottomMessage: ' ',
-        voteModalBottomMessageOpacity: new Animated.Value(0),
-        voteModalLoading: false,
-      }
-    ) : (
-      this.state = {
-        userId: 0,
-        userName: '',
-        jwt: '',
-        tvShowId: this.props.tvShowId,
-        fetchEnded: false,
-        moreTextReady: false,
-        viewOpacity: 0,
-        tvShowData: {},
-        tvShowGenres: '',
-        scoreAvg: 0,
-        scorePersonal: 0,
-        scrollY: new Animated.Value(0),
-        posterOpacity: new Animated.Value(0),
-        fanartOpacity: new Animated.Value(0),
-        voteModalVisible: false,
-        starSize: 20,
-        starValue: null,
-        voteButtonsDisabled: false,
-        voteModalBottomMessage: ' ',
-        voteModalBottomMessageOpacity: new Animated.Value(0),
-        voteModalLoading: false,
-      }
-    );
+    this.state = {
+      userId: 0,
+      userName: '',
+      jwt: '',
+      tvShowId: this.props.tvShowId,
+      fetchEnded: false,
+      moreTextReady: false,
+      viewOpacity: 0,
+      tvShowData: {},
+      tvShowGenres: '',
+      scoreAvg: 0,
+      scorePersonal: 0,
+      scrollY: new Animated.Value(0),
+      posterOpacity: new Animated.Value(0),
+      fanartOpacity: new Animated.Value(0),
+      voteModalVisible: false,
+      starSize: 20,
+      starValue: null,
+      voteButtonsDisabled: false,
+      voteModalBottomMessage: ' ',
+      voteModalBottomMessageOpacity: new Animated.Value(0),
+      voteModalLoading: false,
+    }
   }
 
   // obtener datos usuario
@@ -381,31 +349,6 @@ class TvShow extends Component {
         duration: 500
       }).start();
     }
-  }
-
-  playTrailer() {
-    Animated.timing(this.state.youtubeOpacity, {
-      toValue: 1,
-      duration: 500
-    }).start(() => {
-      this.setState({
-        showVideoPlayer: true,
-        isPlaying: true,
-      });
-    });
-  }
-
-  hideVideoPlayer() {
-    this.setState({isPlaying: false});
-
-    Animated.timing(this.state.youtubeOpacity, {
-      toValue: 0,
-      duration: 500
-    }).start(() => {
-      this.setState({
-        showVideoPlayer: false,
-      });
-    });
   }
 
   onBackPress(navigator) {
@@ -790,7 +733,7 @@ class TvShow extends Component {
 
         </View>
       ) : (
-        <View style={{alignItems: 'center', justifyContent: 'center'}}>
+        <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
           <ActivityIndicator style={styles.loader} size={'large'} color={'rgba(255,149,0,1)'} />
         </View>
       )
