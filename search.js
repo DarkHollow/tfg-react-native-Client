@@ -527,6 +527,14 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     backgroundColor: '#282828',
     elevation: 3,
+    ...Platform.select({
+      ios: {
+        shadowColor: 'rgba(0,0,0,1)',
+        shadowOffset: {width: 0, height: 0},
+        shadowOpacity: 0.4,
+        shadowRadius: 3,
+      },
+    }),
   },
   navBarTitle: {
     paddingLeft: 14,
@@ -596,6 +604,7 @@ const styles = StyleSheet.create({
   viewBody: {
     flex: 1,
     justifyContent: 'flex-start',
+    zIndex: -1,
   },
   listHeader: {
     backgroundColor: '#282828',
