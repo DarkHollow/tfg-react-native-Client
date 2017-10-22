@@ -329,6 +329,12 @@ const styles = StyleSheet.create({
     paddingLeft: 46,
     color: 'white',
     paddingTop: 0,
+    ...Platform.select({
+      android: {
+        fontFamily: 'Roboto-Regular',
+        fontSize: 16,
+      },
+    }),
   },
   accountButtonView: {
     position: 'absolute',

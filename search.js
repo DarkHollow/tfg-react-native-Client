@@ -573,6 +573,10 @@ const styles = StyleSheet.create({
     paddingLeft: 46,
     color: 'white',
     ...Platform.select({
+      android: {
+        fontFamily: 'Roboto-Regular',
+        fontSize: 16,
+      },
       ios: {
         marginTop: 1,
       },
