@@ -524,7 +524,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingLeft: 10,
-    backgroundColor: '#282828',
+    backgroundColor: '#202020',
     elevation: 3,
     ...Platform.select({
       ios: {

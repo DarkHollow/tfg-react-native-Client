@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    backgroundColor: '#1e1e1e',
+    backgroundColor: '#181818',
   },
   navBarView: {
     height: 56,
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingLeft: 10,
-    backgroundColor: '#282828',
+    backgroundColor: '#202020',
     elevation: 1,
   },
   navBarTitle: {

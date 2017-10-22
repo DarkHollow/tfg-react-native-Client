@@ -731,7 +731,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingLeft: 10,
-    backgroundColor: '#282828',
+    backgroundColor: '#202020',
     elevation: 1,
     ...Platform.select({
       ios: {
@@ -794,6 +794,10 @@ const styles = StyleSheet.create({
     paddingLeft: 46,
     color: 'white',
     ...Platform.select({
+      android: {
+        fontFamily: 'Roboto-Regular',
+        fontSize: 16,
+      },
       ios: {
         marginTop: 1,
       },
