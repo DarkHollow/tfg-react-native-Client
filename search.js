@@ -368,6 +368,11 @@ class Search extends Component {
   }
 
   render() {
+    // definición de los botones de los Modal
+
+    // botones del Modal
+    let modalButtons = null;
+
     return(
       <View style={styles.statusBarAndNavView}>
         <StatusBar hidden />
@@ -375,6 +380,33 @@ class Search extends Component {
           renderScene={this.renderScene.bind(this)}
           navigator={this.props.navigator}
         />
+        <Modal
+          animationType={'fade'}
+          transparent
+          onRequestClose={() => {}}
+          visible={this.state.modalVisible}
+        >
+          <View style={styles.modal}>
+            <View style={styles.innerModal}>
+              <Text style={styles.modalTitle}>{this.state.modalTitle}</Text>
+              <Text style={styles.modalMessage}>{this.state.modalMessage}</Text>
+              {(this.state.modalLoading || this.state.modalButtons !== null) ? (
+                <View style={styles.modalBottom}>
+                  <View style={styles.modalBottomTopBorder} />
+                  {(this.state.modalLoading) ? (
+                    <ActivityIndicator style={styles.modalLoader}
+                                       size={'small'} color={'rgba(255,149,0,1)'} />
+                  ) : (
+                    <View style={{flexDirection: 'row'}}>
+                      { modalButtons }
+                    </View>
+                  )}
+
+                </View>
+              ) : ( null )}
+            </View>
+          </View>
+        </Modal>
       </View>
     );
   }
@@ -416,41 +448,8 @@ class Search extends Component {
 
     let { navBarElementsOpacity, searchHeight, searchWidth, searchMarginRight, searchBorderRadius } = this.state;
 
-    // definición de los botones de los Modal
-
-    // botones del Modal
-    let modalButtons = null;
-
     return (
       <View style={styles.container}>
-        <Modal
-          animationType={'fade'}
-          transparent
-          onRequestClose={() => {}}
-          visible={this.state.modalVisible}
-        >
-          <View style={styles.modal}>
-            <View style={styles.innerModal}>
-              <Text style={styles.modalTitle}>{this.state.modalTitle}</Text>
-              <Text style={styles.modalMessage}>{this.state.modalMessage}</Text>
-              {(this.state.modalLoading || this.state.modalButtons !== null) ? (
-                <View style={styles.modalBottom}>
-                  <View style={styles.modalBottomTopBorder} />
-                  {(this.state.modalLoading) ? (
-                    <ActivityIndicator style={styles.modalLoader}
-                                       size={'small'} color={'rgba(255,149,0,1)'} />
-                  ) : (
-                    <View style={{flexDirection: 'row'}}>
-                      { modalButtons }
-                    </View>
-                  )}
-
-                </View>
-              ) : ( null )}
-            </View>
-          </View>
-        </Modal>
-
         <View style={styles.navBarView}>
           <Animated.Text style={[styles.navBarTitle, {opacity: navBarElementsOpacity}]}>Principal</Animated.Text>
           <Animated.View style={[styles.searchView,

@@ -191,21 +191,6 @@ class Login extends Component {
             null
           }
         />
-      </View>
-    );
-  }
-
-  renderScene(route, navigator) {
-
-    const letterOpacity = this.state.letterOpacity.interpolate({
-      inputRange: [0, 300],
-      outputRange: ['rgba(255,255,255,0.2)', 'rgba(255,255,255,1.0)']
-    });
-
-    return (
-      <LinearGradient style={styles.container}
-                      start={{x: 1, y: 0}} end={{x: 0.2, y: 1}}
-                      colors={['#1d1d1d', '#303030']}>
         <Modal
           animationType={'fade'}
           transparent
@@ -225,7 +210,21 @@ class Login extends Component {
             </View>
           </View>
         </Modal>
+      </View>
+    );
+  }
 
+  renderScene(route, navigator) {
+
+    const letterOpacity = this.state.letterOpacity.interpolate({
+      inputRange: [0, 300],
+      outputRange: ['rgba(255,255,255,0.2)', 'rgba(255,255,255,1.0)']
+    });
+
+    return (
+      <LinearGradient style={styles.container}
+                      start={{x: 1, y: 0}} end={{x: 0.2, y: 1}}
+                      colors={['#1d1d1d', '#303030']}>
         <Animated.Image style={[{opacity: this.state.gridBackgroundOpacity}, styles.gridImage]}
                onLoadEnded={this.onBackgroundLoadEnded()}
                blurRadius={8}

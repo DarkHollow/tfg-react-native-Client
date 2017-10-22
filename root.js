@@ -133,25 +133,6 @@ class Root extends Component {
   }
 
   render() {
-    return (
-      <View style={styles.nav}>
-        <StatusBar
-          animated
-          translucent
-          barStyle="light-content"
-          backgroundColor={'transparent'}
-          hidden
-        />
-        <CustomComponents.Navigator
-          renderScene={this.renderScene.bind(this)}
-          navigator={this.props.navigator}
-        />
-      </View>
-    );
-  }
-
-  renderScene(route, navigator) {
-
     // definición de los botones de los Modal
 
     // botones del Modal
@@ -208,10 +189,19 @@ class Root extends Component {
       }
     }
 
-    let { navBarElementsOpacity, searchHeight, searchWidth, searchMarginRight, searchBorderRadius } = this.state;
-
     return (
-      <View style={styles.container}>
+      <View style={styles.nav}>
+        <StatusBar
+          animated
+          translucent
+          barStyle="light-content"
+          backgroundColor={'transparent'}
+          hidden
+        />
+        <CustomComponents.Navigator
+          renderScene={this.renderScene.bind(this)}
+          navigator={this.props.navigator}
+        />
         <Modal
           animationType={'fade'}
           transparent
@@ -239,7 +229,16 @@ class Root extends Component {
             </View>
           </View>
         </Modal>
+      </View>
+    );
+  }
 
+  renderScene(route, navigator) {
+
+    let { navBarElementsOpacity, searchHeight, searchWidth, searchMarginRight, searchBorderRadius } = this.state;
+
+    return (
+      <View style={styles.container}>
         <View style={styles.navBarView}>
           <Animated.Text style={[styles.navBarTitle, {opacity: navBarElementsOpacity}]}>Principal</Animated.Text>
           <Animated.View style={[styles.searchView,
