@@ -382,7 +382,7 @@ class Search extends Component {
   renderScene(route, navigator) {
     let spinner = this.state.showProgress ? (
       <ActivityIndicator style={styles.loader}
-                         size={'small'} color={'#fe3f80'} />
+                         size={'small'} color={'rgba(255,149,0,1)'} />
     ) : ( null );
 
     let notFound = this.state.showNotFound ? (
