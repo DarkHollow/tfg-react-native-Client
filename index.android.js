@@ -123,6 +123,7 @@ export default class TrendingSeriesClient extends Component {
         <LinearGradient style={[styles.container, {alignItems: 'center', justifyContent: 'center'}]}
                         start={{x: 1, y: 0}} end={{x: 0.2, y: 1}}
                         colors={['#1d1d1d', '#303030']}>
+          <StatusBar animated backgroundColor={'transparent'} hidden />
           <ActivityIndicator style={styles.loader}
                              size={'large'} color={'rgba(255,149,0,1)'} />
         </LinearGradient>
@@ -130,7 +131,7 @@ export default class TrendingSeriesClient extends Component {
     } else {
       return (
         <View style={styles.container}>
-          <StatusBar animated backgroundColor={'transparent'}/>
+          <StatusBar animated backgroundColor={'transparent'} hidden />
           <CustomComponents.Navigator
             ref={component => this._navigator = component}
             style={{backgroundColor: '#1e1e1e'}}
