@@ -358,7 +358,7 @@ class TvShow extends Component {
   /* render */
   render() {
     return (
-      <View style={styles.statusBarAndNavView}>
+      <View style={styles.statusBarAndNavView} onLayout={ this.setStarsSpacing }>
         <StatusBar
           animated
           translucent
@@ -370,6 +370,85 @@ class TvShow extends Component {
           renderScene={this.renderScene.bind(this)}
           navigator={this.props.navigator}
         />
+
+        <Modal
+          animationType={'fade'}
+          transparent
+          onRequestClose={ this.dismissVoteModal.bind(this) }
+          visible={this.state.voteModalVisible}
+        >
+          <TouchableWithoutFeedback style={styles.voteModalOutside} onPress={ this.dismissVoteModal.bind(this) }>
+            <View style={styles.voteModal}>
+              <TouchableWithoutFeedback style={styles.voteInnerModalTouchable}>
+                <View style={styles.voteInnerModal}>
+                  <Icon style={styles.closeModal}
+                        name={(Platform.OS === 'ios') ? 'ios-close-outline' : 'md-close'}
+                        onPress={ this.dismissVoteModal.bind(this) } />
+                  <Text style={styles.voteModalTitle}>Votar serie</Text>
+                  <Text style={styles.voteModalTitleName}>{this.state.tvShowData.name}</Text>
+                  <Image style={styles.voteModalPoster} source={this.state.tvShowData.poster !== null ? {uri: this.state.tvShowData.poster} : require('./img/placeholderPoster.png')} />
+                  <Text style={styles.voteModalMessage}>Tu valoración</Text>
+                  <Text style={styles.voteModalNumber}>{(this.state.starValue === null ? '-' : this.state.starValue)}</Text>
+                  <View style={styles.starRating}>
+                    <StarRatingBar
+                      readOnly={false}
+                      continuous={true}
+                      score={this.state.starValue}
+                      maximumValue={10}
+                      spacing={this.state.starSpacing}
+                      starStyle={{width: this.state.starSize, height: this.state.starSize}}
+                      tintColor={'rgba(90,200,250,1)'}
+                      onStarValueChanged={ this.onStarValueChanged }
+                    />
+                  </View>
+                  {(Platform.OS === 'ios') ?
+                    <View style={styles.saveVoteButtonView}>
+                      <TouchableHighlight style={(this.state.starValue !== null ? styles.saveVoteButton : styles.saveVoteButtonDisabled)}
+                                          onPress={(this.state.starValue !== null ? this.saveVote : null)} underlayColor={'rgba(255,179,0,1)'}>
+                        <Text style={styles.saveVoteButtonText}>Guardar voto</Text>
+                      </TouchableHighlight>
+                      <TouchableHighlight style={[(this.state.scorePersonal !== null ? styles.deleteVoteButton : styles.deleteVoteButtonDisabled), styles.lastItem]}
+                                          onPress={(this.state.scorePersonal !== null ? this.deleteVote : null)} underlayColor={'rgba(255,179,0,0.6)'}>
+                        <Text style={styles.saveVoteButtonText}>Eliminar voto</Text>
+                      </TouchableHighlight>
+                    </View>
+                    :
+                    <View style={styles.saveVoteButtonView}>
+                      <TouchableNativeFeedback
+                        onPress={(this.state.starValue !== null ? this.saveVote : null)}
+                        delayPressIn={0}
+                        background={(this.state.starValue !== null ? TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true) : TouchableNativeFeedback.Ripple('rgba(255,224,130,0)', true))}>
+                        <View style={(this.state.starValue !== null ? styles.saveVoteButton : styles.saveVoteButtonDisabled)}>
+                          <Text style={styles.saveVoteButtonText}>Guardar voto</Text>
+                        </View>
+                      </TouchableNativeFeedback>
+                      <TouchableNativeFeedback
+                        onPress={(this.state.scorePersonal !== null ? this.deleteVote : null)}
+                        delayPressIn={0}
+                        background={(this.state.starValue !== null ? TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true) : TouchableNativeFeedback.Ripple('rgba(255,224,130,0)', true))}>
+                        <View style={[(this.state.scorePersonal !== null ? styles.deleteVoteButton : styles.deleteVoteButtonDisabled), styles.lastItem]}>
+                          <Text style={styles.saveVoteButtonText}>Eliminar voto</Text>
+                        </View>
+                      </TouchableNativeFeedback>
+                    </View>
+                  }
+                  <View style={styles.voteModalBottom}>
+                    {(this.state.voteModalLoading) ? (
+                      <View>
+                        <ActivityIndicator style={styles.modalLoader}
+                                           size={'small'} color={'rgba(255,149,0,1)'} />
+                        <Animated.Text style={styles.voteModalBottomMessage}>{this.state.voteModalBottomMessage}</Animated.Text>
+                      </View>
+                    ) : (
+                      <Animated.Text style={[styles.voteModalBottomMessage, {opacity: this.state.voteModalBottomMessageOpacity}]}>{this.state.voteModalBottomMessage}</Animated.Text>
+                    )}
+                  </View>
+
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
       </View>
     );
   }
@@ -403,86 +482,7 @@ class TvShow extends Component {
 
     return (
       (this.state.fetchEnded) ? (
-        <View style={[styles.container, {opacity: this.state.viewOpacity}]} onLayout={ this.setStarsSpacing }>{/* contenedor total incluyendo modals, etc */}
-
-          <Modal
-            animationType={'fade'}
-            transparent
-            onRequestClose={ this.dismissVoteModal.bind(this) }
-            visible={this.state.voteModalVisible}
-          >
-            <TouchableWithoutFeedback style={styles.voteModalOutside} onPress={ this.dismissVoteModal.bind(this) }>
-              <View style={styles.voteModal}>
-                <TouchableWithoutFeedback style={styles.voteInnerModalTouchable}>
-                  <View style={styles.voteInnerModal}>
-                    <Icon style={styles.closeModal}
-                          name={(Platform.OS === 'ios') ? 'ios-close-outline' : 'md-close'}
-                          onPress={ this.dismissVoteModal.bind(this) } />
-                    <Text style={styles.voteModalTitle}>Votar serie</Text>
-                    <Text style={styles.voteModalTitleName}>{this.state.tvShowData.name}</Text>
-                    <Image style={styles.voteModalPoster} source={this.state.tvShowData.poster !== null ? {uri: this.state.tvShowData.poster} : require('./img/placeholderPoster.png')} />
-                    <Text style={styles.voteModalMessage}>Tu valoración</Text>
-                    <Text style={styles.voteModalNumber}>{(this.state.starValue === null ? '-' : this.state.starValue)}</Text>
-                    <View style={styles.starRating}>
-                      <StarRatingBar
-                        readOnly={false}
-                        continuous={true}
-                        score={this.state.starValue}
-                        maximumValue={10}
-                        spacing={this.state.starSpacing}
-                        starStyle={{width: this.state.starSize, height: this.state.starSize}}
-                        tintColor={'rgba(90,200,250,1)'}
-                        onStarValueChanged={ this.onStarValueChanged }
-                      />
-                    </View>
-                    {(Platform.OS === 'ios') ?
-                      <View style={styles.saveVoteButtonView}>
-                        <TouchableHighlight style={(this.state.starValue !== null ? styles.saveVoteButton : styles.saveVoteButtonDisabled)}
-                                            onPress={(this.state.starValue !== null ? this.saveVote : null)} underlayColor={'rgba(255,179,0,1)'}>
-                          <Text style={styles.saveVoteButtonText}>Guardar voto</Text>
-                        </TouchableHighlight>
-                        <TouchableHighlight style={[(this.state.scorePersonal !== null ? styles.deleteVoteButton : styles.deleteVoteButtonDisabled), styles.lastItem]}
-                                            onPress={(this.state.scorePersonal !== null ? this.deleteVote : null)} underlayColor={'rgba(255,179,0,0.6)'}>
-                          <Text style={styles.saveVoteButtonText}>Eliminar voto</Text>
-                        </TouchableHighlight>
-                      </View>
-                      :
-                      <View style={styles.saveVoteButtonView}>
-                        <TouchableNativeFeedback
-                          onPress={(this.state.starValue !== null ? this.saveVote : null)}
-                          delayPressIn={0}
-                          background={(this.state.starValue !== null ? TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true) : TouchableNativeFeedback.Ripple('rgba(255,224,130,0)', true))}>
-                          <View style={(this.state.starValue !== null ? styles.saveVoteButton : styles.saveVoteButtonDisabled)}>
-                            <Text style={styles.saveVoteButtonText}>Guardar voto</Text>
-                          </View>
-                        </TouchableNativeFeedback>
-                        <TouchableNativeFeedback
-                          onPress={(this.state.scorePersonal !== null ? this.deleteVote : null)}
-                          delayPressIn={0}
-                          background={(this.state.starValue !== null ? TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true) : TouchableNativeFeedback.Ripple('rgba(255,224,130,0)', true))}>
-                          <View style={[(this.state.scorePersonal !== null ? styles.deleteVoteButton : styles.deleteVoteButtonDisabled), styles.lastItem]}>
-                            <Text style={styles.saveVoteButtonText}>Eliminar voto</Text>
-                          </View>
-                        </TouchableNativeFeedback>
-                      </View>
-                    }
-                    <View style={styles.voteModalBottom}>
-                      {(this.state.voteModalLoading) ? (
-                        <View>
-                          <ActivityIndicator style={styles.modalLoader}
-                                             size={'small'} color={'rgba(255,149,0,1)'} />
-                          <Animated.Text style={styles.voteModalBottomMessage}>{this.state.voteModalBottomMessage}</Animated.Text>
-                        </View>
-                      ) : (
-                        <Animated.Text style={[styles.voteModalBottomMessage, {opacity: this.state.voteModalBottomMessageOpacity}]}>{this.state.voteModalBottomMessage}</Animated.Text>
-                      )}
-                    </View>
-
-                  </View>
-                </TouchableWithoutFeedback>
-              </View>
-            </TouchableWithoutFeedback>
-          </Modal>
+        <View style={[styles.container, {opacity: this.state.viewOpacity}]}>{/* contenedor total incluyendo modals, etc */}
 
           {/* contenedor de la vista */}
           <View style={styles.containerDark}>
