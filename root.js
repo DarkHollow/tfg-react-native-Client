@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    backgroundColor: '#181818',
+    backgroundColor: '#141414',
   },
   navBarView: {
     height: 56,
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingLeft: 10,
-    backgroundColor: '#202020',
+    backgroundColor: '#1f1f1f',
     elevation: 1,
   },
   navBarTitle: {
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
   searchView: {
     flexDirection: 'row',
     position: 'absolute',
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: 'rgba(255,255,255,0.07)',
   },
   searchIcon: {
     position: 'absolute',

@@ -651,7 +651,7 @@ class RequestTvShow extends Component {
         </View>
         <Text style={styles.notFoundText}>Sin resultados</Text>
         <View style={styles.solicitarSerie}>
-          <Text style={styles.solicitarSerieQuestion}>Al parecer no podemos encontrar ni dentro ni fuera la serie que buscas =(</Text>
+          <Text style={styles.solicitarSerieQuestion}>Al parecer no podemos encontrar ni dentro ni fuera la serie que buscas</Text>
         </View>
       </Animated.View>
     ) : ( null );
@@ -714,7 +714,7 @@ class RequestTvShow extends Component {
 
 const styles = StyleSheet.create({
   doubleNavBar: {
-    backgroundColor: '#282828',
+    backgroundColor: '#1f1f1f',
     elevation: 3,
     ...Platform.select({
       ios: {
@@ -731,7 +731,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingLeft: 10,
-    backgroundColor: '#202020',
+    backgroundColor: '#1f1f1f',
     elevation: 1,
     ...Platform.select({
       ios: {
@@ -755,7 +755,7 @@ const styles = StyleSheet.create({
   searchView: {
     flexDirection: 'row',
     height: 56,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: 'rgba(255,255,255,0.07)',
   },
   backIcon: {
     position: 'absolute',
@@ -809,7 +809,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'column',
-    backgroundColor: '#1e1e1e',
+    backgroundColor: '#141414',
   },
   viewBody: {
     flex: 1,
@@ -823,7 +823,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listHeader: {
-    backgroundColor: '#282828',
+    backgroundColor: '#1f1f1f',
     padding: 14,
     paddingTop: 8,
     paddingBottom: 8,
@@ -856,7 +856,7 @@ const styles = StyleSheet.create({
   rowTouch: {
     flex: 1,
     elevation: 2,
-    backgroundColor: '#333333',
+    backgroundColor: '#202020',
     marginTop: 10,
     marginBottom: 4,
   },
@@ -932,7 +932,7 @@ const styles = StyleSheet.create({
     padding: 3,
     paddingLeft: 6,
     paddingRight: 6,
-    backgroundColor: '#444',
+    backgroundColor: 'rgba(255, 255, 255, 0.07)',
     borderRadius: 3,
   },
   localText: {
@@ -979,8 +979,7 @@ const styles = StyleSheet.create({
     paddingLeft: 8,
     paddingRight: 6,
     paddingBottom: 2,
-    //backgroundColor: 'rgba(255,149,0,0.2)',
-    backgroundColor: '#444',
+    backgroundColor: 'rgba(255, 255, 255, 0.07)',
     borderRadius: 3,
     ...Platform.select({
       android: {
@@ -1048,7 +1047,7 @@ const styles = StyleSheet.create({
   notFoundCircle: {
     height: 120,
     width: 120,
-    backgroundColor: '#232323',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 30,
@@ -1056,12 +1055,12 @@ const styles = StyleSheet.create({
   },
   notFoundIcon: {
     fontSize: 50,
-    color: '#323232'
+    color: 'rgba(255, 255, 255, 0.1)',
   },
   notFoundText: {
     marginTop: 10,
     fontSize: 20,
-    color: '#989898',
+    color: 'rgba(255, 255, 255, 0.5)',
   },
   requestLoader: {
     marginRight: 4,
@@ -1076,7 +1075,8 @@ const styles = StyleSheet.create({
         fontFamily: 'Roboto-Regular',
       },
     }),
-    color: '#989898',
+    color: 'rgba(255, 255, 255, 0.6)',
+    textAlign: 'center'
   },
   solicitarSerieButtonView: {
     borderRadius: 5,
