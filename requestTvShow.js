@@ -526,7 +526,7 @@ class RequestTvShow extends Component {
                         <View style={styles.rowBottomRightRequested}>
                           <View style={styles.requested}>
                             <Icon name='md-time' style={styles.requestedIcon} />
-                            <Text style={styles.processingText}>Solicitada</Text>
+                            <Text style={styles.requestedText}>Solicitada</Text>
                           </View>
                         </View>
                       ) : (
@@ -942,7 +942,7 @@ const styles = StyleSheet.create({
       },
     }),
     fontSize: 12,
-    color: '#aaaaaa'
+    color: 'rgba(255, 255, 255, 0.6)',
   },
   rowBottomRightRequest: {
     elevation: 1,
@@ -995,21 +995,20 @@ const styles = StyleSheet.create({
     ...Platform.select({
       android: {
         fontFamily: 'Roboto-Regular',
-        paddingTop: 0,
       },
     }),
     fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.45)',
+    color: 'rgba(255, 255, 255, 0.6)',
     marginRight: 3,
   },
   requestedIcon: {
     ...Platform.select({
       android: {
-        paddingTop: 2,
+        paddingTop: 1,
       },
     }),
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.45)',
+    color: 'rgba(255, 255, 255, 0.6)',
     marginRight: 5,
   },
   processing: {
