@@ -247,7 +247,7 @@ class Register extends Component {
                     returnKeyType={'next'}
                     iconClass={Icon}
                     iconName={(Platform.OS === 'ios') ? 'ios-mail-outline' : 'md-mail'}
-                    iconColor={'rgba(255,255,255,0.5)'}
+                    iconColor={'rgba(255,255,255,0.6)'}
                     iconBackgroundColor={'transparent'}
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
@@ -270,7 +270,7 @@ class Register extends Component {
                     secureTextEntry
                     iconClass={Icon}
                     iconName={(Platform.OS === 'ios') ? 'ios-lock-outline' : 'md-lock'}
-                    iconColor={'rgba(255,255,255,0.5)'}
+                    iconColor={'rgba(255,255,255,0.6)'}
                     iconBackgroundColor={'transparent'}
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
@@ -293,7 +293,7 @@ class Register extends Component {
                     secureTextEntry
                     iconClass={Icon}
                     iconName={(Platform.OS === 'ios') ? 'ios-lock-outline' : 'md-lock'}
-                    iconColor={'rgba(255,255,255,0.5)'}
+                    iconColor={'rgba(255,255,255,0.6)'}
                     iconBackgroundColor={'transparent'}
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
@@ -315,7 +315,7 @@ class Register extends Component {
                     blurOnSubmit={false}
                     iconClass={Icon}
                     iconName={(Platform.OS === 'ios') ? 'ios-person-outline' : 'md-person'}
-                    iconColor={'rgba(255,255,255,0.5)'}
+                    iconColor={'rgba(255,255,255,0.6)'}
                     iconBackgroundColor={'transparent'}
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
@@ -384,14 +384,14 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   viewBody: {
-    flex: 5,
-    backgroundColor: 'transparent',
+    flex: 1,
   },
   principalView: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
+
   },
   principalTitleText: {
     marginBottom: 20,
@@ -421,23 +421,23 @@ const styles = StyleSheet.create({
   },
   inputView: {
     marginLeft: -12,
-    height: 46,
+    height: 53,
     alignSelf: 'stretch',
-    //borderBottomWidth: 0.5,
-    //borderColor: 'rgba(255,255,255,0.5)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    marginBottom: 10,
   },
   input: {
     marginLeft: -20,
-    height: 36,
-    marginTop: 7,
+    height: 51,
     backgroundColor: 'transparent',//backgroundColor: 'rgba(255,255,255,0.07)',
     color: 'rgba(255,255,255,0.8)',
-    fontSize: 14,
+    fontSize: 16,
     borderRadius: 5,
     ...Platform.select({
       android: {
         fontFamily: 'Roboto-Light',
-        fontSize: 16,
       },
     }),
   },
@@ -467,9 +467,6 @@ const styles = StyleSheet.create({
     }),
   },
   bottomView: {
-    flex: 1,
-    marginLeft: -100,
-    marginRight: -100,
     justifyContent: 'flex-end',
     alignItems: 'center',
     paddingBottom: 50,

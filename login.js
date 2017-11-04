@@ -249,7 +249,7 @@ class Login extends Component {
                     returnKeyType={'next'}
                     iconClass={Icon}
                     iconName={(Platform.OS === 'ios') ? 'ios-mail-outline' : 'md-mail'}
-                    iconColor={'rgba(255,255,255,0.5)'}
+                    iconColor={'rgba(255,255,255,0.6)'}
                     iconBackgroundColor={'transparent'}
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
@@ -272,7 +272,7 @@ class Login extends Component {
                     secureTextEntry
                     iconClass={Icon}
                     iconName={(Platform.OS === 'ios') ? 'ios-lock-outline' : 'md-lock'}
-                    iconColor={'rgba(255,255,255,0.5)'}
+                    iconColor={'rgba(255,255,255,0.6)'}
                     iconBackgroundColor={'transparent'}
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
@@ -379,21 +379,23 @@ const styles = StyleSheet.create({
   },
   inputView: {
     marginLeft: -12,
-    height: 47,
+    height: 53,
     alignSelf: 'stretch',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    marginBottom: 10,
   },
   input: {
     marginLeft: -20,
-    height: 36,
-    marginTop: 7,
+    height: 51,
     backgroundColor: 'transparent',
     color: 'rgba(255,255,255,0.8)',
-    fontSize: 14,
+    fontSize: 16,
     borderRadius: 5,
     ...Platform.select({
       android: {
         fontFamily: 'Roboto-Light',
-        fontSize: 16,
       },
     }),
   },
