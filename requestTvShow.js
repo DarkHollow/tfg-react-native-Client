@@ -208,7 +208,6 @@ class RequestTvShow extends Component {
         result = URLTVDB + TVDBBANNERS + uri.substring(0);
       }
     }
-    console.log(result);
     return result;
   }
 
@@ -424,7 +423,7 @@ class RequestTvShow extends Component {
                     <View style={styles.localView}>
                       <Text style={styles.localText}>En local</Text>
                     </View>
-                    <Text style={styles.ratingText}>4,7</Text>
+                    <Text style={styles.ratingText}>{(rowData.voteCount === 0) ? 'Sin votos' : rowData.score}</Text>
                     <Icon name='ios-star' style={styles.ratingIcon} />
                   </View>
                 </View>
@@ -516,7 +515,7 @@ class RequestTvShow extends Component {
                         <View style={styles.localView}>
                           <Text style={styles.localText}>En local</Text>
                         </View>
-                        <Text style={styles.ratingText}>4,7</Text>
+                        <Text style={styles.ratingText}>{(rowData.voteCount === 0) ? 'Sin votos' : rowData.score}</Text>
                         <Icon name='md-star' style={styles.ratingIcon} />
                       </View>
                     </View>
