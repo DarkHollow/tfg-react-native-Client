@@ -791,7 +791,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     borderRadius: 10,
     alignItems: 'center',
-    backgroundColor: '#212121',
+    backgroundColor: '#1f1f1f',
     ...Platform.select({
       ios: {
         shadowColor: 'rgba(0,0,0,1)',

@@ -1237,7 +1237,7 @@ const styles = StyleSheet.create({
   voteInnerModal: {
     padding: 20,
     borderRadius: 10,
-    backgroundColor: '#212121',
+    backgroundColor: '#1f1f1f',
     ...Platform.select({
       ios: {
         shadowColor: 'rgba(0,0,0,1)',
