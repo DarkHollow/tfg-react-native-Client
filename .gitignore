@@ -29,16 +29,34 @@ build/
 .gradle
 local.properties
 *.iml
+gen
 
 # node.js
 #
-node_modules/
+node_modules/*
+# unignore some files from node_modules
+## Navigator files from deprecated custom components
+!node_modules/react-native-deprecated-custom-components
+node_modules/react-native-deprecated-custom-components/*
+!node_modules/react-native-deprecated-custom-components/src
+node_modules/react-native-deprecated-custom-components/src/*
+!node_modules/react-native-deprecated-custom-components/src/NavigatorNavigationBarStylesAndroid.js
+!node_modules/react-native-deprecated-custom-components/src/NavigatorSceneConfigs.js
+## Ichigo TextInput component from textinput effects
+!node_modules/react-native-textinput-effects
+node_modules/react-native-textinput-effects/*
+!node_modules/react-native-textinput-effects/lib
+node_modules/react-native-textinput-effects/lib/*
+!node_modules/react-native-textinput-effects/lib/BaseInput.js
+!node_modules/react-native-textinput-effects/lib/Ichigo.js
+!node_modules/react-native-textinput-effects/lib/index.js
+
 npm-debug.log
+yarn-error.log
 
 # BUCK
 buck-out/
 \.buckd/
-android/app/libs
 *.keystore
 
 # fastlane

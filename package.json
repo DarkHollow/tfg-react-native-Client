@@ -7,17 +7,23 @@
     "test": "jest"
   },
   "dependencies": {
-    "react": "15.4.1",
-    "react-native": "^0.40.0",
+    "@expo/react-native-read-more-text": "^1.1.0",
+    "crypto-js": "^3.1.9-1",
+    "react": "^16.0.0-alpha.6",
+    "react-native": "^0.44.0",
+    "react-native-deprecated-custom-components": "^0.1.1",
+    "react-native-linear-gradient": "^2.0.0",
+    "react-native-star-rating-view": "git+https://github.com/DarkHollow/react-native-star-rating-view.git",
     "react-native-textinput-effects": "^0.3.0",
-    "react-native-vector-icons": "^4.0.0",
-    "react-native-youtube": "git+https://github.com/joncursi/react-native-youtube.git"
+    "react-native-vector-icons": "^4.0.0"
   },
   "devDependencies": {
     "babel-jest": "18.0.0",
     "babel-preset-react-native": "1.9.1",
+    "install": "^0.9.4",
     "jest": "18.1.0",
-    "react-test-renderer": "15.4.1"
+    "npm": "^4.5.0",
+    "react-test-renderer": "^16.0.0-alpha.6"
   },
   "jest": {
     "preset": "react-native"
