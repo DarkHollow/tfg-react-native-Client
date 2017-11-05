@@ -251,7 +251,7 @@ class Login extends Component {
                     iconName={(Platform.OS === 'ios') ? 'ios-mail-outline' : 'md-mail'}
                     iconColor={'rgba(255,255,255,0.6)'}
                     iconBackgroundColor={'transparent'}
-                    iconPaddingTop={3}
+                    iconPaddingTop={(Platform.OS === 'ios') ? 3 : 3}
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
                     onChangeText={ (text) => this.setState({emailText: text}) }
@@ -275,7 +275,7 @@ class Login extends Component {
                     iconName={(Platform.OS === 'ios') ? 'ios-lock-outline' : 'md-lock'}
                     iconColor={'rgba(255,255,255,0.6)'}
                     iconBackgroundColor={'transparent'}
-                    iconPaddingTop={2}
+                    iconPaddingTop={(Platform.OS === 'ios') ? 0 : 2}
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
                     onChangeText={ (text) => this.setState({passwordText: text}) }

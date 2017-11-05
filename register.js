@@ -249,7 +249,7 @@ class Register extends Component {
                     iconName={(Platform.OS === 'ios') ? 'ios-mail-outline' : 'md-mail'}
                     iconColor={'rgba(255,255,255,0.6)'}
                     iconBackgroundColor={'transparent'}
-                    iconPaddingTop={3}
+                    iconPaddingTop={(Platform.OS === 'ios') ? 3 : 3}
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
                     onChangeText={ (text) => this.setState({emailText: text}) }
@@ -273,7 +273,7 @@ class Register extends Component {
                     iconName={(Platform.OS === 'ios') ? 'ios-lock-outline' : 'md-lock'}
                     iconColor={'rgba(255,255,255,0.6)'}
                     iconBackgroundColor={'transparent'}
-                    iconPaddingTop={2}
+                    iconPaddingTop={(Platform.OS === 'ios') ? 0 : 2}
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
                     onChangeText={ (text) => this.setState({password1Text: text}) }
@@ -297,7 +297,7 @@ class Register extends Component {
                     iconName={(Platform.OS === 'ios') ? 'ios-lock-outline' : 'md-lock'}
                     iconColor={'rgba(255,255,255,0.6)'}
                     iconBackgroundColor={'transparent'}
-                    iconPaddingTop={2}
+                    iconPaddingTop={(Platform.OS === 'ios') ? 0 : 2}
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
                     onChangeText={ (text) => this.setState({password2Text: text}) }
@@ -320,7 +320,7 @@ class Register extends Component {
                     iconName={(Platform.OS === 'ios') ? 'ios-person-outline' : 'md-person'}
                     iconColor={'rgba(255,255,255,0.6)'}
                     iconBackgroundColor={'transparent'}
-                    iconPaddingTop={2}
+                    iconPaddingTop={(Platform.OS === 'ios') ? 1 : 2}
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
                     onChangeText={ (text) => this.setState({nameText: text}) }
@@ -402,6 +402,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Blacklisted',
     fontSize: 40,
     color: 'rgba(255,255,255,1)',
+    backgroundColor: 'transparent',
     ...Platform.select({
       ios: {
         paddingTop: 10,
@@ -410,6 +411,7 @@ const styles = StyleSheet.create({
   },
   principalTitleSecondText: {
     color: 'rgba(255,149,0,1)',
+    backgroundColor: 'transparent',
   },
   lightOff: {
     color: 'rgba(255,255,255,0.35)',
@@ -417,6 +419,7 @@ const styles = StyleSheet.create({
   principalText: {
     marginBottom: 20,
     color: 'rgba(255,255,255,0.70)',
+    backgroundColor: 'transparent',
     ...Platform.select({
       android: {
         fontFamily: 'Roboto-Regular',
