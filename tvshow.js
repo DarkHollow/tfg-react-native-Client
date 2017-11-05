@@ -16,6 +16,7 @@ import {
   ActivityIndicator,
   Image,
 } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import CustomComponents from 'react-native-deprecated-custom-components';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ReadMore from '@expo/react-native-read-more-text';
@@ -42,61 +43,29 @@ class TvShow extends Component {
   constructor(props) {
     super(props);
 
-    (Platform.OS === 'ios') ? (
-      this.state = {
-        userId: 0,
-        userName: '',
-        jwt: '',
-        tvShowId: this.props.tvShowId,
-        fetchEnded: false,
-        moreTextReady: false,
-        viewOpacity: 0,
-        tvShowData: {},
-        tvShowGenres: '',
-        scoreAvg: 0,
-        scorePersonal: 0,
-        scrollY: new Animated.Value(0),
-        posterOpacity: new Animated.Value(0),
-        fanartOpacity: new Animated.Value(0),
-        youtubeOpacity: new Animated.Value(0),
-        showVideoPlayer: false,
-        status: null,
-        quality: null,
-        error: null,
-        isPlaying: false,
-        voteModalVisible: false,
-        starSize: 20,
-        starValue: null,
-        voteButtonsDisabled: false,
-        voteModalBottomMessage: ' ',
-        voteModalBottomMessageOpacity: new Animated.Value(0),
-        voteModalLoading: false,
-      }
-    ) : (
-      this.state = {
-        userId: 0,
-        userName: '',
-        jwt: '',
-        tvShowId: this.props.tvShowId,
-        fetchEnded: false,
-        moreTextReady: false,
-        viewOpacity: 0,
-        tvShowData: {},
-        tvShowGenres: '',
-        scoreAvg: 0,
-        scorePersonal: 0,
-        scrollY: new Animated.Value(0),
-        posterOpacity: new Animated.Value(0),
-        fanartOpacity: new Animated.Value(0),
-        voteModalVisible: false,
-        starSize: 20,
-        starValue: null,
-        voteButtonsDisabled: false,
-        voteModalBottomMessage: ' ',
-        voteModalBottomMessageOpacity: new Animated.Value(0),
-        voteModalLoading: false,
-      }
-    );
+    this.state = {
+      userId: 0,
+      userName: '',
+      jwt: '',
+      tvShowId: this.props.tvShowId,
+      fetchEnded: false,
+      moreTextReady: false,
+      viewOpacity: 0,
+      tvShowData: {},
+      tvShowGenres: '',
+      scoreAvg: 0,
+      scorePersonal: 0,
+      scrollY: new Animated.Value(0),
+      posterOpacity: new Animated.Value(0),
+      fanartOpacity: new Animated.Value(0),
+      voteModalVisible: false,
+      starSize: 20,
+      starValue: null,
+      voteButtonsDisabled: false,
+      voteModalBottomMessage: ' ',
+      voteModalBottomMessageOpacity: new Animated.Value(0),
+      voteModalLoading: false,
+    }
   }
 
   // obtener datos usuario
@@ -212,13 +181,11 @@ class TvShow extends Component {
 
   dismissVoteModal() {
     //e.preventDefault();
-    console.log("cancelar modal");
     this.setVoteModalVisible(false, false);
   };
 
   showVoteModal = (e) => {
     //e.preventDefault();
-    console.log('mostrando modal');
     this.setVoteModalVisible(true, false);
     // ponemos nota de usuario
     this.setState({starValue: this.state.scorePersonal })
@@ -229,7 +196,10 @@ class TvShow extends Component {
       Animated.timing(this.state.voteModalBottomMessageOpacity, {
         toValue: 0,
         duration: 500
-      }).start(() => { this.setState({ voteModalBottomMessage: ' ' }) });
+      }).start(() => {
+        this.setState({ voteModalBottomMessage: ' ' });
+        this.dismissVoteModal();
+      });
     }
   }
 
@@ -381,35 +351,14 @@ class TvShow extends Component {
     }
   }
 
-  playTrailer() {
-    Animated.timing(this.state.youtubeOpacity, {
-      toValue: 1,
-      duration: 500
-    }).start(() => {
-      this.setState({
-        showVideoPlayer: true,
-        isPlaying: true,
-      });
-    });
-  }
-
-  hideVideoPlayer() {
-    this.setState({isPlaying: false});
-
-    Animated.timing(this.state.youtubeOpacity, {
-      toValue: 0,
-      duration: 500
-    }).start(() => {
-      this.setState({
-        showVideoPlayer: false,
-      });
-    });
+  onBackPress(navigator) {
+    navigator.parentNavigator.pop();
   }
 
   /* render */
   render() {
     return (
-      <View style={styles.statusBarAndNavView}>
+      <View style={styles.statusBarAndNavView} onLayout={ this.setStarsSpacing }>
         <StatusBar
           animated
           translucent
@@ -420,12 +369,86 @@ class TvShow extends Component {
         <CustomComponents.Navigator
           renderScene={this.renderScene.bind(this)}
           navigator={this.props.navigator}
-          navigationBar={
-            <CustomComponents.Navigator.NavigationBar
-              routeMapper={NavigationBarRouteMapper(this)}
-              style={styles.nav} />
-          }
         />
+
+        <Modal
+          animationType={'fade'}
+          transparent
+          onRequestClose={ this.dismissVoteModal.bind(this) }
+          visible={this.state.voteModalVisible}
+        >
+          <TouchableWithoutFeedback style={styles.voteModalOutside} onPress={ this.dismissVoteModal.bind(this) }>
+            <View style={styles.voteModal}>
+              <TouchableWithoutFeedback style={styles.voteInnerModalTouchable}>
+                <View style={styles.voteInnerModal}>
+                  <Icon style={styles.closeModal}
+                        name={(Platform.OS === 'ios') ? 'ios-close-outline' : 'md-close'}
+                        onPress={ this.dismissVoteModal.bind(this) } />
+                  <Text style={styles.voteModalTitle}>Votar serie</Text>
+                  <Text style={styles.voteModalTitleName}>{this.state.tvShowData.name}</Text>
+                  <Image style={styles.voteModalPoster} source={this.state.tvShowData.poster !== null ? {uri: this.state.tvShowData.poster} : require('./img/placeholderPoster.png')} />
+                  <Text style={styles.voteModalMessage}>Tu valoración</Text>
+                  <Text style={styles.voteModalNumber}>{(this.state.starValue === null ? '-' : this.state.starValue)}</Text>
+                  <View style={styles.starRating}>
+                    <StarRatingBar
+                      readOnly={false}
+                      continuous={true}
+                      score={this.state.starValue}
+                      maximumValue={10}
+                      spacing={this.state.starSpacing}
+                      starStyle={{width: this.state.starSize, height: this.state.starSize}}
+                      tintColor={'rgba(90,200,250,1)'}
+                      onStarValueChanged={ this.onStarValueChanged }
+                    />
+                  </View>
+                  {(Platform.OS === 'ios') ?
+                    <View style={styles.saveVoteButtonView}>
+                      <TouchableHighlight style={(this.state.starValue !== null ? styles.saveVoteButton : styles.saveVoteButtonDisabled)}
+                                          onPress={(this.state.starValue !== null ? this.saveVote : null)} underlayColor={'rgba(255,179,0,1)'}>
+                        <Text style={styles.saveVoteButtonText}>Guardar voto</Text>
+                      </TouchableHighlight>
+                      <TouchableHighlight style={[(this.state.scorePersonal !== null ? styles.deleteVoteButton : styles.deleteVoteButtonDisabled), styles.lastItem]}
+                                          onPress={(this.state.scorePersonal !== null ? this.deleteVote : null)} underlayColor={'rgba(255,179,0,0.6)'}>
+                        <Text style={styles.saveVoteButtonText}>Eliminar voto</Text>
+                      </TouchableHighlight>
+                    </View>
+                    :
+                    <View style={styles.saveVoteButtonView}>
+                      <TouchableNativeFeedback
+                        onPress={(this.state.starValue !== null ? this.saveVote : null)}
+                        delayPressIn={0}
+                        background={(this.state.starValue !== null ? TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true) : TouchableNativeFeedback.Ripple('rgba(255,224,130,0)', true))}>
+                        <View style={(this.state.starValue !== null ? styles.saveVoteButton : styles.saveVoteButtonDisabled)}>
+                          <Text style={styles.saveVoteButtonText}>Guardar voto</Text>
+                        </View>
+                      </TouchableNativeFeedback>
+                      <TouchableNativeFeedback
+                        onPress={(this.state.scorePersonal !== null ? this.deleteVote : null)}
+                        delayPressIn={0}
+                        background={(this.state.starValue !== null ? TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true) : TouchableNativeFeedback.Ripple('rgba(255,224,130,0)', true))}>
+                        <View style={[(this.state.scorePersonal !== null ? styles.deleteVoteButton : styles.deleteVoteButtonDisabled), styles.lastItem]}>
+                          <Text style={styles.saveVoteButtonText}>Eliminar voto</Text>
+                        </View>
+                      </TouchableNativeFeedback>
+                    </View>
+                  }
+                  <View style={styles.voteModalBottom}>
+                    {(this.state.voteModalLoading) ? (
+                      <View>
+                        <ActivityIndicator style={styles.modalLoader}
+                                           size={'small'} color={'rgba(255,149,0,1)'} />
+                        <Animated.Text style={styles.voteModalBottomMessage}>{this.state.voteModalBottomMessage}</Animated.Text>
+                      </View>
+                    ) : (
+                      <Animated.Text style={[styles.voteModalBottomMessage, {opacity: this.state.voteModalBottomMessageOpacity}]}>{this.state.voteModalBottomMessage}</Animated.Text>
+                    )}
+                  </View>
+
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
       </View>
     );
   }
@@ -455,90 +478,26 @@ class TvShow extends Component {
       null
     );
 
+    const LinearGradientAnimated = Animated.createAnimatedComponent(LinearGradient);
+
     return (
       (this.state.fetchEnded) ? (
-        <View style={[styles.container, {opacity: this.state.viewOpacity}]} onLayout={ this.setStarsSpacing }>{/* contenedor total incluyendo modals, etc */}
-
-          <Modal
-            animationType={'fade'}
-            transparent
-            onRequestClose={ this.dismissVoteModal }
-            visible={this.state.voteModalVisible}
-          >
-            <TouchableWithoutFeedback style={styles.voteModalOutside} onPress={ this.dismissVoteModal.bind(this) }>
-              <View style={styles.voteModal}>
-                <TouchableWithoutFeedback style={styles.voteInnerModalTouchable}>
-                  <View style={styles.voteInnerModal}>
-                    <Text style={styles.voteModalTitle}>Votar serie</Text>
-                    <Text style={styles.voteModalTitleName}>{this.state.tvShowData.name}</Text>
-                    <Image style={styles.voteModalPoster} source={this.state.tvShowData.poster !== null ? {uri: this.state.tvShowData.poster} : require('./img/placeholderPoster.png')} />
-                    <Text style={styles.voteModalMessage}>Tu valoración</Text>
-                    <Text style={styles.voteModalNumber}>{(this.state.starValue === null ? '-' : this.state.starValue)}</Text>
-                    <View style={styles.starRating}>
-                      <StarRatingBar
-                        readOnly={false}
-                        continuous={true}
-                        score={this.state.starValue}
-                        maximumValue={10}
-                        spacing={this.state.starSpacing}
-                        starStyle={{width: this.state.starSize, height: this.state.starSize}}
-                        tintColor={'rgba(90,200,250,1)'}
-                        onStarValueChanged={ this.onStarValueChanged }
-                      />
-                    </View>
-                    {(Platform.OS === 'ios') ?
-                      <View style={styles.saveVoteButtonView}>
-                        <TouchableHighlight style={(this.state.starValue !== null ? styles.saveVoteButton : styles.saveVoteButtonDisabled)}
-                                            onPress={(this.state.starValue !== null ? this.saveVote : null)} underlayColor={'rgba(255,179,0,1)'}>
-                          <Text style={styles.saveVoteButtonText}>Guardar voto</Text>
-                        </TouchableHighlight>
-                        <TouchableHighlight style={[(this.state.scorePersonal !== null ? styles.deleteVoteButton : styles.deleteVoteButtonDisabled), styles.lastItem]}
-                                            onPress={(this.state.scorePersonal !== null ? this.deleteVote : null)} underlayColor={'rgba(255,179,0,0.6)'}>
-                          <Text style={styles.saveVoteButtonText}>Eliminar voto</Text>
-                        </TouchableHighlight>
-                      </View>
-                      :
-                      <View style={styles.saveVoteButtonView}>
-                        <TouchableNativeFeedback
-                          onPress={(this.state.starValue !== null ? this.saveVote : null)}
-                          delayPressIn={0}
-                          background={(this.state.starValue !== null ? TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true) : TouchableNativeFeedback.Ripple('rgba(255,224,130,0)', true))}>
-                          <View style={(this.state.starValue !== null ? styles.saveVoteButton : styles.saveVoteButtonDisabled)}>
-                            <Text style={styles.saveVoteButtonText}>Guardar voto</Text>
-                          </View>
-                        </TouchableNativeFeedback>
-                        <TouchableNativeFeedback
-                          onPress={(this.state.scorePersonal !== null ? this.deleteVote : null)}
-                          delayPressIn={0}
-                          background={(this.state.starValue !== null ? TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true) : TouchableNativeFeedback.Ripple('rgba(255,224,130,0)', true))}>
-                          <View style={[(this.state.scorePersonal !== null ? styles.deleteVoteButton : styles.deleteVoteButtonDisabled), styles.lastItem]}>
-                            <Text style={styles.saveVoteButtonText}>Eliminar voto</Text>
-                          </View>
-                        </TouchableNativeFeedback>
-                      </View>
-                    }
-                    <View style={styles.voteModalBottom}>
-                      {(this.state.voteModalLoading) ? (
-                        <View>
-                          <ActivityIndicator style={styles.modalLoader}
-                                             size={'small'} color={'rgba(255,149,0,1)'} />
-                          <Animated.Text style={styles.voteModalBottomMessage}>{this.state.voteModalBottomMessage}</Animated.Text>
-                        </View>
-                      ) : (
-                        <Animated.Text style={[styles.voteModalBottomMessage, {opacity: this.state.voteModalBottomMessageOpacity}]}>{this.state.voteModalBottomMessage}</Animated.Text>
-                      )}
-                    </View>
-
-                  </View>
-                </TouchableWithoutFeedback>
-              </View>
-            </TouchableWithoutFeedback>
-          </Modal>
+        <View style={[styles.container, {opacity: this.state.viewOpacity}]}>{/* contenedor total incluyendo modals, etc */}
 
           {/* contenedor de la vista */}
           <View style={styles.containerDark}>
+            <Icon style={styles.backIcon} onPress={ this.onBackPress.bind(this, navigator) }
+                  name={(Platform.OS === 'ios') ? 'ios-arrow-back-outline' : 'md-arrow-back'} />
 
-            <Animated.View style={[styles.topBarOverlay, {opacity: topBarOpacity}]} />
+            <View style={styles.navButtons}>
+
+              <View style={styles.linearGradientContainer}>
+                <LinearGradientAnimated style={[styles.topBarOverlay, {opacity: topBarOpacity}]}
+                                        colors={['#000', 'transparent']} />
+              </View>
+
+            </View>
+
             <View style={styles.fanArtOverlay} />
             <Animated.Image style={[
               styles.fanArt,
@@ -774,7 +733,7 @@ class TvShow extends Component {
 
         </View>
       ) : (
-        <View style={{alignItems: 'center', justifyContent: 'center'}}>
+        <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
           <ActivityIndicator style={styles.loader} size={'large'} color={'rgba(255,149,0,1)'} />
         </View>
       )
@@ -783,7 +742,7 @@ class TvShow extends Component {
 
   // pie del resumen de la serie (leer mas)
   overviewReady = () => {
-    console.log('ready');
+    console.log('overview ready');
     this.setState({ moreTextReady: true, viewOpacity: 1 });
   };
 
@@ -835,40 +794,6 @@ class TvShow extends Component {
 
 }
 
-let NavigationBarRouteMapper = props => ({
-  LeftButton(route, navigator, index, navState) {
-    return (
-      <View style={styles.backButtonView}>
-        <TouchableOpacity style={styles.backButton}
-                          onPress={() => (props.state.showVideoPlayer && Platform.OS === 'ios') ? props.hideVideoPlayer() : navigator.parentNavigator.pop()}>
-          <Icon
-            name={(Platform.OS === 'ios') ? 'ios-arrow-back' : 'md-arrow-back'}
-            style={styles.backIcon}
-          />
-          {/*<Text style={styles.backButtonText}>
-            Atrás
-          </Text>*/}
-        </TouchableOpacity>
-      </View>
-    );
-  },
-  /**
-   * @return {null}
-   */
-  RightButton(route, navigator, index, navState) {
-    return null;
-  },
-  Title(route, navigator, index, navState) {
-    return (
-      <View style={styles.titleView}>
-        <Text style={styles.titleText}>
-
-        </Text>
-      </View>
-    );
-  }
-});
-
 const styles = StyleSheet.create({
   // StatusBar y Navigator
   statusBarAndNavView: {
@@ -878,58 +803,41 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: {},
       android: {
-        marginTop: 24,
+        marginTop: 2,
       }
     }),
   },
-  backButtonView: {
+  linearGradientContainer: {
     flex: 1,
-    justifyContent: 'center',
   },
-  backButton: {
+  topBarOverlay: {
     flex: 1,
+  },
+  navButtons: {
+    position: 'absolute',
+    height: 56,
+    left: 0,
+    top: 0,
+    right: 0,
     flexDirection: 'row',
-    justifyContent: 'center',
-    ...Platform.select({
-      ios: {
-        padding: 8.5,
-        paddingTop: 5.5,
-      },
-      android: {
-        padding: 14,
-      }
-    }),
+    backgroundColor: 'transparent',
+    zIndex: 2,
   },
   backIcon: {
-    color: '#dddddd',
+    position: 'absolute',
+    zIndex: 3,
+    paddingTop: 16,
+    paddingLeft: 14,
+    paddingRight: 10,
+    backgroundColor: 'transparent',
+    fontSize: 24,
+    color: '#ddd',
     ...Platform.select({
       ios: {
+        paddingTop: 11,
         fontSize: 33,
-        shadowColor: '#000000',
-        shadowOffset: {
-        },
-        shadowOpacity: 0.8,
       },
-      android: {
-        fontSize: 24,
-        elevation: 2,
-      }
     }),
-  },
-
-  backButtonText: {
-    color: '#dddddd',
-    fontSize: 17,
-    ...Platform.select({
-      ios: {
-        marginTop: 6,
-        marginLeft: 6,
-      },
-      android: {
-        marginLeft: 4,
-      }
-    }),
-
   },
   // container total
   container: {
@@ -940,25 +848,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-start',
     backgroundColor: '#212121',
-  },
-  // barra superior (simulando navigator)
-  topBarOverlay: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    right: 0,
-    backgroundColor: 'black',
-    elevation: 2,
-    width: null,
-    ...Platform.select({
-      ios: {
-        height: 64,
-      },
-      android: {
-        height: 77,
-      }
-    }),
-    zIndex: 1,
   },
   // overlay oscuro para la imagen de cabecera grande
   fanArtOverlay: {
@@ -1348,7 +1237,7 @@ const styles = StyleSheet.create({
   voteInnerModal: {
     padding: 20,
     borderRadius: 10,
-    backgroundColor: '#212121',
+    backgroundColor: '#1f1f1f',
     ...Platform.select({
       ios: {
         shadowColor: 'rgba(0,0,0,1)',
@@ -1359,6 +1248,20 @@ const styles = StyleSheet.create({
       android: {
         elevation: 6,
       }
+    }),
+  },
+  closeModal: {
+    position: 'absolute',
+    right: 20,
+    top: 16,
+    zIndex: 2,
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontSize: 26,
+    ...Platform.select({
+      android: {
+        top: 22,
+        fontSize: 20,
+      },
     }),
   },
   voteModalTitle: {

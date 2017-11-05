@@ -189,21 +189,6 @@ class Register extends Component {
             null
           }
         />
-      </View>
-    );
-  }
-
-  renderScene(route, navigator) {
-
-    const letterOpacity = this.state.letterOpacity.interpolate({
-      inputRange: [0, 300],
-      outputRange: ['rgba(255,255,255,0.2)', 'rgba(255,255,255,1.0)']
-    });
-
-    return (
-      <LinearGradient style={styles.container}
-                      start={{x: 1, y: 0}} end={{x: 0.2, y: 1}}
-                      colors={['#1d1d1d', '#303030']}>
         <Modal
           animationType={'fade'}
           transparent
@@ -223,7 +208,21 @@ class Register extends Component {
             </View>
           </View>
         </Modal>
+      </View>
+    );
+  }
 
+  renderScene(route, navigator) {
+
+    const letterOpacity = this.state.letterOpacity.interpolate({
+      inputRange: [0, 300],
+      outputRange: ['rgba(255,255,255,0.2)', 'rgba(255,255,255,1.0)']
+    });
+
+    return (
+      <LinearGradient style={styles.container}
+                      start={{x: 1, y: 0}} end={{x: 0.2, y: 1}}
+                      colors={['#1d1d1d', '#303030']}>
         <Animated.Image style={[{opacity: this.state.gridBackgroundOpacity}, styles.gridImage]}
                onLoadEnded={this.onBackgroundLoadEnded()}
                blurRadius={8}
@@ -240,7 +239,7 @@ class Register extends Component {
                     ref={component => this._textInputEmail = component}
                     placeholder={'Correo electrónico'}
                     placeholderTextColor={'rgba(255,255,255,0.4)'}
-                    selectionColor={'rgba(255,149,0,1)'}
+                    selectionColor={(Platform.OS === 'ios') ? 'rgba(255,149,0,1)' : 'rgba(255,149,0,0.5)'}
                     underlineColor={['rgba(255,255,255,0.5)', 'rgba(255,149,0,1)']}
                     autoCapitalize={'none'}
                     autoCorrect={false}
@@ -248,8 +247,9 @@ class Register extends Component {
                     returnKeyType={'next'}
                     iconClass={Icon}
                     iconName={(Platform.OS === 'ios') ? 'ios-mail-outline' : 'md-mail'}
-                    iconColor={'rgba(255,255,255,0.5)'}
+                    iconColor={'rgba(255,255,255,0.6)'}
                     iconBackgroundColor={'transparent'}
+                    iconPaddingTop={(Platform.OS === 'ios') ? 3 : 3}
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
                     onChangeText={ (text) => this.setState({emailText: text}) }
@@ -261,7 +261,7 @@ class Register extends Component {
                     ref={component => this._textInputPass1 = component}
                     placeholder={'Contraseña'}
                     placeholderTextColor={'rgba(255,255,255,0.4)'}
-                    selectionColor={'rgba(255,149,0,1)'}
+                    selectionColor={(Platform.OS === 'ios') ? 'rgba(255,149,0,1)' : 'rgba(255,149,0,0.5)'}
                     underlineColor={['rgba(255,255,255,0.5)', 'rgba(255,149,0,1)']}
                     autoCapitalize={'none'}
                     autoCorrect={false}
@@ -271,8 +271,9 @@ class Register extends Component {
                     secureTextEntry
                     iconClass={Icon}
                     iconName={(Platform.OS === 'ios') ? 'ios-lock-outline' : 'md-lock'}
-                    iconColor={'rgba(255,255,255,0.5)'}
+                    iconColor={'rgba(255,255,255,0.6)'}
                     iconBackgroundColor={'transparent'}
+                    iconPaddingTop={(Platform.OS === 'ios') ? 0 : 2}
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
                     onChangeText={ (text) => this.setState({password1Text: text}) }
@@ -284,7 +285,7 @@ class Register extends Component {
                     ref={component => this._textInputPass2 = component}
                     placeholder={'Confirma la contraseña'}
                     placeholderTextColor={'rgba(255,255,255,0.4)'}
-                    selectionColor={'rgba(255,149,0,1)'}
+                    selectionColor={(Platform.OS === 'ios') ? 'rgba(255,149,0,1)' : 'rgba(255,149,0,0.5)'}
                     underlineColor={['rgba(255,255,255,0.5)', 'rgba(255,149,0,1)']}
                     autoCapitalize={'none'}
                     autoCorrect={false}
@@ -294,8 +295,9 @@ class Register extends Component {
                     secureTextEntry
                     iconClass={Icon}
                     iconName={(Platform.OS === 'ios') ? 'ios-lock-outline' : 'md-lock'}
-                    iconColor={'rgba(255,255,255,0.5)'}
+                    iconColor={'rgba(255,255,255,0.6)'}
                     iconBackgroundColor={'transparent'}
+                    iconPaddingTop={(Platform.OS === 'ios') ? 0 : 2}
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
                     onChangeText={ (text) => this.setState({password2Text: text}) }
@@ -307,7 +309,7 @@ class Register extends Component {
                     ref={component => this._textInputName = component}
                     placeholder={'Nombre'}
                     placeholderTextColor={'rgba(255,255,255,0.4)'}
-                    selectionColor={'rgba(255,149,0,1)'}
+                    selectionColor={(Platform.OS === 'ios') ? 'rgba(255,149,0,1)' : 'rgba(255,149,0,0.5)'}
                     underlineColor={['rgba(255,255,255,0.5)', 'rgba(255,149,0,1)']}
                     autoCapitalize={'words'}
                     autoCorrect={false}
@@ -316,8 +318,9 @@ class Register extends Component {
                     blurOnSubmit={false}
                     iconClass={Icon}
                     iconName={(Platform.OS === 'ios') ? 'ios-person-outline' : 'md-person'}
-                    iconColor={'rgba(255,255,255,0.5)'}
+                    iconColor={'rgba(255,255,255,0.6)'}
                     iconBackgroundColor={'transparent'}
+                    iconPaddingTop={(Platform.OS === 'ios') ? 1 : 2}
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
                     onChangeText={ (text) => this.setState({nameText: text}) }
@@ -385,20 +388,21 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   viewBody: {
-    flex: 5,
-    backgroundColor: 'transparent',
+    flex: 1,
   },
   principalView: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
+
   },
   principalTitleText: {
     marginBottom: 20,
     fontFamily: 'Blacklisted',
     fontSize: 40,
     color: 'rgba(255,255,255,1)',
+    backgroundColor: 'transparent',
     ...Platform.select({
       ios: {
         paddingTop: 10,
@@ -407,6 +411,7 @@ const styles = StyleSheet.create({
   },
   principalTitleSecondText: {
     color: 'rgba(255,149,0,1)',
+    backgroundColor: 'transparent',
   },
   lightOff: {
     color: 'rgba(255,255,255,0.35)',
@@ -414,6 +419,7 @@ const styles = StyleSheet.create({
   principalText: {
     marginBottom: 20,
     color: 'rgba(255,255,255,0.70)',
+    backgroundColor: 'transparent',
     ...Platform.select({
       android: {
         fontFamily: 'Roboto-Regular',
@@ -422,23 +428,23 @@ const styles = StyleSheet.create({
   },
   inputView: {
     marginLeft: -12,
-    height: 46,
+    height: 53,
     alignSelf: 'stretch',
-    //borderBottomWidth: 0.5,
-    //borderColor: 'rgba(255,255,255,0.5)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    marginBottom: 10,
   },
   input: {
     marginLeft: -20,
-    height: 36,
-    marginTop: 7,
+    height: 51,
     backgroundColor: 'transparent',//backgroundColor: 'rgba(255,255,255,0.07)',
     color: 'rgba(255,255,255,0.8)',
-    fontSize: 14,
+    fontSize: 16,
     borderRadius: 5,
     ...Platform.select({
       android: {
         fontFamily: 'Roboto-Light',
-        fontSize: 16,
       },
     }),
   },
@@ -468,9 +474,6 @@ const styles = StyleSheet.create({
     }),
   },
   bottomView: {
-    flex: 1,
-    marginLeft: -100,
-    marginRight: -100,
     justifyContent: 'flex-end',
     alignItems: 'center',
     paddingBottom: 50,
@@ -513,7 +516,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     borderRadius: 10,
     alignItems: 'center',
-    backgroundColor: '#212121',
+    backgroundColor: '#1f1f1f',
     ...Platform.select({
       ios: {
         shadowColor: 'rgba(0,0,0,1)',

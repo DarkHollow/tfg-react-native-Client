@@ -123,6 +123,7 @@ export default class TrendingSeriesClient extends Component {
         <LinearGradient style={[styles.container, {alignItems: 'center', justifyContent: 'center'}]}
                         start={{x: 1, y: 0}} end={{x: 0.2, y: 1}}
                         colors={['#1d1d1d', '#303030']}>
+          <StatusBar animated backgroundColor={'transparent'} hidden />
           <ActivityIndicator style={styles.loader}
                              size={'large'} color={'rgba(255,149,0,1)'} />
         </LinearGradient>
@@ -130,10 +131,11 @@ export default class TrendingSeriesClient extends Component {
     } else {
       return (
         <View style={styles.container}>
-          <StatusBar animated backgroundColor={'#2f3e9e'}/>
+          <StatusBar animated backgroundColor={'transparent'} hidden />
           <CustomComponents.Navigator
             ref={component => this._navigator = component}
-            style={{backgroundColor: '#1d1d1d'}}
+            style={{backgroundColor: '#1e1e1e'}}
+            sceneStyle={{backgroundColor: 'transparent'}}
             initialRoute={{name: this.state.initialRoute}}
             renderScene={this.renderScene.bind(this)}
             configureScene={(route) => {
@@ -142,7 +144,7 @@ export default class TrendingSeriesClient extends Component {
               } else if (route.name === 'register') {
                 return CustomComponents.Navigator.SceneConfigs.FloatFromRightAndroid;
               } else if (route.name === 'search') {
-                return CustomComponents.Navigator.SceneConfigs.FadeAndroid;
+                return CustomComponents.Navigator.SceneConfigs.Fade10;
               } else if (route.name === 'tvshow') {
                 return CustomComponents.Navigator.SceneConfigs.FloatFromBottomAndroid;
               } else {
@@ -164,6 +166,7 @@ export default class TrendingSeriesClient extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'transparent'
   }
 });
 

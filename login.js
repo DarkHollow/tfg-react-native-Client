@@ -64,11 +64,21 @@ class Login extends Component {
   };
 
   // mostrar u ocultar modal: mostrar/ocultar, titulo, mensaje, mostrar/ocultar spinner
-  setModalVisible(visible, title, message, loading) {
+  setModalVisible(visible, title, message, loading, buttons) {
     this.setState({modalTitle: title});
     this.setState({modalMessage: message});
     this.setState({modalLoading: loading});
+    this.setState({modalButtons: buttons});
     this.setState({modalVisible: visible});
+  }
+
+  showAndHideModal(visible, title, message, loading) {
+    this.setModalVisible(visible, title, message, loading);
+    setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+  }
+
+  showButtonsModal(title, message, buttons) {
+    this.setModalVisible(true, title, message, null, buttons)
   }
 
   async storeSession(data) {
@@ -86,23 +96,19 @@ class Login extends Component {
   // procesamos los datos que nos devuelve la API
   processLoginResponse(data) {
     console.log('processLoginResponse');
-
     // si la API nos devuelve error
     if (data.error) {
-      this.setModalVisible(true, 'Entrar', data.message, false);
-      setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+      this.showAndHideModal(true, 'Entrar', data.message, false);
     } else if (data.ok !== undefined) {
       // se ha hecho login
       // guardamos token
       this.storeSession(data).then(() => {
-        this.setModalVisible(true, 'Entrar', 'Has iniciado sesión correctamente', false);
-        setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+        this.showAndHideModal(true, 'Entrar', 'Has iniciado sesión correctamente', false);
         // navegamos a la app
         setTimeout(() => this.navigateTo('root', true), 2100);
       });
     } else {
-      this.setModalVisible(true, 'Entrar', data.message, false);
-      setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+      this.showAndHideModal(true, 'Entrar', 'Prueba de nuevo más tarde', false);
     }
   }
 
@@ -136,30 +142,30 @@ class Login extends Component {
               email: email,
               password: hash.toString(),
             })
-          }).then((response) => response.json())
-            .finally((responseData) => {
-              this.processLoginResponse(responseData);
-            }).catch((error) => {
-            console.error(error);
-            this.setModalVisible(true, 'Entrar', 'Lamentablemente no se ha podido iniciar sesión', false);
-            setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+          }).then((response) => {
+            if (response.ok) {
+              return response.json();
+            } else {
+              console.log("not ok");
+            }
+          }).then((responseData) => {
+            this.processLoginResponse(responseData);
+          }).catch((error) => {
+            this.showAndHideModal(true, 'Entrar', 'Lamentablemente no se ha podido iniciar sesión', false);
           });
         } else {
           // longitud password
-          this.setModalVisible(true, 'Entrar', 'La contraseña debe contener entre 6 y 14 caracteres', false);
-          setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+          this.showAndHideModal(true, 'Entrar', 'La contraseña debe contener entre 6 y 14 caracteres', false);
           this._textInputPass.focus();
         }
       } else {
         // email no valido
-        this.setModalVisible(true, 'Entrar', 'El formato de email no es válido', false);
-        setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+        this.showAndHideModal(true, 'Entrar', 'El formato de email no es válido', false);
         this._textInputEmail.focus();
       }
     } else {
       // email vacio ?
-      this.setModalVisible(true, 'Entrar', 'El email no es válido', false);
-      setTimeout(() => this.setModalVisible(false, '', '', false), 2000);
+      this.showAndHideModal(true, 'Entrar', 'El email no es válido', false);
       this._textInputEmail.focus();
     }
   }
@@ -185,21 +191,6 @@ class Login extends Component {
             null
           }
         />
-      </View>
-    );
-  }
-
-  renderScene(route, navigator) {
-
-    const letterOpacity = this.state.letterOpacity.interpolate({
-      inputRange: [0, 300],
-      outputRange: ['rgba(255,255,255,0.2)', 'rgba(255,255,255,1.0)']
-    });
-
-    return (
-      <LinearGradient style={styles.container}
-                      start={{x: 1, y: 0}} end={{x: 0.2, y: 1}}
-                      colors={['#1d1d1d', '#303030']}>
         <Modal
           animationType={'fade'}
           transparent
@@ -219,7 +210,21 @@ class Login extends Component {
             </View>
           </View>
         </Modal>
+      </View>
+    );
+  }
 
+  renderScene(route, navigator) {
+
+    const letterOpacity = this.state.letterOpacity.interpolate({
+      inputRange: [0, 300],
+      outputRange: ['rgba(255,255,255,0.2)', 'rgba(255,255,255,1.0)']
+    });
+
+    return (
+      <LinearGradient style={styles.container}
+                      start={{x: 1, y: 0}} end={{x: 0.2, y: 1}}
+                      colors={['#1d1d1d', '#303030']}>
         <Animated.Image style={[{opacity: this.state.gridBackgroundOpacity}, styles.gridImage]}
                onLoadEnded={this.onBackgroundLoadEnded()}
                blurRadius={8}
@@ -236,7 +241,7 @@ class Login extends Component {
                     ref={component => this._textInputEmail = component}
                     placeholder={'Correo electrónico'}
                     placeholderTextColor={'rgba(255,255,255,0.4)'}
-                    selectionColor={'rgba(255,149,0,1)'}
+                    selectionColor={(Platform.OS === 'ios') ? 'rgba(255,149,0,1)' : 'rgba(255,149,0,0.5)'}
                     underlineColor={['rgba(255,255,255,0.5)', 'rgba(255,149,0,1)']}
                     autoCapitalize={'none'}
                     autoCorrect={false}
@@ -244,8 +249,9 @@ class Login extends Component {
                     returnKeyType={'next'}
                     iconClass={Icon}
                     iconName={(Platform.OS === 'ios') ? 'ios-mail-outline' : 'md-mail'}
-                    iconColor={'rgba(255,255,255,0.5)'}
+                    iconColor={'rgba(255,255,255,0.6)'}
                     iconBackgroundColor={'transparent'}
+                    iconPaddingTop={(Platform.OS === 'ios') ? 3 : 3}
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
                     onChangeText={ (text) => this.setState({emailText: text}) }
@@ -257,7 +263,7 @@ class Login extends Component {
                     ref={component => this._textInputPass = component}
                     placeholder={'Contraseña'}
                     placeholderTextColor={'rgba(255,255,255,0.4)'}
-                    selectionColor={'rgba(255,149,0,1)'}
+                    selectionColor={(Platform.OS === 'ios') ? 'rgba(255,149,0,1)' : 'rgba(255,149,0,0.5)'}
                     underlineColor={['rgba(255,255,255,0.5)', 'rgba(255,149,0,1)']}
                     autoCapitalize={'none'}
                     autoCorrect={false}
@@ -267,8 +273,9 @@ class Login extends Component {
                     secureTextEntry
                     iconClass={Icon}
                     iconName={(Platform.OS === 'ios') ? 'ios-lock-outline' : 'md-lock'}
-                    iconColor={'rgba(255,255,255,0.5)'}
+                    iconColor={'rgba(255,255,255,0.6)'}
                     iconBackgroundColor={'transparent'}
+                    iconPaddingTop={(Platform.OS === 'ios') ? 0 : 2}
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
                     onChangeText={ (text) => this.setState({passwordText: text}) }
@@ -374,21 +381,23 @@ const styles = StyleSheet.create({
   },
   inputView: {
     marginLeft: -12,
-    height: 46,
+    height: 53,
     alignSelf: 'stretch',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    marginBottom: 10,
   },
   input: {
     marginLeft: -20,
-    height: 36,
-    marginTop: 7,
+    height: 51,
     backgroundColor: 'transparent',
     color: 'rgba(255,255,255,0.8)',
-    fontSize: 14,
+    fontSize: 16,
     borderRadius: 5,
     ...Platform.select({
       android: {
         fontFamily: 'Roboto-Light',
-        fontSize: 16,
       },
     }),
   },
@@ -463,7 +472,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     borderRadius: 10,
     alignItems: 'center',
-    backgroundColor: '#212121',
+    backgroundColor: '#1f1f1f',
     ...Platform.select({
       ios: {
         shadowColor: 'rgba(0,0,0,1)',
