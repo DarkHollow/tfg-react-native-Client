@@ -9,7 +9,8 @@ Branches
 ## master [![Version](https://img.shields.io/badge/release-v0.10.0-blue.svg)](https://github.com/DarkHollow/tfg-react-native-Client/releases/tag/v0.10.0)
 
 ##### Current version `v.0.10.0`
-[![Release](https://darkhollow.github.com/tfg-series-playApi/rocket.svg) v0.10.0](https://github.com/DarkHollow/tfg-react-native-Client/releases/tag/v0.10.0) including:
+[![Release](https://darkhollow.github.com/tfg-series-playApi/rocket.svg) v0.10.0](https://github.com/DarkHollow/tfg-react-native-Client/releases/tag/v0.10.0)
+including:
 
 - Register and login
   - Secured by encryption and JWT
