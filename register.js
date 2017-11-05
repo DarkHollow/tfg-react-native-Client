@@ -249,6 +249,7 @@ class Register extends Component {
                     iconName={(Platform.OS === 'ios') ? 'ios-mail-outline' : 'md-mail'}
                     iconColor={'rgba(255,255,255,0.6)'}
                     iconBackgroundColor={'transparent'}
+                    iconPaddingTop={3}
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
                     onChangeText={ (text) => this.setState({emailText: text}) }
@@ -272,6 +273,7 @@ class Register extends Component {
                     iconName={(Platform.OS === 'ios') ? 'ios-lock-outline' : 'md-lock'}
                     iconColor={'rgba(255,255,255,0.6)'}
                     iconBackgroundColor={'transparent'}
+                    iconPaddingTop={2}
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
                     onChangeText={ (text) => this.setState({password1Text: text}) }
@@ -295,6 +297,7 @@ class Register extends Component {
                     iconName={(Platform.OS === 'ios') ? 'ios-lock-outline' : 'md-lock'}
                     iconColor={'rgba(255,255,255,0.6)'}
                     iconBackgroundColor={'transparent'}
+                    iconPaddingTop={2}
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
                     onChangeText={ (text) => this.setState({password2Text: text}) }
@@ -317,6 +320,7 @@ class Register extends Component {
                     iconName={(Platform.OS === 'ios') ? 'ios-person-outline' : 'md-person'}
                     iconColor={'rgba(255,255,255,0.6)'}
                     iconBackgroundColor={'transparent'}
+                    iconPaddingTop={2}
                     inputStyle={styles.input}
                     clearButtonMode={'while-editing'}
                     onChangeText={ (text) => this.setState({nameText: text}) }
