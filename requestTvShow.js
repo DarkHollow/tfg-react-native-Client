@@ -109,7 +109,7 @@ class RequestTvShow extends Component {
         uri = encodeURI(searchText);
 
         // hacemos fetch a la API
-        fetch('http://192.168.1.13:9000/api/tvshows?search=' + uri + '&tvdb=1', {
+        fetch(URLSERVER + 'api/tvshows?search=' + uri + '&tvdb=1', {
           method: "GET",
           headers: {
             'Accept': 'application/json',
@@ -318,7 +318,7 @@ class RequestTvShow extends Component {
     // solicitar serie
     return AsyncStorage.getItem("jwt")
       .then((jwt) => {
-        fetch('http://192.168.1.13:9000/api/requests', {
+        fetch(URLSERVER + 'api/requests', {
           method: 'POST',
           headers: {
             'Accept': 'application/json',
