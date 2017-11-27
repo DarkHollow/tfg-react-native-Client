@@ -169,6 +169,11 @@ class TvShow extends Component {
       // procesamos la nota personal del usuario
       this.getTvShowVote();
 
+      // procesamos orden temporadas
+      data.seasons.sort(function(a, b) {
+        return a.seasonNumber - b.seasonNumber;
+      });
+
       // cargamos datos en el state
       this.setState({tvShowData: data});
     }
