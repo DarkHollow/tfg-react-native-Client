@@ -23,7 +23,7 @@ import ReadMore from '@expo/react-native-read-more-text';
 import StarRatingBar from 'react-native-star-rating-view/StarRatingBar';
 
 //import CircularButton from './components/circularButton';
-//import SeasonButton from './components/seasonButton';
+import SeasonButton from './components/seasonButton';
 
 const TouchableNativeFeedback = Platform.select({
   android: () => require('TouchableNativeFeedback'),
@@ -651,80 +651,35 @@ class TvShow extends Component {
                   </View>
                 </View>
 
-                {/*<View style={styles.seasonsContent}>
-                <ScrollView horizontal style={styles.scrollH}>
 
-                  <SeasonButton
-                    imageWidth={(Platform.OS === 'ios') ? 110 : 120}
-                    imageHeight={(Platform.OS === 'ios') ? 159 : 173}
-                    backgroundColor={'#212121'}
-                    opacityColor={'#fe3f80'}
-                    source={'https://thetvdb.com/banners/seasons/305288-1-3.jpg'}
-                    title={'Temporada 1'}
-                    titleSize={(Platform.OS === 'ios') ? 13 : 14}
-                    titleColor={'#dedede'}
-                    subtitle={'8 episodios'}
-                    subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
-                    subtitleColor={'#bbbbc1'}
-                  />
+                {(this.state.tvShowData.seasons.length > 0) ? (
+                  <View style={styles.seasonsContent}>
+                    <ScrollView horizontal style={styles.scrollH}>
 
-                  <SeasonButton
-                    imageWidth={(Platform.OS === 'ios') ? 110 : 120}
-                    imageHeight={(Platform.OS === 'ios') ? 159 : 173}
-                    backgroundColor={'#212121'}
-                    opacityColor={'#fe3f80'}
-                    source={'https://thetvdb.com/banners/seasons/305288-1-3.jpg'}
-                    title={'Temporada 1'}
-                    titleSize={(Platform.OS === 'ios') ? 13 : 14}
-                    titleColor={'#dedede'}
-                    subtitle={'8 episodios'}
-                    subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
-                    subtitleColor={'#bbbbc1'}
-                  />
+                      {this.state.tvShowData.seasons.map((season, index) => {
+                        return (
+                          <SeasonButton
+                            key={index}
+                            imageWidth={(Platform.OS === 'ios') ? 110 : 120}
+                            imageHeight={(Platform.OS === 'ios') ? 159 : 173}
+                            backgroundColor={'#212121'}
+                            opacityColor={'#fe3f80'}
+                            source={season.poster !== null ? {uri: (URLSERVER + season.poster.substring(2))} : require('./img/placeholderPoster.png')}
+                            title={'Temporada ' + season.seasonNumber}
+                            titleSize={(Platform.OS === 'ios') ? 13 : 14}
+                            titleColor={'#dedede'}
+                            subtitle={''}
+                            subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
+                            subtitleColor={'#bbbbc1'}
+                          />
+                        )
+                      })}
+                    </ScrollView>
+                  </View>
+                ) : (
+                  null
+                )}
 
-                  <SeasonButton
-                    imageWidth={(Platform.OS === 'ios') ? 110 : 120}
-                    imageHeight={(Platform.OS === 'ios') ? 159 : 173}
-                    backgroundColor={'#212121'}
-                    opacityColor={'#fe3f80'}
-                    source={'https://thetvdb.com/banners/seasons/305288-1-3.jpg'}
-                    title={'Temporada 1'}
-                    titleSize={(Platform.OS === 'ios') ? 13 : 14}
-                    titleColor={'#dedede'}
-                    subtitle={'8 episodios'}
-                    subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
-                    subtitleColor={'#bbbbc1'}
-                  />
-
-                  <SeasonButton
-                    imageWidth={(Platform.OS === 'ios') ? 110 : 120}
-                    imageHeight={(Platform.OS === 'ios') ? 159 : 173}
-                    backgroundColor={'#212121'}
-                    opacityColor={'#fe3f80'}
-                    source={'https://thetvdb.com/banners/seasons/305288-1-3.jpg'}
-                    title={'Temporada 1'}
-                    titleSize={(Platform.OS === 'ios') ? 13 : 14}
-                    titleColor={'#dedede'}
-                    subtitle={'8 episodios'}
-                    subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
-                    subtitleColor={'#bbbbc1'}
-                  />
-
-                  <SeasonButton
-                    imageWidth={(Platform.OS === 'ios') ? 110 : 120}
-                    imageHeight={(Platform.OS === 'ios') ? 159 : 173}
-                    backgroundColor={'#212121'}
-                    opacityColor={'#fe3f80'}
-                    source={'https://thetvdb.com/banners/seasons/305288-1-3.jpg'}
-                    title={'Temporada 1'}
-                    titleSize={(Platform.OS === 'ios') ? 13 : 14}
-                    titleColor={'#dedede'}
-                    subtitle={'8 episodios'}
-                    subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
-                    subtitleColor={'#bbbbc1'}
-                  />
-                </ScrollView>
-              </View>*/}
               </View>
               {(Platform.OS === 'android') ?
                 <View style={styles.scrollPaddingBottom} /> : null}

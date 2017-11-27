@@ -52,7 +52,7 @@ class seasonButton extends Component {
                   }
                 ]
               }
-              source={{uri: this.props.source}}
+              source={this.props.source}
             />
             <View style={styles.titleAndSubtitle}>
               <Text style={
