@@ -327,6 +327,19 @@ class TvShow extends Component {
     }
   };
 
+  /* redirige a la vista de una season */
+    openSeason(seasonNumber) {
+    console.log('Ver la season:' + seasonNumber + ' de ' + this.state.tvShowData.id);
+    this.props.navigator.push({
+      name: 'season',
+      passProps: {
+        tvShowId: this.state.tvShowData.id,
+        seasonNumber: seasonNumber,
+        backButtonText: this.state.tvShowData.name
+      }
+    });
+  }
+
   // process image uri
   formatImageUri(uri) {
     result = uri;
@@ -527,8 +540,8 @@ class TvShow extends Component {
                     <Text style={styles.tvShowTitle} numberOfLines={1}>{this.state.tvShowData.name}</Text>
                     <View style={styles.tvShowSubtitle}>
                       <View style={styles.tvShowSubtitleLeft}>
-                        <Text style={styles.tvShowYearRating}>{new Date(this.state.tvShowData.firstAired).getFullYear()}   <Text numberOfLines={1}>{this.state.tvShowData.rating}</Text></Text>
-                        <Text style={styles.tvShowGenre} numberOfLines={1}>{this.state.tvShowGenres}</Text>
+                        <Text style={styles.tvSubtitleText}>{new Date(this.state.tvShowData.firstAired).getFullYear()}   <Text numberOfLines={1}>{this.state.tvShowData.rating}</Text></Text>
+                        <Text style={styles.tvShowFirstAired} numberOfLines={1}>{this.state.tvShowGenres}</Text>
                       </View>
                       <View style={styles.subtitleRight}>
                         {/*<Text style={styles.ratingText}>
@@ -665,12 +678,14 @@ class TvShow extends Component {
                         return (
                           <SeasonButton
                             key={index}
+                            onPress={ this.openSeason.bind(this, season.seasonNumber) }
                             imageWidth={(Platform.OS === 'ios') ? 110 : 120}
                             imageHeight={(Platform.OS === 'ios') ? 159 : 173}
                             backgroundColor={'#212121'}
-                            opacityColor={'#fe3f80'}
+                            opacityColor={'rgba(255,149,0,1)'}
+                            useForeground
                             source={season.poster !== null ? {uri: (URLSERVER + season.poster.substring(2))} : require('./img/placeholderPoster.png')}
-                            title={'Temporada ' + season.seasonNumber}
+                            title={season.seasonNumber !== 0 ? 'Temporada ' + season.seasonNumber : 'Especiales'}
                             titleSize={(Platform.OS === 'ios') ? 13 : 14}
                             titleColor={'#dedede'}
                             subtitle={''}
@@ -899,16 +914,16 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     height: 22,
     fontSize: 17,
-    color: '#eaeaea',
+    color: '#ededed',
     backgroundColor: 'transparent',
     ...Platform.select({
       ios: {
         fontWeight: '500',
-        opacity: 0.9,
+        opacity: 0.95,
       },
       android: {
         fontFamily: 'Roboto-Medium',
-        opacity: 0.8,
+        opacity: 0.9,
       }
     }),
   },
@@ -924,7 +939,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     maxWidth: 160,
   },
-  tvShowYearRating: {
+  tvSubtitleText: {
     color: '#bbbbc1',
     ...Platform.select({
       ios: {
@@ -939,7 +954,7 @@ const styles = StyleSheet.create({
       }
     }),
   },
-  tvShowGenre: {
+  tvShowFirstAired: {
     color: '#bbbbc1',
     ...Platform.select({
       ios: {
@@ -1363,7 +1378,7 @@ const styles = StyleSheet.create({
   // temporadas!
   seasonsContent: {
     flex: 1,
-    marginTop: 20,
+    marginTop: 10,
   },
   scrollH: {
     backgroundColor: '#1C1C1C',
