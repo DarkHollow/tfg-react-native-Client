@@ -438,6 +438,11 @@ const styles = StyleSheet.create({
     flex: 1,
     marginTop: 80,
     backgroundColor: 'transparent',
+    ...Platform.select({
+      android: {
+        marginTop: 30,
+      },
+    }),
   },
   zIndexFix: {
     ...Platform.select({
