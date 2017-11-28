@@ -16,6 +16,7 @@ import Login from './login';
 import Register from './register';
 import Search from './search';
 import TvShow from './tvshow';
+import Season from './season';
 import RequestTvShow from "./requestTvShow";
 
 export default class TrendingSeriesClient extends Component {
@@ -106,6 +107,9 @@ export default class TrendingSeriesClient extends Component {
     }
     if (route.name === 'tvshow') {
       return <TvShow navigator={navigator} {...route.passProps} />
+    }
+    if (route.name === 'season') {
+      return <Season navigator={navigator} {...route.passProps} />
     }
     if (route.name === 'requestTvShow') {
       return <RequestTvShow navigator={navigator} {...route.passProps} />

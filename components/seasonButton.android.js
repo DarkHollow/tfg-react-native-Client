@@ -4,10 +4,8 @@ import {
   Text,
   View,
   TouchableNativeFeedback,
-  Platform,
   Image
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
 
 class seasonButton extends Component {
   render() {
@@ -26,7 +24,9 @@ class seasonButton extends Component {
       }>
         <TouchableNativeFeedback
           disabled={this.props.disabled}
+          useForeground={this.props.useForeground}
           background={TouchableNativeFeedback.Ripple(this.props.opacityColor, true)}
+          onPress={this.props.onPress}
         >
           <View style={
             [
