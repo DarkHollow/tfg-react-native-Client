@@ -1163,7 +1163,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     paddingLeft: 20,
     paddingRight: 20,
-    paddingBottom: 20,
+    paddingBottom: 10,
     backgroundColor: '#212121',
   },
   footerTitleView: {
