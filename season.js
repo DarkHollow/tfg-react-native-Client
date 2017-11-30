@@ -12,6 +12,7 @@ import {
   AsyncStorage,
   ActivityIndicator,
   Dimensions,
+  TouchableOpacity,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import CustomComponents from 'react-native-deprecated-custom-components';
@@ -117,14 +118,18 @@ class Season extends Component {
       // procesamos URLs imagenes
       data.poster = this.formatImageUri(data.poster);
 
-      // procesamos orden temporadas
-      /*data.seasons.sort(function(a, b) {
-        return a.seasonNumber - b.seasonNumber;
-      });*/
+      // procesamos orden episodios
+      data.episodes.sort(function(a, b) {
+        return a.episodeNumber - b.episodeNumber;
+      });
 
       // cargamos datos en el state
       this.setState({seasonData: data});
     }
+  }
+
+  openEpisode(id) {
+
   }
 
   // process image uri
@@ -233,7 +238,7 @@ class Season extends Component {
               {transform: [{translateY: imageTranslate}]},
               {opacity: this.state.fanartOpacity},
             ]}
-                            source={this.state.seasonData.poster !== null ? {uri: this.state.seasonData.poster} : require('./img/placeholderFanart.png')}
+                            source={this.state.seasonData.poster !== null ? {uri: this.state.seasonData.poster} : require('./img/placeholderPoster.png')}
                             onLoadEnded={this.onFanartLoadEnded()}
             />
 
@@ -265,6 +270,50 @@ class Season extends Component {
                 <View style={styles.bodyContent}>
                   { overview }
                 </View>
+
+                {(this.state.seasonData.episodes.length > 0) ? (
+                  <View style={styles.episodesView}>
+                    {this.state.seasonData.episodes.map((episode, index) => {
+                      return (
+                        (Platform.OS === 'ios') ? (
+                          <TouchableOpacity style={styles.episode} key={index} onPress={ this.openEpisode.bind(this, 1) }>
+                            <View style={styles.episodeInner}>
+                              <View style={styles.episodeNameNumber}>
+                                <Text style={styles.episodeName} numberOfLines={1}>{episode.name}</Text>
+                                <Text style={styles.episodeNumber}>Episodio {episode.episodeNumber}</Text>
+                              </View>
+                              <View>
+
+                              </View>
+
+                            </View>
+                          </TouchableOpacity>
+                        ) : (
+                          <View style={styles.episode} onPress={ this.openEpisode.bind(this, 1) }>
+                            <TouchableNativeFeedback
+                              onPress={ this.openEpisode.bind(this, 1) }
+                              background={TouchableNativeFeedback.Ripple('rgba(255,149,0,1)', true)}
+                              useForeground>
+
+                              <View style={styles.episodeInner}>
+                                <View style={styles.episodeNameNumber}>
+                                  <Text style={styles.episodeName} numberOfLines={1}>{episode.name}</Text>
+                                  <Text style={styles.episodeNumber}>Episodio {episode.episodeNumber}</Text>
+                                </View>
+                                <View>
+
+                                </View>
+
+                              </View>
+                            </TouchableNativeFeedback>
+                          </View>
+                        )
+                      )
+                    })}
+                  </View>
+                ) : (
+                  null
+                )}
 
               </View>
               {(Platform.OS === 'android') ?
@@ -537,14 +586,14 @@ const styles = StyleSheet.create({
   // contenido del cuerpo debajo de la cabecera
   bodyContent: {
     flex: 1,
-    minHeight: HEADER_MAX_HEIGHT - 80 - 14 - 147 - 10 - 6 - 6,
+    //minHeight: HEADER_MAX_HEIGHT - 80 - 14 - 147 - 10 - 6 - 6,
     paddingLeft: 14,
     paddingRight: 14,
     paddingTop: 6,
     backgroundColor: 'transparent',
     ...Platform.select({
       android: {
-        minHeight: HEADER_MAX_HEIGHT - 80 - 14 - 147 - 10 - 6 - 6 - 50,
+        //minHeight: HEADER_MAX_HEIGHT - 80 - 14 - 147 - 10 - 6 - 6 - 50,
       },
     }),
   },
@@ -585,6 +634,33 @@ const styles = StyleSheet.create({
         fontFamily: 'Roboto-Medium',
       },
     }),
+  },
+  episodesView: {
+    marginTop: 14,
+    backgroundColor: 'rgba(20, 20, 20, 0.7)',
+  },
+  episode: {
+    flex: 1,
+    //borderTopWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    marginBottom: 2,
+  },
+  episodeInner: {
+    flexDirection: 'row',
+    padding: 14,
+  },
+  episodeNameNumber: {
+    flexDirection: 'column',
+  },
+  episodeName: {
+    color: '#dadade',
+    fontSize: 14.5,
+    fontWeight: '600',
+    letterSpacing: -0.4,
+  },
+  episodeNumber: {
+    color: 'rgba(255, 255, 255, 0.66)',
+    marginRight: 10,
   },
   modalLoader: {
     position: 'absolute',
