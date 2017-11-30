@@ -688,7 +688,7 @@ class TvShow extends Component {
                             title={season.seasonNumber !== 0 ? 'Temporada ' + season.seasonNumber : 'Especiales'}
                             titleSize={(Platform.OS === 'ios') ? 13 : 14}
                             titleColor={'#dedede'}
-                            subtitle={''}
+                            subtitle={season.episodeCount + ' episodios'}
                             subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
                             subtitleColor={'#bbbbc1'}
                           />
