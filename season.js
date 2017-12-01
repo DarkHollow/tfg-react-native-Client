@@ -17,6 +17,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import CustomComponents from 'react-native-deprecated-custom-components';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ReadMore from '@expo/react-native-read-more-text';
+import EpisodeCollapse from './components/episodeCollapse';
 
 const TouchableNativeFeedback = Platform.select({
   android: () => require('TouchableNativeFeedback'),
@@ -117,14 +118,18 @@ class Season extends Component {
       // procesamos URLs imagenes
       data.poster = this.formatImageUri(data.poster);
 
-      // procesamos orden temporadas
-      /*data.seasons.sort(function(a, b) {
-        return a.seasonNumber - b.seasonNumber;
-      });*/
+      // procesamos orden episodios
+      data.episodes.sort(function(a, b) {
+        return a.episodeNumber - b.episodeNumber;
+      });
 
       // cargamos datos en el state
       this.setState({seasonData: data});
     }
+  }
+
+  openEpisode(id) {
+
   }
 
   // process image uri
@@ -197,7 +202,7 @@ class Season extends Component {
       <ReadMore numberOfLines={3}
                 renderTruncatedFooter={this.overviewTruncatedFooter}
                 renderRevealedFooter={this.overviewRevealedFooter}>
-        <Text style={styles.overview}>{this.state.seasonData.overview}</Text>
+        <Text style={styles.overview}>{(this.state.seasonData.overview !== null) ? this.state.seasonData.overview : 'Sin sinopsis'}</Text>
       </ReadMore>
     ) : (
       null
@@ -233,7 +238,8 @@ class Season extends Component {
               {transform: [{translateY: imageTranslate}]},
               {opacity: this.state.fanartOpacity},
             ]}
-                            source={this.state.seasonData.poster !== null ? {uri: this.state.seasonData.poster} : require('./img/placeholderFanart.png')}
+                            blurRadius={Platform.OS === 'ios' ? 6 : 2}
+                            source={this.state.seasonData.poster !== null ? {uri: this.state.seasonData.poster} : require('./img/placeholderPoster.png')}
                             onLoadEnded={this.onFanartLoadEnded()}
             />
 
@@ -265,6 +271,25 @@ class Season extends Component {
                 <View style={styles.bodyContent}>
                   { overview }
                 </View>
+
+                {(this.state.seasonData.episodes.length > 0) ? (
+                  <View style={styles.episodesView}>
+                    {this.state.seasonData.episodes.map((episode, index) => {
+                      return (
+                        <EpisodeCollapse
+                          key={index}
+                          screenshot={episode.screenshot !== null ? {uri: this.formatImageUri(episode.screenshot)} : require('./img/placeholderPoster.png')}
+                          name={episode.name}
+                          number={episode.episodeNumber}
+                          date={(episode.firstAired !== null) ? new Date(episode.firstAired).toLocaleDateString() : null}>
+                          <Text style={styles.episodeOverview}>{(episode.overview !== null) ? episode.overview : 'Sin sinopsis'}</Text>
+                        </EpisodeCollapse>
+                      )
+                    })}
+                  </View>
+                ) : (
+                  null
+                )}
 
               </View>
               {(Platform.OS === 'android') ?
@@ -537,14 +562,14 @@ const styles = StyleSheet.create({
   // contenido del cuerpo debajo de la cabecera
   bodyContent: {
     flex: 1,
-    minHeight: HEADER_MAX_HEIGHT - 80 - 14 - 147 - 10 - 6 - 6,
+    //minHeight: HEADER_MAX_HEIGHT - 80 - 14 - 147 - 10 - 6 - 6,
     paddingLeft: 14,
     paddingRight: 14,
     paddingTop: 6,
     backgroundColor: 'transparent',
     ...Platform.select({
       android: {
-        minHeight: HEADER_MAX_HEIGHT - 80 - 14 - 147 - 10 - 6 - 6 - 50,
+        //minHeight: HEADER_MAX_HEIGHT - 80 - 14 - 147 - 10 - 6 - 6 - 50,
       },
     }),
   },
@@ -585,6 +610,13 @@ const styles = StyleSheet.create({
         fontFamily: 'Roboto-Medium',
       },
     }),
+  },
+  episodesView: {
+    marginTop: 20,
+    backgroundColor: 'rgba(20, 20, 20, 0.7)',
+  },
+  episodeOverview: {
+    color: 'rgba(255, 255, 255, 0.66)',
   },
   modalLoader: {
     position: 'absolute',
