@@ -13,6 +13,7 @@ import {
   ActivityIndicator,
   Dimensions,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import CustomComponents from 'react-native-deprecated-custom-components';
@@ -238,6 +239,7 @@ class Season extends Component {
               {transform: [{translateY: imageTranslate}]},
               {opacity: this.state.fanartOpacity},
             ]}
+                            blurRadius={Platform.OS === 'ios' ? 6 : 2}
                             source={this.state.seasonData.poster !== null ? {uri: this.state.seasonData.poster} : require('./img/placeholderPoster.png')}
                             onLoadEnded={this.onFanartLoadEnded()}
             />
@@ -278,29 +280,37 @@ class Season extends Component {
                         (Platform.OS === 'ios') ? (
                           <TouchableOpacity style={styles.episode} key={index} onPress={ this.openEpisode.bind(this, 1) }>
                             <View style={styles.episodeInner}>
+                              <View style={styles.episodeScreenshotView}>
+                                <Image style={styles.episodeScreenshot}
+                                  source={episode.screenshot !== null ? {uri: this.formatImageUri(episode.screenshot)} : null} />
+                              </View>
                               <View style={styles.episodeNameNumber}>
                                 <Text style={styles.episodeName} numberOfLines={1}>{episode.name}</Text>
                                 <Text style={styles.episodeNumber}>Episodio {episode.episodeNumber}</Text>
                               </View>
-                              <View>
+                              <View style={styles.episodeOption}>
 
                               </View>
 
                             </View>
                           </TouchableOpacity>
                         ) : (
-                          <View style={styles.episode} onPress={ this.openEpisode.bind(this, 1) }>
+                          <View style={styles.episode} key={index} onPress={ this.openEpisode.bind(this, 1) }>
                             <TouchableNativeFeedback
                               onPress={ this.openEpisode.bind(this, 1) }
                               background={TouchableNativeFeedback.Ripple('rgba(255,149,0,1)', true)}
                               useForeground>
 
                               <View style={styles.episodeInner}>
+                                <View style={styles.episodeScreenshotView}>
+                                  <Image style={styles.episodeScreenshot}
+                                         source={episode.screenshot !== null ? {uri: this.formatImageUri(episode.screenshot)} : null} />
+                                </View>
                                 <View style={styles.episodeNameNumber}>
                                   <Text style={styles.episodeName} numberOfLines={1}>{episode.name}</Text>
                                   <Text style={styles.episodeNumber}>Episodio {episode.episodeNumber}</Text>
                                 </View>
-                                <View>
+                                <View style={styles.episodeOption}>
 
                                 </View>
 
@@ -643,14 +653,28 @@ const styles = StyleSheet.create({
     flex: 1,
     //borderTopWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
-    marginBottom: 2,
   },
   episodeInner: {
     flexDirection: 'row',
-    padding: 14,
+    padding: 10,
+    alignItems: 'center',
+  },
+  episodeScreenshotView: {
+    width: 80,
+    height: 50,
+  },
+  episodeScreenshot: {
+    flex: 1,
+    width: null,
+    height: null,
+    resizeMode: 'cover',
+    borderRadius: 3,
   },
   episodeNameNumber: {
+    flex: 1,
     flexDirection: 'column',
+    paddingLeft: 10,
+    paddingRight: 2,
   },
   episodeName: {
     color: '#dadade',
@@ -661,6 +685,9 @@ const styles = StyleSheet.create({
   episodeNumber: {
     color: 'rgba(255, 255, 255, 0.66)',
     marginRight: 10,
+  },
+  episodeOption: {
+
   },
   modalLoader: {
     position: 'absolute',
