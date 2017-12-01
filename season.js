@@ -202,7 +202,7 @@ class Season extends Component {
       <ReadMore numberOfLines={3}
                 renderTruncatedFooter={this.overviewTruncatedFooter}
                 renderRevealedFooter={this.overviewRevealedFooter}>
-        <Text style={styles.overview}>{this.state.seasonData.overview}</Text>
+        <Text style={styles.overview}>{(this.state.seasonData.overview !== null) ? this.state.seasonData.overview : 'Sin sinopsis'}</Text>
       </ReadMore>
     ) : (
       null
@@ -278,11 +278,11 @@ class Season extends Component {
                       return (
                         <EpisodeCollapse
                           key={index}
-                          screenshot={episode.screenshot !== null ? {uri: this.formatImageUri(episode.screenshot)} : null}
+                          screenshot={episode.screenshot !== null ? {uri: this.formatImageUri(episode.screenshot)} : require('./img/placeholderPoster.png')}
                           name={episode.name}
                           number={episode.episodeNumber}
-                          date={(episode.firstAired !== null) ? new Date(this.state.seasonData.firstAired).toLocaleDateString() : null}>
-                          <Text style={styles.episodeOverview}>{episode.overview}</Text>
+                          date={(episode.firstAired !== null) ? new Date(episode.firstAired).toLocaleDateString() : null}>
+                          <Text style={styles.episodeOverview}>{(episode.overview !== null) ? episode.overview : 'Sin sinopsis'}</Text>
                         </EpisodeCollapse>
                       )
                     })}
