@@ -12,13 +12,12 @@ import {
   AsyncStorage,
   ActivityIndicator,
   Dimensions,
-  TouchableOpacity,
-  Image,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import CustomComponents from 'react-native-deprecated-custom-components';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ReadMore from '@expo/react-native-read-more-text';
+import EpisodeCollapse from './components/episodeCollapse';
 
 const TouchableNativeFeedback = Platform.select({
   android: () => require('TouchableNativeFeedback'),
@@ -277,47 +276,14 @@ class Season extends Component {
                   <View style={styles.episodesView}>
                     {this.state.seasonData.episodes.map((episode, index) => {
                       return (
-                        (Platform.OS === 'ios') ? (
-                          <TouchableOpacity style={styles.episode} key={index} onPress={ this.openEpisode.bind(this, 1) }>
-                            <View style={styles.episodeInner}>
-                              <View style={styles.episodeScreenshotView}>
-                                <Image style={styles.episodeScreenshot}
-                                  source={episode.screenshot !== null ? {uri: this.formatImageUri(episode.screenshot)} : null} />
-                              </View>
-                              <View style={styles.episodeNameNumber}>
-                                <Text style={styles.episodeName} numberOfLines={1}>{episode.name}</Text>
-                                <Text style={styles.episodeNumber}>Episodio {episode.episodeNumber}</Text>
-                              </View>
-                              <View style={styles.episodeOption}>
-
-                              </View>
-
-                            </View>
-                          </TouchableOpacity>
-                        ) : (
-                          <View style={styles.episode} key={index} onPress={ this.openEpisode.bind(this, 1) }>
-                            <TouchableNativeFeedback
-                              onPress={ this.openEpisode.bind(this, 1) }
-                              background={TouchableNativeFeedback.Ripple('rgba(255,149,0,1)', true)}
-                              useForeground>
-
-                              <View style={styles.episodeInner}>
-                                <View style={styles.episodeScreenshotView}>
-                                  <Image style={styles.episodeScreenshot}
-                                         source={episode.screenshot !== null ? {uri: this.formatImageUri(episode.screenshot)} : null} />
-                                </View>
-                                <View style={styles.episodeNameNumber}>
-                                  <Text style={styles.episodeName} numberOfLines={1}>{episode.name}</Text>
-                                  <Text style={styles.episodeNumber}>Episodio {episode.episodeNumber}</Text>
-                                </View>
-                                <View style={styles.episodeOption}>
-
-                                </View>
-
-                              </View>
-                            </TouchableNativeFeedback>
-                          </View>
-                        )
+                        <EpisodeCollapse
+                          key={index}
+                          screenshot={episode.screenshot !== null ? {uri: this.formatImageUri(episode.screenshot)} : null}
+                          name={episode.name}
+                          number={episode.episodeNumber}
+                          date={(episode.firstAired !== null) ? new Date(this.state.seasonData.firstAired).toLocaleDateString() : null}>
+                          <Text style={styles.episodeOverview}>{episode.overview}</Text>
+                        </EpisodeCollapse>
                       )
                     })}
                   </View>
@@ -646,48 +612,11 @@ const styles = StyleSheet.create({
     }),
   },
   episodesView: {
-    marginTop: 14,
+    marginTop: 20,
     backgroundColor: 'rgba(20, 20, 20, 0.7)',
   },
-  episode: {
-    flex: 1,
-    //borderTopWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  episodeInner: {
-    flexDirection: 'row',
-    padding: 10,
-    alignItems: 'center',
-  },
-  episodeScreenshotView: {
-    width: 80,
-    height: 50,
-  },
-  episodeScreenshot: {
-    flex: 1,
-    width: null,
-    height: null,
-    resizeMode: 'cover',
-    borderRadius: 3,
-  },
-  episodeNameNumber: {
-    flex: 1,
-    flexDirection: 'column',
-    paddingLeft: 10,
-    paddingRight: 2,
-  },
-  episodeName: {
-    color: '#dadade',
-    fontSize: 14.5,
-    fontWeight: '600',
-    letterSpacing: -0.4,
-  },
-  episodeNumber: {
+  episodeOverview: {
     color: 'rgba(255, 255, 255, 0.66)',
-    marginRight: 10,
-  },
-  episodeOption: {
-
   },
   modalLoader: {
     position: 'absolute',
