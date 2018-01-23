@@ -196,9 +196,10 @@ class Root extends Component {
         this.processPopularData(responseData);
       }).then( () => {
       // indicamos que fetch ha terminado
-      this.setState({popularFetchEnded: true});
+      this.setState({popularFetchEnded: true, popularRefreshed: true});
     }).catch((error) => {
       console.log(error.stack);
+      this.setState({popularRefreshed: true});
       this.showAndHideModal(true, 'Error', 'No se han podido cargar los datos de las series populares', false);
     });
   }
@@ -239,9 +240,10 @@ class Root extends Component {
         this.processTopRatedData(responseData);
       }).then( () => {
       // indicamos que fetch ha terminado
-      this.setState({topRatedFetchEnded: true});
+      this.setState({topRatedFetchEnded: true, topRatedRefreshed: true});
     }).catch((error) => {
       console.log(error.stack);
+      this.setState({topRatedRefreshed: true});
       this.showAndHideModal(true, 'Error', 'No se han podido cargar los datos de las series mejor valoradas', false);
     });
   }
