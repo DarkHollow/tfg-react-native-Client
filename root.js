@@ -89,6 +89,15 @@ class Root extends Component {
     });
   }
 
+  onRefresh() {
+    this.setState({refreshing: true, popularRefreshed: false, topRatedRefreshed: false});
+    this.getPopular();
+    this.getTopRated();
+    if (this.state.popularRefreshed && this.state.topRatedRefreshed) {
+      this.setState({refreshing: false});
+    }
+  }
+
   async logout() {
     console.log("logout");
     try {
@@ -455,7 +464,14 @@ class Root extends Component {
         </View>
 
         <ScrollView style={styles.scrollViewV}
-                    scrollEventThrottle={16}>
+                    scrollEventThrottle={16}
+                    refreshControl={
+                      <RefreshControl
+                        refreshing={this.state.refreshing}
+                        onRefresh={this.onRefresh.bind(this)}
+                      />
+                    }
+        >
           <View style={styles.sections}>
 
             <View style={styles.section}>
