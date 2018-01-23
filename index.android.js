@@ -18,7 +18,8 @@ import Register from './register';
 import Search from './search';
 import TvShow from './tvshow';
 import Season from './season';
-import RequestTvShow from "./requestTvShow";
+import RequestTvShow from './requestTvShow';
+import PopularTvShows from './popularTvShows';
 
 export default class TrendingSeriesClient extends Component {
 
@@ -91,7 +92,7 @@ export default class TrendingSeriesClient extends Component {
     BackHandler.addEventListener('hardwareBackPress', () => {
       if (route.name === 'root') {
         return true;
-      } else if (route.name === 'login' || route.name === 'register' || route.name === 'search' || route.name === 'tvshow' || route.name === 'season' || route.name === 'requestTvShow') {
+      } else if (route.name === 'login' || route.name === 'register' || route.name === 'search' || route.name === 'tvshow' || route.name === 'season' || route.name === 'requestTvShow' || route.name === 'popularTvShows') {
         navigator.pop();
         return true;
       }
@@ -119,6 +120,9 @@ export default class TrendingSeriesClient extends Component {
     if (route.name === 'requestTvShow') {
       return <RequestTvShow navigator={navigator} {...route.passProps} />
     }
+    if (route.name === 'popularTvShows') {
+      return <PopularTvShows navigator={navigator} />
+    }
   }
 
   render() {
@@ -143,7 +147,7 @@ export default class TrendingSeriesClient extends Component {
             initialRoute={{name: this.state.initialRoute}}
             renderScene={this.renderScene.bind(this)}
             configureScene={(route) => {
-              if (route.name === 'login' || route.name === 'root') {
+              if (route.name === 'login' || route.name === 'root' || route.name === 'popularTvShows') {
                 return CustomComponents.Navigator.SceneConfigs.FadeAndroid;
               } else if (route.name === 'register') {
                 return CustomComponents.Navigator.SceneConfigs.FloatFromRightAndroid;
