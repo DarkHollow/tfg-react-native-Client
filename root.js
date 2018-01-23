@@ -290,6 +290,16 @@ class Root extends Component {
               </View>
             </View>
 
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Mejor valoradas</Text>
+                <Text style={styles.sectionButton} onPress={this.navigateTo.bind(this, 'mostRatedTvShows', false)}>Ver todo</Text>
+              </View>
+              <View style={styles.sectionContent}>
+
+              </View>
+            </View>
+
           </View>
         </ScrollView>
 
