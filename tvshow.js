@@ -4,7 +4,6 @@ import {
   Platform,
   Text,
   View,
-  TouchableOpacity,
   TouchableWithoutFeedback,
   StatusBar,
   Alert,
@@ -19,10 +18,8 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import CustomComponents from 'react-native-deprecated-custom-components';
 import Icon from 'react-native-vector-icons/Ionicons';
-import ReadMore from '@expo/react-native-read-more-text';
+import ReadMore from 'react-native-read-more-text';
 import StarRatingBar from 'react-native-star-rating-view/StarRatingBar';
-
-//import CircularButton from './components/circularButton';
 import SeasonButton from './components/seasonButton';
 
 const TouchableNativeFeedback = Platform.select({
@@ -503,7 +500,7 @@ class TvShow extends Component {
                 renderTruncatedFooter={this.overviewTruncatedFooter}
                 renderRevealedFooter={this.overviewRevealedFooter}
                 onReady={this.overviewReady}>
-        <Text style={styles.overview}>{this.state.tvShowData.overview}</Text>
+        <Text style={styles.overview}>{this.state.tvShowData.overview !== undefined && this.state.tvShowData.overview !== null ? this.state.tvShowData.overview : 'Sin sinopsis'}</Text>
       </ReadMore>
     ) : (
       null
