@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import CustomComponents from 'react-native-deprecated-custom-components';
 import Icon from 'react-native-vector-icons/Ionicons';
+import TvShowButtom from './components/tvShowButton';
 
 const InitialNavBarElementsOpacity = 1;
 const InitialSearchMarginRight = 50;
