@@ -48,6 +48,9 @@ class Root extends Component {
       popularData: {},
       topRatedFetchEnded: false,
       topRatedData: {},
+      refreshing: false,
+      popularRefreshed: false,
+      topRatedRefreshed: false,
     }
   }
 
@@ -84,6 +87,15 @@ class Root extends Component {
       this.getPopular();
       this.getTopRated();
     });
+  }
+
+  onRefresh() {
+    this.setState({refreshing: true, popularRefreshed: false, topRatedRefreshed: false});
+    this.getPopular();
+    this.getTopRated();
+    if (this.state.popularRefreshed && this.state.topRatedRefreshed) {
+      this.setState({refreshing: false});
+    }
   }
 
   async logout() {
@@ -193,9 +205,10 @@ class Root extends Component {
         this.processPopularData(responseData);
       }).then( () => {
       // indicamos que fetch ha terminado
-      this.setState({popularFetchEnded: true});
+      this.setState({popularFetchEnded: true, popularRefreshed: true});
     }).catch((error) => {
       console.log(error.stack);
+      this.setState({popularRefreshed: true});
       this.showAndHideModal(true, 'Error', 'No se han podido cargar los datos de las series populares', false);
     });
   }
@@ -236,9 +249,10 @@ class Root extends Component {
         this.processTopRatedData(responseData);
       }).then( () => {
       // indicamos que fetch ha terminado
-      this.setState({topRatedFetchEnded: true});
+      this.setState({topRatedFetchEnded: true, topRatedRefreshed: true});
     }).catch((error) => {
       console.log(error.stack);
+      this.setState({topRatedRefreshed: true});
       this.showAndHideModal(true, 'Error', 'No se han podido cargar los datos de las series mejor valoradas', false);
     });
   }
@@ -450,7 +464,14 @@ class Root extends Component {
         </View>
 
         <ScrollView style={styles.scrollViewV}
-                    scrollEventThrottle={16}>
+                    scrollEventThrottle={16}
+                    refreshControl={
+                      <RefreshControl
+                        refreshing={this.state.refreshing}
+                        onRefresh={this.onRefresh.bind(this)}
+                      />
+                    }
+        >
           <View style={styles.sections}>
 
             <View style={styles.section}>
