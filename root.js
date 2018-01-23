@@ -399,6 +399,19 @@ class Root extends Component {
     />
   );
 
+  formatAvgScore(score, count) {
+    let newScore;
+    // procesamos nota media
+    if (count === 0) {
+      newScore = '-';
+    } else if (score === 10) {
+      newScore = 10;
+    } else {
+      newScore = score.toFixed(1);
+    }
+    return newScore;
+  }
+
   renderTopRatedItem = ({item, index}) => (
     <TvShowButton
       onPress={ this.openTvShow.bind(this, item.id) }
@@ -412,7 +425,7 @@ class Root extends Component {
       title={ item.name}
       titleSize={(Platform.OS === 'ios') ? 13 : 14}
       titleColor={'rgba(255,255,255,0.86)'}
-      subtitleLeft={<Text> <Icon style={styles.scoreAvgStar} name={(Platform.OS === 'ios') ? 'ios-star' : 'md-star'} /> <Text style={styles.textIconStar}>{item.score}</Text></Text>}
+      subtitleLeft={<Text> <Icon style={styles.scoreAvgStar} name={(Platform.OS === 'ios') ? 'ios-star' : 'md-star'} /> <Text style={styles.textIconStar}>{this.formatAvgScore(item.score, item.voteCount)}</Text></Text>}
       subtitleRight={'(' + item.voteCount +')'}
       subtitleLeftSize={(Platform.OS === 'ios') ? 12 : 13}
       subtitleLeftColor={'rgba(255,255,255,0.86)'}
