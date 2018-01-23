@@ -386,6 +386,19 @@ class RequestTvShow extends Component {
     navigator.parentNavigator.pop();
   }
 
+  formatAvgScore(score, count) {
+    let newScore;
+    // procesamos nota media
+    if (count === 0) {
+      newScore = '-';
+    } else if (score === 10) {
+      newScore = 10;
+    } else {
+      newScore = score.toFixed(1);
+    }
+    return newScore;
+  }
+
   /* cabecera del listview: mostrar cuántos resultados se han obtenido */
   renderHeader() {
     return (
@@ -423,7 +436,7 @@ class RequestTvShow extends Component {
                     <View style={styles.localView}>
                       <Text style={styles.localText}>En local</Text>
                     </View>
-                    <Text style={styles.ratingText}>{(rowData.voteCount === 0) ? 'Sin votos' : rowData.score}</Text>
+                    <Text style={styles.ratingText}>{(rowData.voteCount === 0) ? 'Sin votos' : this.formatAvgScore(rowData.score, rowData.voteCount)}</Text>
                     <Icon name='ios-star' style={styles.ratingIcon} />
                   </View>
                 </View>

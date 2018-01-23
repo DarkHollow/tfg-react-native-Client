@@ -16,7 +16,7 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import CustomComponents from 'react-native-deprecated-custom-components';
 import Icon from 'react-native-vector-icons/Ionicons';
-import ReadMore from '@expo/react-native-read-more-text';
+import ReadMore from 'react-native-read-more-text';
 import EpisodeCollapse from './components/episodeCollapse';
 
 const TouchableNativeFeedback = Platform.select({
