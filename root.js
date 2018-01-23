@@ -46,6 +46,8 @@ class Root extends Component {
       modalVisible: false,
       popularFetchEnded: false,
       popularData: {},
+      topRatedFetchEnded: false,
+      topRatedData: {},
     }
   }
 
@@ -80,6 +82,7 @@ class Root extends Component {
         jwt: userData[2][1]
       });
       this.getPopular();
+      this.getTopRated();
     });
   }
 
@@ -214,6 +217,49 @@ class Root extends Component {
     }
   }
 
+  getTopRated() {
+    console.log('obtener series mejor valoradas');
+    // segun la plataforma, url
+    const URL = (Platform.OS === 'ios') ?
+      'http://localhost:9000/api/tvshows/toprated' : 'http://192.168.1.13:9000/api/tvshows/toprated';
+
+    // hacemos fetch a la API
+    fetch(URL, {
+      method: "GET",
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer ' + this.state.jwt,
+      }
+    }).then((response) => response.json())
+      .then((responseData) => {
+        // procesamos datos
+        this.processTopRatedData(responseData);
+      }).then( () => {
+      // indicamos que fetch ha terminado
+      this.setState({topRatedFetchEnded: true});
+    }).catch((error) => {
+      console.log(error.stack);
+      this.showAndHideModal(true, 'Error', 'No se han podido cargar los datos de las series mejor valoradas', false);
+    });
+  }
+
+  processTopRatedData(data) {
+    // si la API nos devuelve que no ha encontrado nada
+    if (data.error) {
+      if (data.error === 'Not found') {
+        // no hay series populares
+      } else {
+        // otro tipo de error interno
+      }
+      // mostramos error y volvemos atrás
+      console.log(data);
+      this.showAndHideModal(true, 'Error', 'No se han podido cargar los datos de las series mejor valoradas', false);
+    } else {
+      // cargamos datos en el state
+      this.setState({topRatedData: data});
+    }
+  }
+
   render() {
     // definición de los botones de los Modal
 
@@ -339,6 +385,28 @@ class Root extends Component {
     />
   );
 
+  renderTopRatedItem = ({item, index}) => (
+    <TvShowButton
+      onPress={ this.openTvShow.bind(this, item.id) }
+      width={(Platform.OS === 'ios') ? 130 : 130}
+      imageWidth={(Platform.OS === 'ios') ? 130 : 130}
+      imageHeight={(Platform.OS === 'ios') ? 191 : 191}
+      backgroundColor={'#212121'}
+      opacityColor={'rgba(255,149,0,1)'}
+      useForeground
+      source={item.poster !== null && item.poster !== undefined ? {uri: (URLSERVER + item.poster.substring(2))} : require('./img/placeholderPoster.png')}
+      title={ item.name}
+      titleSize={(Platform.OS === 'ios') ? 13 : 14}
+      titleColor={'rgba(255,255,255,0.86)'}
+      subtitleLeft={<Text> <Icon style={styles.scoreAvgStar} name={(Platform.OS === 'ios') ? 'ios-star' : 'md-star'} /> <Text style={styles.textIconStar}>{item.score}</Text></Text>}
+      subtitleRight={'(' + item.voteCount +')'}
+      subtitleLeftSize={(Platform.OS === 'ios') ? 12 : 13}
+      subtitleLeftColor={'rgba(255,255,255,0.86)'}
+      subtitleRightColor={'rgba(255,255,255,0.56)'}
+      resizeMode={'cover'}
+    />
+  );
+
   renderScene(route, navigator) {
 
     let { navBarElementsOpacity, searchHeight, searchWidth, searchMarginRight, searchBorderRadius } = this.state;
@@ -399,7 +467,6 @@ class Root extends Component {
                               keyExtractor={this.keyExtractor.bind(this)}
                               extraData={this.state.popularData}
                     />
-
                   ) : (
                     null
                   ) : (
@@ -415,10 +482,22 @@ class Root extends Component {
                 <Text style={styles.sectionButton} onPress={this.navigateTo.bind(this, 'mostRatedTvShows', false)}>Ver todo</Text>
               </View>
               <View style={styles.sectionContent}>
-
+                {(this.state.topRatedFetchEnded ?
+                  (this.state.topRatedData.size > 0) ? (
+                    <FlatList horizontal style={styles.scrollH} contentContainerStyle={styles.scrollHcontent}
+                              data={this.state.topRatedData.tvShows}
+                              renderItem={this.renderTopRatedItem.bind(this)}
+                              keyExtractor={this.keyExtractor.bind(this)}
+                              extraData={this.state.topRatedData}
+                    />
+                  ) : (
+                    null
+                  ) : (
+                    <ActivityIndicator style={styles.modalLoader}
+                                       size={'small'} color={'rgba(255,149,0,1)'} />
+                  ))}
               </View>
             </View>
-
           </View>
         </ScrollView>
 
@@ -451,8 +530,8 @@ const styles = StyleSheet.create({
       ios: {
         shadowColor: 'rgba(0,0,0,1)',
         shadowOffset: { width: 0, height: 0},
-        shadowOpacity: 0.4,
-        shadowRadius: 10,
+        shadowOpacity: 1,
+        shadowRadius: 4,
       },
       android: {
         elevation: 1,
@@ -606,6 +685,8 @@ const styles = StyleSheet.create({
   },
   scrollViewV: {
     flex: 1,
+    position: 'relative',
+    zIndex: -2,
     alignSelf: 'stretch',
   },
   section: {
@@ -652,6 +733,10 @@ const styles = StyleSheet.create({
   scrollHcontent: {
     paddingLeft: 14,
     paddingRight: 14,
+  },
+  scoreAvgStar: {
+    fontSize: 16,
+    color: 'rgba(255,204,0,1)',
   },
 });
 
