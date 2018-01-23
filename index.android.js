@@ -20,6 +20,7 @@ import TvShow from './tvshow';
 import Season from './season';
 import RequestTvShow from './requestTvShow';
 import PopularTvShows from './popularTvShows';
+import MostRatedTvShows from "./mostRatedTvShows";
 
 export default class TrendingSeriesClient extends Component {
 
@@ -123,6 +124,9 @@ export default class TrendingSeriesClient extends Component {
     if (route.name === 'popularTvShows') {
       return <PopularTvShows navigator={navigator} />
     }
+    if (route.name === 'mostRatedTvShows') {
+      return <MostRatedTvShows navigator={navigator} />
+    }
   }
 
   render() {
@@ -147,7 +151,7 @@ export default class TrendingSeriesClient extends Component {
             initialRoute={{name: this.state.initialRoute}}
             renderScene={this.renderScene.bind(this)}
             configureScene={(route) => {
-              if (route.name === 'login' || route.name === 'root' || route.name === 'popularTvShows') {
+              if (route.name === 'login' || route.name === 'root' || route.name === 'popularTvShows' || route.name === 'mostRatedTvShows') {
                 return CustomComponents.Navigator.SceneConfigs.FadeAndroid;
               } else if (route.name === 'register') {
                 return CustomComponents.Navigator.SceneConfigs.FloatFromRightAndroid;
