@@ -267,6 +267,19 @@ class Search extends Component {
     });
   }
 
+  formatAvgScore(score, count) {
+    let newScore;
+    // procesamos nota media
+    if (count === 0) {
+      newScore = '-';
+    } else if (score === 10) {
+      newScore = 10;
+    } else {
+      newScore = score.toFixed(1);
+    }
+    return newScore;
+  }
+
   /* cabecera del listview: mostrar cuántos resultados se han obtenido */
   renderHeader() {
     return (
@@ -297,7 +310,7 @@ class Search extends Component {
               </View>
               <View style={styles.rowBottomRight}>
                 <View style={styles.rating}>
-                  <Text style={styles.ratingText}>{(rowData.voteCount === 0) ? 'Sin votos' : rowData.score}</Text>
+                  <Text style={styles.ratingText}>{(rowData.voteCount === 0) ? 'Sin votos' : this.formatAvgScore(rowData.score, rowData.voteCount)}</Text>
                   <Icon name='ios-star' style={styles.ratingIcon} />
                   <Icon name='ios-arrow-forward' style={styles.forwardIcon} />
                 </View>
