@@ -387,11 +387,11 @@ class Root extends Component {
       opacityColor={'rgba(255,149,0,1)'}
       useForeground
       source={item.poster !== null && item.poster !== undefined ? {uri: (URLSERVER + item.poster.substring(2))} : require('./img/placeholderPoster.png')}
-      title={ item.name}
+      title={item.name}
       titleSize={(Platform.OS === 'ios') ? 13 : 14}
       titleColor={'rgba(255,255,255,0.86)'}
       subtitleLeft={'#' + (index+1)}
-      subtitleRight={ item.trend > 0 ? '▲ ' + item.trend : item.trend === 0 ? '--' : '▼ ' + item.trend}
+      subtitleRight={item.trend > 0 ? '▲ ' + item.trend : item.trend === 0 ? '--' : '▼ ' + item.trend}
       subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
       subtitleLeftColor={'rgba(255,255,255,0.86)'}
       subtitleRightColor={item.trend > 0 ? 'rgba(0,230,0,0.56)' + item.trend : item.trend === 0 ? 'rgba(0,230,0,0.56)' : '#ba2c20'}
@@ -422,11 +422,11 @@ class Root extends Component {
       opacityColor={'rgba(255,149,0,1)'}
       useForeground
       source={item.poster !== null && item.poster !== undefined ? {uri: (URLSERVER + item.poster.substring(2))} : require('./img/placeholderPoster.png')}
-      title={ item.name}
+      title={item.name}
       titleSize={(Platform.OS === 'ios') ? 13 : 14}
       titleColor={'rgba(255,255,255,0.86)'}
       subtitleLeft={<Text> <Icon style={styles.scoreAvgStar} name={(Platform.OS === 'ios') ? 'ios-star' : 'md-star'} /> <Text style={styles.textIconStar}>{this.formatAvgScore(item.score, item.voteCount)}</Text></Text>}
-      subtitleRight={'(' + item.voteCount +')'}
+      subtitleRight={'(' + item.voteCount + ')'}
       subtitleLeftSize={(Platform.OS === 'ios') ? 12 : 13}
       subtitleLeftColor={'rgba(255,255,255,0.86)'}
       subtitleRightColor={'rgba(255,255,255,0.56)'}
