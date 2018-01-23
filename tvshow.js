@@ -136,6 +136,19 @@ class TvShow extends Component {
     });
   }
 
+  formatAvgScore(score, count) {
+    let newScore;
+    // procesamos nota media
+    if (count === 0) {
+      newScore = '-';
+    } else if (score === 10) {
+      newScore = 10;
+    } else {
+      newScore = score.toFixed(1);
+    }
+    return newScore;
+  }
+
   errorAndPop() {
     Alert.alert('Error', 'Lamentablemente no se han podido cargar los datos del tv show');
     this.props.navigator.pop();
@@ -569,7 +582,7 @@ class TvShow extends Component {
                     ) : (
                       <View style={styles.scoreAvg}>
                         <View style={styles.iconView}><Icon style={styles.scoreAvgStar} name={(Platform.OS === 'ios') ? 'ios-star' : 'md-star'} /></View>
-                        <Text style={styles.scoreAvgText}> {this.state.tvShowData.score} <Text style={styles.scoreAvgTextNull}>({this.state.tvShowData.voteCount})</Text></Text>
+                        <Text style={styles.scoreAvgText}> {this.formatAvgScore(this.state.tvShowData.score)} <Text style={styles.scoreAvgTextNull}>({this.state.tvShowData.voteCount})</Text></Text>
                       </View>
                     )}
 
