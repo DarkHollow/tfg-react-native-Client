@@ -48,6 +48,9 @@ class Root extends Component {
       popularData: {},
       topRatedFetchEnded: false,
       topRatedData: {},
+      refreshing: false,
+      popularRefreshed: false,
+      topRatedRefreshed: false,
     }
   }
 
