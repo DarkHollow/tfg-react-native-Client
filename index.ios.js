@@ -18,6 +18,7 @@ import Search from './search';
 import TvShow from './tvshow';
 import Season from './season';
 import RequestTvShow from "./requestTvShow";
+import PopularTvShows from "./popularTvShows";
 
 export default class TrendingSeriesClient extends Component {
 
@@ -114,6 +115,9 @@ export default class TrendingSeriesClient extends Component {
     if (route.name === 'requestTvShow') {
       return <RequestTvShow navigator={navigator} {...route.passProps} />
     }
+    if (route.name === 'popularTvShows') {
+      return <PopularTvShows navigator={navigator} />
+    }
   }
 
   render() {
@@ -138,7 +142,7 @@ export default class TrendingSeriesClient extends Component {
             initialRoute={{ name: this.state.initialRoute }}
             renderScene={this.renderScene.bind(this)}
             configureScene={(route) => {
-              if (route.name === 'login' || route.name === 'root') {
+              if (route.name === 'login' || route.name === 'root' || route.name === 'popularTvShows') {
                 return CustomComponents.Navigator.SceneConfigs.FadeAndroid;
               } else if (route.name === 'search') {
                 return CustomComponents.Navigator.SceneConfigs.Fade10;

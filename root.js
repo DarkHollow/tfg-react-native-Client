@@ -13,7 +13,8 @@ import {
   Dimensions,
   Easing,
   Modal,
-  Button
+  Button,
+  ScrollView,
 } from 'react-native';
 import CustomComponents from 'react-native-deprecated-custom-components';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -274,6 +275,24 @@ class Root extends Component {
             </Animated.View>
           }
         </View>
+
+        <ScrollView style={styles.scrollViewV}
+                    scrollEventThrottle={16}>
+          <View style={styles.sections}>
+
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Más populares</Text>
+                <Text style={styles.sectionButton} onPress={this.navigateTo.bind(this, 'popularTvShows', false)}>Ver todo</Text>
+              </View>
+              <View style={styles.sectionContent}>
+
+              </View>
+            </View>
+
+          </View>
+        </ScrollView>
+
       </View>
     )
   }
@@ -443,6 +462,48 @@ const styles = StyleSheet.create({
       },
     }),
     fontSize: 14,
+  },
+  scrollViewV: {
+    flex: 1,
+    alignSelf: 'stretch',
+  },
+  section: {
+    marginBottom: 10,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    padding: 14,
+    paddingBottom: 10,
+    justifyContent: 'space-between'
+  },
+  sectionTitle: {
+    color: 'rgba(255,255,255,0.56)',
+    fontSize: 14,
+    ...Platform.select({
+      android: {
+        fontFamily: 'Roboto-Medium'
+      },
+      ios: {
+        fontWeight: '600',
+      },
+    }),
+  },
+  sectionButton: {
+    backgroundColor: 'transparent',
+    fontSize: 13,
+    alignSelf: 'flex-end',
+    color: 'rgba(255,149,0,1)',
+    ...Platform.select({
+      ios: {
+        fontWeight: '600',
+      },
+      android: {
+        fontFamily: 'Roboto-Medium',
+      },
+    }),
+  },
+  sectionContent: {
+
   },
 });
 
