@@ -482,6 +482,11 @@ class Root extends Component {
                       <RefreshControl
                         refreshing={this.state.refreshing}
                         onRefresh={this.onRefresh.bind(this)}
+                        tintColor={'rgba(239,186,126,1)'}
+                        colors={['rgba(255,149,0,1)']}
+                        progressBackgroundColor={['rgba(60,60,60,0.7)']}
+                        title={'Actualizar datos'}
+                        titleColor={'rgba(255,255,255,0.3)'}
                       />
                     }
         >
