@@ -14,6 +14,7 @@ import {
   Modal,
   ActivityIndicator,
   Image,
+  ToastAndroid,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import CustomComponents from 'react-native-deprecated-custom-components';
@@ -22,6 +23,7 @@ import MCIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ReadMore from 'react-native-read-more-text';
 import StarRatingBar from 'react-native-star-rating-view/StarRatingBar';
 import SeasonButton from './components/seasonButton';
+import CustomToast, {DURATION} from './components/customToast';
 
 const TouchableNativeFeedback = Platform.select({
   android: () => require('TouchableNativeFeedback'),
@@ -383,16 +385,27 @@ class TvShow extends Component {
 
   followAnimations(method) {
     let tvShowData = this.state.tvShowData;
-    tvShowData.following = method === 'PUT';
-    this.setState({tvShowData: tvShowData});
+    let toValue = 0;
+    let toastMessage = 'Serie no seguida';
 
-    const toValue = method === 'PUT' ? 1 : 0;
+    if (method === 'PUT') {
+      tvShowData.following = true;
+      toValue = 1;
+      toastMessage = 'Siguiendo serie';
+    } else {
+      tvShowData.following = false;
+    }
+
+    this.setState({tvShowData: tvShowData});
 
     Animated.timing(this.state.followIconColor, {
       delay: 0,
       duration: 300,
       toValue: toValue,
     }).start();
+
+    // toast
+    this.refs.toast.show(toastMessage, 2000);
   }
 
   /* redirige a la vista de una season */
@@ -535,6 +548,7 @@ class TvShow extends Component {
             </View>
           </TouchableWithoutFeedback>
         </Modal>
+        <CustomToast ref='toast' />
       </View>
     );
   }
@@ -637,13 +651,28 @@ class TvShow extends Component {
                 <View style={styles.bodyContent}>
                   <View style={styles.scores}>
                     <View style={styles.followView}>
-                      <View style={styles.followIconView}>
-                        <AnimatedMCIcon
+                      {Platform.OS === 'ios' ? (
+                        <TouchableHighlight style={styles.followIconView}
+                                            onPress={this.state.followIconColor._value === 0 || this.state.followIconColor._value === 1 ? this.following.bind(this) : null}
+                                            underlayColor={'rgba(255,179,0,0.5)'}>
+                          <AnimatedMCIcon
+                            style={[this.state.tvShowData.following ? styles.bookmarkCheck : styles.bookmarkPlus, {color: followIconColor}]}
+                            name={this.state.tvShowData.following ? 'bookmark-check' : 'bookmark-plus'} />
+                        </TouchableHighlight>
+                      ) : (
+                        <TouchableNativeFeedback
                           onPress={this.state.followIconColor._value === 0 || this.state.followIconColor._value === 1 ? this.following.bind(this) : null}
-                          style={[this.state.tvShowData.following ? styles.bookmarkCheck : styles.bookmarkPlus, {color: followIconColor}]}
-                          name={this.state.tvShowData.following ? 'bookmark-check' : 'bookmark-plus'} />
-                      </View>
+                          delayPressIn={0}
+                          background={TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true)}>
+                          <View style={styles.followIconView}>
+                            <AnimatedMCIcon
+                              style={[this.state.tvShowData.following ? styles.bookmarkCheck : styles.bookmarkPlus, {color: followIconColor}]}
+                              name={this.state.tvShowData.following ? 'bookmark-check' : 'bookmark-plus'} />
+                          </View>
+                        </TouchableNativeFeedback>
+                      )}
                     </View>
+
 
                     {(this.state.tvShowData.voteCount === 0) ? (
                       <View style={styles.scoreAvg}>
@@ -1175,11 +1204,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    flexDirection: 'row'
+    flexDirection: 'row',
   },
   followIconView: {
     borderWidth: 1,
     borderColor: 'transparent',
+    paddingHorizontal: 10,
   },
   bookmarkPlus: {
     fontSize: 32,
