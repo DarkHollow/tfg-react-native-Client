@@ -1210,10 +1210,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'transparent',
     paddingHorizontal: 10,
+    paddingTop: 4,
   },
   bookmarkPlus: {
     fontSize: 32,
-    elevation: 1,
   },
   bookmarkCheck: {
     fontSize: 32,
