@@ -14,13 +14,16 @@ import {
   Modal,
   ActivityIndicator,
   Image,
+  ToastAndroid,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import CustomComponents from 'react-native-deprecated-custom-components';
 import Icon from 'react-native-vector-icons/Ionicons';
+import MCIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ReadMore from 'react-native-read-more-text';
 import StarRatingBar from 'react-native-star-rating-view/StarRatingBar';
 import SeasonButton from './components/seasonButton';
+import CustomToast, {DURATION} from './components/customToast';
 
 const TouchableNativeFeedback = Platform.select({
   android: () => require('TouchableNativeFeedback'),
@@ -62,7 +65,10 @@ class TvShow extends Component {
       voteModalBottomMessage: ' ',
       voteModalBottomMessageOpacity: new Animated.Value(0),
       voteModalLoading: false,
-    }
+      followIconColor: new Animated.Value(0),
+    };
+
+    this.state.followIconColor.addListener(({value}) => this._value = value);
   }
 
   // obtener datos usuario
@@ -168,6 +174,11 @@ class TvShow extends Component {
       console.log(data);
       this.errorAndPop();
     } else {
+      // procesamos color follow
+      if (data.following) {
+        this.setState({followIconColor: new Animated.Value(1)});
+      }
+
       // procesamos URLs imagenes
       data.fanart = this.formatImageUri(data.fanart);
       data.poster = this.formatImageUri(data.poster);
@@ -337,8 +348,68 @@ class TvShow extends Component {
     }
   };
 
+  followingFetch(method) {
+    // segun la plataforma, url
+    const URL = (Platform.OS === 'ios') ?
+      'http://localhost:9000/api/tvshows/' : 'http://192.168.1.13:9000/api/tvshows/';
+    const ACTION = '/following';
+
+    // hacemos fetch a la API
+    fetch(URL + this.state.tvShowId + ACTION, {
+      method: method,
+      headers: {
+        'Authorization': 'Bearer ' + this.state.jwt,
+      }
+    }).then(function (response) {
+      if (response.status === 204) {
+        this.followAnimations(method);
+      } else {
+        // mal: mostrar toast ?
+      }
+    }.bind(this)).catch((error) => {
+      console.log(error.stack);
+      // mostrar toast ?
+    });
+  }
+
+  /* boton follow */
+  following() {
+    if (this.state.tvShowData.following) {
+      // dejar de seguir
+      this.followingFetch('DELETE');
+    } else {
+      // seguir
+      this.followingFetch('PUT');
+    }
+  }
+
+  followAnimations(method) {
+    let tvShowData = this.state.tvShowData;
+    let toValue = 0;
+    let toastMessage = 'Serie no seguida';
+
+    if (method === 'PUT') {
+      tvShowData.following = true;
+      toValue = 1;
+      toastMessage = 'Siguiendo serie';
+    } else {
+      tvShowData.following = false;
+    }
+
+    this.setState({tvShowData: tvShowData});
+
+    Animated.timing(this.state.followIconColor, {
+      delay: 0,
+      duration: 300,
+      toValue: toValue,
+    }).start();
+
+    // toast
+    this.refs.toast.show(toastMessage, 2000);
+  }
+
   /* redirige a la vista de una season */
-    openSeason(seasonNumber) {
+  openSeason(seasonNumber) {
     console.log('Ver la season:' + seasonNumber + ' de ' + this.state.tvShowData.id);
     this.props.navigator.push({
       name: 'season',
@@ -477,6 +548,7 @@ class TvShow extends Component {
             </View>
           </TouchableWithoutFeedback>
         </Modal>
+        <CustomToast ref='toast' />
       </View>
     );
   }
@@ -494,6 +566,13 @@ class TvShow extends Component {
       outputRange: [0, 0, 0.8],
       extrapolate: 'clamp',
     });
+    /* calculo color boton follow */
+    const followIconColor = this.state.followIconColor.interpolate({
+      inputRange: [0, 1],
+      outputRange: ['rgba(255,255,255,0.36)', 'rgba(76,217,100,0.90)'],
+    });
+    /* MCIcon animado */
+    const AnimatedMCIcon = Animated.createAnimatedComponent(MCIcon);
 
     let overview = this.state.fetchEnded ? (
       <ReadMore numberOfLines={3}
@@ -571,6 +650,30 @@ class TvShow extends Component {
 
                 <View style={styles.bodyContent}>
                   <View style={styles.scores}>
+                    <View style={styles.followView}>
+                      {Platform.OS === 'ios' ? (
+                        <TouchableHighlight style={styles.followIconView}
+                                            onPress={this.state.followIconColor._value === 0 || this.state.followIconColor._value === 1 ? this.following.bind(this) : null}
+                                            underlayColor={'rgba(255,179,0,0.5)'}>
+                          <AnimatedMCIcon
+                            style={[this.state.tvShowData.following ? styles.bookmarkCheck : styles.bookmarkPlus, {color: followIconColor}]}
+                            name={this.state.tvShowData.following ? 'bookmark-check' : 'bookmark-plus'} />
+                        </TouchableHighlight>
+                      ) : (
+                        <TouchableNativeFeedback
+                          onPress={this.state.followIconColor._value === 0 || this.state.followIconColor._value === 1 ? this.following.bind(this) : null}
+                          delayPressIn={0}
+                          background={TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true)}>
+                          <View style={styles.followIconView}>
+                            <AnimatedMCIcon
+                              style={[this.state.tvShowData.following ? styles.bookmarkCheck : styles.bookmarkPlus, {color: followIconColor}]}
+                              name={this.state.tvShowData.following ? 'bookmark-check' : 'bookmark-plus'} />
+                          </View>
+                        </TouchableNativeFeedback>
+                      )}
+                    </View>
+
+
                     {(this.state.tvShowData.voteCount === 0) ? (
                       <View style={styles.scoreAvg}>
                         <View style={styles.iconView}><Icon style={styles.scoreAvgStar} name={(Platform.OS === 'ios') ? 'ios-star-outline' : 'md-star-outline'} /></View>
@@ -589,7 +692,7 @@ class TvShow extends Component {
                           <TouchableHighlight style={styles.scorePersonal} onPress={ this.showVoteModal } underlayColor={'rgba(255,179,0,0.5)'}>
                             <View style={styles.insideButton}>
                               <View style={styles.iconView}><Icon style={styles.scorePersonalStarNull} name={'ios-star-outline'} /></View>
-                              <Text style={styles.scorePersonalTextNull}>Vota</Text>
+                              <Text style={styles.scorePersonalTextNull}>Votar</Text>
                             </View>
                           </TouchableHighlight>
                         </View>
@@ -601,7 +704,7 @@ class TvShow extends Component {
                             background={TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true)}>
                             <View style={styles.insideButton}>
                               <View style={styles.iconView}><Icon style={styles.scorePersonalStarNull} name={'md-star-outline'} /></View>
-                              <Text style={styles.scorePersonalTextNull}>Vota</Text>
+                              <Text style={styles.scorePersonalTextNull}>Votar</Text>
                             </View>
                           </TouchableNativeFeedback>
                         </View>
@@ -897,12 +1000,14 @@ const styles = StyleSheet.create({
   },
   // imagen poster del tv show
   poster: {
+    position: 'relative',
     marginTop: -86,
     height: 147,
     width: 100,
     resizeMode: 'contain',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderTopRightRadius: 10,
   },
   // vista donde estan el titulo, año, content rating y generos del tv show
   headerData: {
@@ -1042,13 +1147,13 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingLeft: 14,
     paddingRight: 14,
-    paddingTop: 6,
+    paddingTop: 5,
     backgroundColor: '#212121',
   },
   scores: {
     flex: 1,
     flexDirection: 'row',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   scoreAvg: {
     flex: 1,
@@ -1094,6 +1199,27 @@ const styles = StyleSheet.create({
   scorePersonalStarNull: {
     fontSize: 24,
     color: 'rgba(255,255,255,0.3)'
+  },
+  followView: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  followIconView: {
+    borderWidth: 1,
+    borderColor: 'transparent',
+    paddingHorizontal: 10,
+    paddingTop: 4,
+  },
+  bookmarkPlus: {
+    fontSize: 32,
+  },
+  bookmarkCheck: {
+    fontSize: 32,
+  },
+  followText: {
+    color: 'rgba(255,255,255,0.3)',
   },
   principalButtons: {
     backgroundColor: '#212121',
