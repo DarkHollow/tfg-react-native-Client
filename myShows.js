@@ -23,8 +23,7 @@ class Root extends Component {
     super();
     this.state = {
       modalVisible: false,
-      fetchEnded: false,
-      myShowsData: {},
+      myShowsData: null,
     }
   }
 
@@ -85,6 +84,7 @@ class Root extends Component {
   }
 
   dismissModal() {
+    console.log('quitar');
     this.setModalVisible(false, '', '', false, null);
   }
 
@@ -103,12 +103,9 @@ class Root extends Component {
       }
     }).then((response) => response.json())
       .then((responseData) => {
-      console.log(responseData);
         // procesamos datos
         this.processFollowingData(responseData);
       }).then( () => {
-      // indicamos que fetch ha terminado
-      this.setState({fetchEnded: true});
     }).catch((error) => {
       console.log(error.stack);
       this.showAndHideModal(true, 'Error', 'No se han podido cargar los datos de las series seguidas', false);
@@ -120,11 +117,11 @@ class Root extends Component {
     if (data.error) {
       if (data.error === 'Not found') {
         // no hay series seguidas
+        this.showAndHideModal(true, 'Mis series', 'Todavía no sigues ninguna serie', false);
       } else {
         // otro tipo de error interno
+        this.showAndHideModal(true, 'Error', 'No se han podido cargar los datos de las series seguidas', false);
       }
-      // mostramos error y volvemos atrás
-      this.showAndHideModal(true, 'Error', 'No se han podido cargar los datos de las series seguidas', false);
     } else {
       // cargamos datos en el state
       this.setState({myShowsData: data.tvShows});
@@ -191,19 +188,13 @@ class Root extends Component {
       {...item}
       index={index}
       jwt={this.state.jwt}
-      //tvShowId={item.id}
       imageWidth={(Platform.OS === 'ios') ? 70 : 70}
       imageHeight={(Platform.OS === 'ios') ? 103 : 103}
       backgroundColor={'#202020'}
       opacityColor={'rgba(255,149,0,1)'}
       useForeground
-      //source={item.poster !== null && item.poster !== undefined ? {uri: (URLSERVER + item.poster.substring(2))} : require('./img/placeholderPoster.png')}
-      //title={item.name + ' (' + new Date(item.firstAired).getFullYear() + ')'}
       titleSize={(Platform.OS === 'ios') ? 15 : 17}
       titleColor={'rgba(255,255,255,0.86)'}
-      //score={item.score}
-      //voteCount={item.voteCount}
-      //following={item.following}
       resizeMode={'cover'} />
   );
 
