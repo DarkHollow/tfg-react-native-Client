@@ -54,15 +54,21 @@ class Season extends Component {
     }
   }
 
+  componentWillMount() {
+    console.log('Consulta season: ' + this.state.seasonNumber + ' de tvshow: ' + this.state.tvShowId);
+    this.getUserData().then(() => {
+      this.getSeason();
+    });
+  }
+
   // obtener datos usuario
-  async getUserDataAndFetchData() {
+  async getUserData() {
     await AsyncStorage.multiGet(['userId', 'userName', 'jwt']).then((userData) => {
       this.setState({
         userId: userData[0][1],
         userName: userData[1][1],
         jwt: userData[2][1]
       });
-      this.getSeason();
     });
   }
 
@@ -96,11 +102,6 @@ class Season extends Component {
   errorAndPop() {
     Alert.alert('Error', 'Lamentablemente no se han podido cargar los datos de la season');
     this.props.navigator.pop();
-  }
-
-  componentWillMount() {
-    console.log('Consulta season: ' + this.state.seasonNumber + ' de tvshow: ' + this.state.tvShowId);
-    this.getUserDataAndFetchData();
   }
 
   processData(data) {

@@ -14,7 +14,6 @@ import {
   Modal,
   ActivityIndicator,
   Image,
-  ToastAndroid,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import CustomComponents from 'react-native-deprecated-custom-components';
@@ -23,7 +22,7 @@ import MCIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ReadMore from 'react-native-read-more-text';
 import StarRatingBar from 'react-native-star-rating-view/StarRatingBar';
 import SeasonButton from './components/seasonButton';
-import CustomToast, {DURATION} from './components/customToast';
+import CustomToast, { DURATION } from './components/customToast';
 
 const TouchableNativeFeedback = Platform.select({
   android: () => require('TouchableNativeFeedback'),
@@ -71,15 +70,21 @@ class TvShow extends Component {
     this.state.followIconColor.addListener(({value}) => this._value = value);
   }
 
+  componentWillMount() {
+    console.log('Consulta tv show id: ' + this.state.tvShowId);
+    this.getUserData().then(() => {
+      this.getTvShow();
+    });
+  }
+
   // obtener datos usuario
-  async getUserDataAndFetchTvShow() {
+  async getUserData() {
     await AsyncStorage.multiGet(['userId', 'userName', 'jwt']).then((userData) => {
       this.setState({
         userId: userData[0][1],
         userName: userData[1][1],
         jwt: userData[2][1]
       });
-      this.getTvShow();
     });
   }
 
@@ -155,11 +160,6 @@ class TvShow extends Component {
   errorAndPop() {
     Alert.alert('Error', 'Lamentablemente no se han podido cargar los datos del tv show');
     this.props.navigator.pop();
-  }
-
-  componentWillMount() {
-    console.log('Consulta tv show id: ' + this.state.tvShowId);
-    this.getUserDataAndFetchTvShow();
   }
 
   processData(data) {

@@ -4,22 +4,14 @@ import {
   StyleSheet,
   Text,
   View,
-  TouchableHighlight,
   StatusBar,
   Platform,
-  TouchableNativeFeedback,
-  TextInput,
-  Animated,
-  Dimensions,
-  Easing,
   Modal,
-  Button,
-  ScrollView,
   FlatList,
 } from 'react-native';
 import CustomComponents from 'react-native-deprecated-custom-components';
 import Icon from 'react-native-vector-icons/Ionicons';
-import TopRatedListItem from './components/topRatedListItem';
+import MyShowsListItem from './components/myShowsListItem';
 
 /* Constantes de URLs */
 const URLSERVER = (Platform.OS === 'ios') ?
@@ -32,23 +24,24 @@ class Root extends Component {
     this.state = {
       modalVisible: false,
       fetchEnded: false,
-      mostRatedData: {},
+      myShowsData: {},
     }
   }
 
   componentWillMount() {
-    this.getUserDataAndFetch();
+    this.getUserData().then(() => {
+      this.getFollowing();
+    });
   }
 
   // obtener datos usuario
-  async getUserDataAndFetch() {
+  async getUserData() {
     await AsyncStorage.multiGet(['userId', 'userName', 'jwt']).then((userData) => {
       this.setState({
         userId: userData[0][1],
         userName: userData[1][1],
         jwt: userData[2][1]
       });
-      this.getTopRated();
     });
   }
 
@@ -95,11 +88,11 @@ class Root extends Component {
     this.setModalVisible(false, '', '', false, null);
   }
 
-  getTopRated() {
-    console.log('obtener series mejor valoradas');
+  getFollowing() {
+    console.log('obtener series que sigue el usuario');
     // segun la plataforma, url
     const URL = (Platform.OS === 'ios') ?
-      'http://localhost:9000/api/tvshows/toprated?size=10' : 'http://192.168.1.13:9000/api/tvshows/toprated?size=10';
+      'http://localhost:9000/api/tvshows/following' : 'http://192.168.1.13:9000/api/tvshows/following';
 
     // hacemos fetch a la API
     fetch(URL, {
@@ -112,31 +105,36 @@ class Root extends Component {
       .then((responseData) => {
       console.log(responseData);
         // procesamos datos
-        this.processTopRatedData(responseData);
+        this.processFollowingData(responseData);
       }).then( () => {
       // indicamos que fetch ha terminado
       this.setState({fetchEnded: true});
     }).catch((error) => {
       console.log(error.stack);
-      this.showAndHideModal(true, 'Error', 'No se han podido cargar los datos de las series mejor valoradas', false);
+      this.showAndHideModal(true, 'Error', 'No se han podido cargar los datos de las series seguidas', false);
     });
   }
 
-  processTopRatedData(data) {
+  processFollowingData(data) {
     // si la API nos devuelve que no ha encontrado nada
     if (data.error) {
       if (data.error === 'Not found') {
-        // no hay series mejor valoradas
+        // no hay series seguidas
       } else {
         // otro tipo de error interno
       }
       // mostramos error y volvemos atrás
-      console.log(data);
-      this.showAndHideModal(true, 'Error', 'No se han podido cargar los datos de las mejor valoradas', false);
+      this.showAndHideModal(true, 'Error', 'No se han podido cargar los datos de las series seguidas', false);
     } else {
       // cargamos datos en el state
-      this.setState({mostRatedData: data});
+      this.setState({myShowsData: data.tvShows});
     }
+  }
+
+  onRemoveItem(index) {
+    const start = this.state.myShowsData.slice(0, index);
+    const end = this.state.myShowsData.slice(index + 1);
+    this.setState({ myShowsData: start.concat(end)});
   }
 
   render() {
@@ -187,22 +185,26 @@ class Root extends Component {
   keyExtractor = (item, index) => index;
 
   renderItem = ({item, index}) => (
-    <TopRatedListItem
+    <MyShowsListItem
       onPress={this.openTvShow.bind(this, item.id)}
+      onRemove={this.onRemoveItem.bind(this, index)}
+      {...item}
+      index={index}
       jwt={this.state.jwt}
-      tvShowId={item.id}
+      //tvShowId={item.id}
       imageWidth={(Platform.OS === 'ios') ? 70 : 70}
       imageHeight={(Platform.OS === 'ios') ? 103 : 103}
       backgroundColor={'#202020'}
       opacityColor={'rgba(255,149,0,1)'}
       useForeground
-      source={item.poster !== null && item.poster !== undefined ? {uri: (URLSERVER + item.poster.substring(2))} : require('./img/placeholderPoster.png')}
-      title={item.name + ' (' + new Date(item.firstAired).getFullYear() + ')'}
+      //source={item.poster !== null && item.poster !== undefined ? {uri: (URLSERVER + item.poster.substring(2))} : require('./img/placeholderPoster.png')}
+      //title={item.name + ' (' + new Date(item.firstAired).getFullYear() + ')'}
       titleSize={(Platform.OS === 'ios') ? 15 : 17}
       titleColor={'rgba(255,255,255,0.86)'}
-      score={item.score}
-      voteCount={item.voteCount}
-      resizeMode={'cover'}/>
+      //score={item.score}
+      //voteCount={item.voteCount}
+      //following={item.following}
+      resizeMode={'cover'} />
   );
 
   renderScene(route, navigator) {
@@ -212,16 +214,16 @@ class Root extends Component {
         <View style={styles.navBarView}>
           <Icon style={styles.backIcon} onPress={ this.onBackPress.bind(this, navigator) }
                 name={(Platform.OS === 'ios') ? 'ios-arrow-back-outline' : 'md-arrow-back'} />
-          <Text style={styles.navBarTitle}>Series mejor valoradas</Text>
-        </View>
+          <Text style={styles.navBarTitle}>Mis series</Text>
+      </View>
 
         <FlatList vertical
                   style={styles.topRatedList}
                   contentContainerStyle={styles.topRatedListContent}
-                  data={this.state.mostRatedData.tvShows}
+                  data={this.state.myShowsData}
                   renderItem={this.renderItem.bind(this)}
                   keyExtractor={this.keyExtractor.bind(this)}
-                  extraData={this.state.mostRatedData}
+                  extraData={this.state.myShowsData}
         />
 
       </View>

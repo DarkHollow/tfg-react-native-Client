@@ -5,35 +5,36 @@ import {
   View,
   TouchableOpacity,
   TouchableNativeFeedback,
+  TouchableHighlight,
   Image,
   Animated,
   Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import MCIcon from 'react-native-vector-icons/MaterialCommunityIcons';
+
+/* Constantes de URLs */
+const URLSERVER = (Platform.OS === 'ios') ?
+  'http://localhost:9000/' : 'http://192.168.1.13:9000/';
 
 const ANIMATION_DURATION = 500;
+const HEIGHT = 123;
 
-class topRatedListItem extends Component {
+class myShowsListItem extends Component {
   constructor(props) {
     super(props);
-    this.animated = new Animated.Value(0);
-
-    let score;
-    // procesamos nota media
-    if (props.voteCount === 0) {
-      score = '-';
-    } else if (props.score === 10) {
-      score = 10;
-    } else {
-      score = props.score.toFixed(1);
-    }
 
     this.state = {
-      modalVisible: false,
-      score: score,
-      scorePersonal: null,
       jwt: props.jwt,
-    }
+    };
+
+    this.animated = new Animated.Value(0);
+    this.opacity = new Animated.Value(0);
+    this.height = new Animated.Value(HEIGHT);
+    this.followIconColor = props.following ? new Animated.Value(1) : new Animated.Value(0);
+    this.personalScore = null;
+    this.personalScoreOpacity = new Animated.Value(0);
+    this.fetchEnded = false;
   }
 
   componentWillMount() {
@@ -44,12 +45,16 @@ class topRatedListItem extends Component {
     Animated.timing(this.animated, {
       toValue: 1,
       duration: ANIMATION_DURATION,
+    }).start(() => this.showPersonaScore());
+    Animated.timing(this.opacity, {
+      toValue: 1,
+      duration: ANIMATION_DURATION,
     }).start();
   }
 
   getTvShowVote() {
     // segun la plataforma, url
-    const tvShowId = this.props.tvShowId;
+    const tvShowId = this.props.id;
     const route = 'api/tvshows/' + tvShowId + '/rating';
     const URL = (Platform.OS === 'ios') ?
       'http://localhost:9000/' + route : 'http://192.168.1.13:9000/' + route;
@@ -66,16 +71,116 @@ class topRatedListItem extends Component {
         // procesamos datos
         if (responseData.error) {
           // ponemos null
-          this.setState({scorePersonal: null});
+          this.personalScore = null;
         } else {
           // ponemos nota del usuario
-          this.setState({scorePersonal: responseData.tvShowVote.score});
+          this.personalScore = responseData.tvShowVote.score;
+          this.fetchEnded = true;
+          // animamos opacidad
+
         }
       }).catch((error) => {
-      console.log(error.stack);
-      this.errorAndPop();
+        console.log(error.stack);
+        this.errorAndPop();
     });
   }
+
+  showPersonaScore() {
+    setTimeout(() => {
+      Animated.timing(this.personalScoreOpacity, {
+        delay: 0,
+        duration: 250,
+        toValue: 1,
+      }).start();
+    }, 300);
+
+  }
+
+  /* boton follow */
+  following() {
+    const { following } = this.props;
+    if (following) {
+      // dejar de seguir
+      this.followingFetch('DELETE');
+    } else {
+      // seguir
+      this.followingFetch('PUT');
+    }
+  }
+
+  followingFetch(method) {
+    // segun la plataforma, url
+    const URL = (Platform.OS === 'ios') ?
+      'http://localhost:9000/api/tvshows/' : 'http://192.168.1.13:9000/api/tvshows/';
+    const ACTION = '/following';
+    const tvShowId = this.props.id;
+
+    // hacemos fetch a la API
+    fetch(URL + tvShowId + ACTION, {
+      method: method,
+      headers: {
+        'Authorization': 'Bearer ' + this.state.jwt,
+      }
+    }).then(function (response) {
+      if (response.status === 204) {
+        this.followAnimations(method);
+      } else {
+        // mal: mostrar toast ?
+      }
+    }.bind(this)).catch((error) => {
+      console.log(error.stack);
+      // mostrar toast ?
+    });
+  }
+
+  followAnimations(method) {
+    let toValue = 0;
+    let toastMessage = 'Serie no seguida';
+
+    Animated.parallel([
+      Animated.timing(this.followIconColor, {
+        delay: 0,
+        duration: 300,
+        toValue: toValue,
+      }),
+      Animated.timing(this.opacity, {
+        toValue: 0,
+        duration: ANIMATION_DURATION,
+      }),
+      Animated.timing(this.height, {
+        toValue: 0,
+        duration: ANIMATION_DURATION,
+      }),
+    ]).start(() => this.resetThings());
+
+    // toast
+    //this.refs.toast.show(toastMessage, 2000);
+  }
+
+  resetThings() {
+    Animated.parallel([
+      Animated.timing(this.followIconColor, {
+        delay: 0,
+        duration: 1,
+        toValue: 1,
+      }),
+      Animated.timing(this.opacity, {
+        toValue: 1,
+        duration: 1,
+      }),
+      Animated.timing(this.height, {
+        toValue: 123,
+        duration: 1,
+      }),
+    ]).start(() => this.onRemove());
+  }
+
+  onRemove = () => {
+    const { onRemove } = this.props;
+    if (onRemove) {
+      onRemove();
+    }
+  };
 
   render() {
     const verticalPosition = this.animated.interpolate({
@@ -83,16 +188,47 @@ class topRatedListItem extends Component {
       outputRange: [100, 0],
       extrapolate: 'clamp',
     });
+    const opacity = this.opacity.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0, 1],
+      extrapolate: 'clamp',
+    });
+    const height = this.height.interpolate({
+      inputRange: [0, 123],
+      outputRange: [0, 123],
+      extrapolate: 'clamp',
+    });
+
+    /* MCIcon animado */
+    const AnimatedMCIcon = Animated.createAnimatedComponent(MCIcon);
+    /* calculo color boton follow */
+    const followIconColor = this.followIconColor.interpolate({
+      inputRange: [0, 1],
+      outputRange: ['rgba(255,255,255,0.36)', 'rgba(76,217,100,0.90)'],
+    });
+
+    const { poster, name, firstAired, score, voteCount, following } = this.props;
+    const personalScore = this.personalScore;
+
+    let fixedScore;
+    // procesamos nota media
+    if (voteCount === 0) {
+      fixedScore = '-';
+    } else if (score === 10) {
+      fixedScore = 10;
+    } else {
+      fixedScore = score.toFixed(1);
+    }
 
     return (
       <Animated.View style={
         [
           {
-            height: this.props.height,
             backgroundColor: this.props.backgroundColor,
             borderRadius: this.props.borderRadius,
-            opacity: this.animated,
+            opacity: opacity,
             marginTop: verticalPosition,
+            height: height,
           },
           styles.externalView,
           this.props.style,
@@ -100,7 +236,7 @@ class topRatedListItem extends Component {
       }>
         {Platform.OS === 'ios' ? (
           <TouchableOpacity disabled={this.props.disabled}
-                            onPress={this.props.onPress}
+                            onPress={this.following.bind(this)}
                             style={
                               [
                                 {
@@ -113,8 +249,6 @@ class topRatedListItem extends Component {
             <View style={
               [
                 {
-                  width: this.props.width,
-                  height: this.props.height,
                   backgroundColor: 'transparent'
                 },
                 styles.interiorView,
@@ -130,7 +264,7 @@ class topRatedListItem extends Component {
                   styles.poster
                 ]
               }
-                     source={this.props.source}
+                     source={poster !== null && poster !== undefined ? {uri: (URLSERVER + poster.substring(2))} : require('../img/placeholderPoster.png')}
               />
               <View style={[{width: this.props.width,}, styles.titleAndSubtitle,]}>
                 <Text numberOfLines={1} style={
@@ -141,23 +275,32 @@ class topRatedListItem extends Component {
                     },
                     styles.title,
                   ]
-                }>{this.props.subtitleLeft} {this.props.title}
+                }>{this.props.subtitleLeft} {name}
                 </Text>
 
                 <View style={styles.ratingView}>
                   <View style={styles.scoreView}>
                     <Icon style={styles.scoreAvgStar} name={(Platform.OS === 'ios') ? 'ios-star' : 'md-star'} />
-                    <Text style={styles.score}>{this.state.score}</Text>
+                    <Text style={styles.score}>{fixedScore}</Text>
                   </View>
-                  {this.state.scorePersonal !== undefined && this.state.scorePersonal !== null ? (
-                    <View style={styles.personalScoreView}>
+                  {this.personalScore !== undefined && this.personalScore !== null ? (
+                    <Animated.View style={[styles.personalScoreView, {opacity: this.personalScoreOpacity}]}>
                       <Icon style={styles.personalScoreStar} name={(Platform.OS === 'ios') ? 'ios-star' : 'md-star'} />
-                      <Text style={styles.score}>{this.state.scorePersonal}</Text>
-                    </View>
+                      <Text style={styles.score}>{personalScore}</Text>
+                    </Animated.View>
                   ) : (
                     null
                   )}
                 </View>
+              </View>
+              <View style={styles.footerView}>
+                <TouchableHighlight style={styles.followIconView}
+                                    onPress={this.following.bind(this)}
+                                    underlayColor={'rgba(255,179,0,0.5)'}>
+                  <AnimatedMCIcon
+                    style={[following ? styles.bookmarkCheck : styles.bookmarkPlus, {color: followIconColor}]}
+                    name={following ? 'bookmark-check' : 'bookmark-plus'} />
+                </TouchableHighlight>
               </View>
             </View>
           </TouchableOpacity>
@@ -166,13 +309,11 @@ class topRatedListItem extends Component {
             disabled={this.props.disabled}
             useForeground={this.props.useForeground}
             background={TouchableNativeFeedback.Ripple(this.props.opacityColor, true)}
-            onPress={this.props.onPress}
+            onPress={this.following.bind(this)}
           >
             <View style={
               [
                 {
-                  width: this.props.width,
-                  height: this.props.height,
                   backgroundColor: 'transparent'
                 },
                 styles.interiorView,
@@ -189,7 +330,7 @@ class topRatedListItem extends Component {
                     styles.poster,
                   ]
                 }
-                 source={this.props.source}
+                      source={poster !== null && poster !== undefined ? {uri: (URLSERVER + poster.substring(2))} : require('../img/placeholderPoster.png')}
               />
               <View style={[{width: this.props.width,}, styles.titleAndSubtitle,]}>
                 <Text numberOfLines={1} style={
@@ -200,23 +341,35 @@ class topRatedListItem extends Component {
                     },
                     styles.title,
                   ]
-                }>{this.props.subtitleLeft} {this.props.title}
+                }>{this.props.subtitleLeft} {name}
                 </Text>
 
                 <View style={styles.ratingView}>
                   <View style={styles.scoreView}>
                     <Icon style={styles.scoreAvgStar} name={(Platform.OS === 'ios') ? 'ios-star' : 'md-star'} />
-                    <Text style={styles.score}>{this.state.score}</Text>
+                    <Text style={styles.score}>{fixedScore}</Text>
                   </View>
-                  {this.state.scorePersonal !== undefined && this.state.scorePersonal !== null ? (
-                    <View style={styles.personalScoreView}>
+                  {this.personalScore !== undefined && this.personalScore !== null ? (
+                    <Animated.View style={[styles.personalScoreView, {opacity: this.personalScoreOpacity}]}>
                       <Icon style={styles.personalScoreStar} name={(Platform.OS === 'ios') ? 'ios-star' : 'md-star'} />
-                      <Text style={styles.score}>{this.state.scorePersonal}</Text>
-                    </View>
+                      <Text style={styles.score}>{personalScore}</Text>
+                    </Animated.View>
                   ) : (
                     null
                   )}
                 </View>
+              </View>
+              <View style={styles.footerView}>
+                <TouchableNativeFeedback
+                  onPress={this.following.bind(this)}
+                  delayPressIn={0}
+                  background={TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true)}>
+                  <View style={styles.followIconView}>
+                    <AnimatedMCIcon
+                      style={[following ? styles.bookmarkCheck : styles.bookmarkPlus, {color: followIconColor}]}
+                      name={following ? 'bookmark-check' : 'bookmark-plus'} />
+                  </View>
+                </TouchableNativeFeedback>
               </View>
             </View>
           </TouchableNativeFeedback>
@@ -232,6 +385,7 @@ const styles = StyleSheet.create({
     borderRadius: 1,
     flex: 1,
     alignSelf: 'stretch',
+    justifyContent: 'center',
   },
   interiorView: {
     flexDirection: 'row',
@@ -320,6 +474,25 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: 'rgba(90,200,250,1)',
   },
+  footerView: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  followIconView: {
+    borderWidth: 1,
+    borderColor: 'transparent',
+    alignSelf: 'flex-end',
+    padding: 3,
+  },
+  bookmarkPlus: {
+    fontSize: 36,
+  },
+  bookmarkCheck: {
+    fontSize: 36,
+  },
+  followText: {
+    color: 'rgba(255,255,255,0.3)',
+  },
 });
 
-export default topRatedListItem;
+export default myShowsListItem;
