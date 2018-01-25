@@ -21,6 +21,7 @@ import {
 } from 'react-native';
 import CustomComponents from 'react-native-deprecated-custom-components';
 import Icon from 'react-native-vector-icons/Ionicons';
+import MCIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import TvShowButton from './components/tvShowButton';
 
 /* Constantes */
@@ -55,7 +56,10 @@ class Root extends Component {
   }
 
   componentWillMount() {
-    this.getUserDataAndFetch();
+    this.getUserData().then(() => {
+      this.getPopular();
+      this.getTopRated();
+    });
   }
 
   navigateTo(route, reset) {
@@ -77,15 +81,13 @@ class Root extends Component {
   }
 
   // obtener datos usuario
-  async getUserDataAndFetch() {
-    await AsyncStorage.multiGet(['userId', 'userName', 'jwt']).then((userData) => {
+  async getUserData() {
+    return await AsyncStorage.multiGet(['userId', 'userName', 'jwt']).then((userData) => {
       this.setState({
         userId: userData[0][1],
         userName: userData[1][1],
         jwt: userData[2][1]
       });
-      this.getPopular();
-      this.getTopRated();
     });
   }
 
@@ -442,6 +444,22 @@ class Root extends Component {
       <View style={styles.container}>
         <View style={styles.navBarView}>
           <Animated.Text style={[styles.navBarTitle, {opacity: navBarElementsOpacity}]}>Principal</Animated.Text>
+          <Animated.View style={[styles.myShowsButtonView, {opacity: navBarElementsOpacity}]}>
+          {Platform.OS === 'ios' ? (
+            <TouchableHighlight onPress={ this.navigateTo.bind(this, 'myShows', false) } underlayColor={'rgba(255,179,0,0.5)'}>
+              <MCIcon style={styles.bookmarkNavIcon} name={'bookmark-check'} />
+            </TouchableHighlight>
+          ) : (
+            <TouchableNativeFeedback
+              onPress={ this.navigateTo.bind(this, 'myShows', false) }
+              delayPressIn={0}
+              background={TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true)}>
+              <View>
+                <MCIcon style={styles.bookmarkNavIcon} name={'bookmark-check'} />
+              </View>
+            </TouchableNativeFeedback>
+          )}
+          </Animated.View>
           <Animated.View style={[styles.searchView,
             {height: searchHeight, width: searchWidth, right: searchMarginRight, borderRadius: searchBorderRadius}
           ]}>
@@ -458,7 +476,7 @@ class Root extends Component {
           </Animated.View>
           {(Platform.OS === 'ios') ?
             <Animated.View style={[styles.accountButtonView, {opacity: navBarElementsOpacity}]}>
-              <TouchableHighlight onPress={ this.onLogoutPress.bind(this) } underlayColor={'rgba(255,179,0,1)'}>
+              <TouchableHighlight onPress={ this.onLogoutPress.bind(this) } underlayColor={'rgba(255,179,0,0.5)'}>
                 <Icon style={styles.accountButtonIcon} name={'ios-log-out'} />
               </TouchableHighlight>
             </Animated.View>
@@ -587,6 +605,24 @@ const styles = StyleSheet.create({
       },
     }),
   },
+  myShowsButtonView: {
+    position: 'absolute',
+    right: 226,
+  },
+  bookmarkNavIcon: {
+    fontSize: 26,
+    paddingTop: 3,
+    paddingBottom: 3,
+    paddingLeft: 3,
+    paddingRight: 3,
+    color: 'rgba(255,255,255,0.76)',
+    ...Platform.select({
+      android: {
+        fontFamily: 'Roboto-Light',
+        fontSize: 26,
+      },
+    }),
+  },
   searchView: {
     flexDirection: 'row',
     position: 'absolute',
@@ -633,6 +669,9 @@ const styles = StyleSheet.create({
       android: {
         fontFamily: 'Roboto-Light',
         fontSize: 20,
+      },
+      ios: {
+        color: 'rgba(255,255,255,0.96)',
       },
     }),
   },
