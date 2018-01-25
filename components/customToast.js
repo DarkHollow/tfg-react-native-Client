@@ -6,6 +6,7 @@ import {
   Animated,
   Dimensions,
   Text,
+  Platform,
   ViewPropTypes as RNViewPropTypes,
 } from 'react-native'
 
@@ -18,6 +19,8 @@ export const DURATION = {
 };
 
 const {height, width} = Dimensions.get('window');
+
+const defaultPositionValue = Platform.OS === 'ios' ? 92 : 72;
 
 export default class Toast extends Component {
 
@@ -144,7 +147,7 @@ Toast.propTypes = {
 Toast.defaultProps = {
   position: 'bottom',
   textStyle: styles.text,
-  positionValue: 72,
+  positionValue: defaultPositionValue,
   fadeInDuration: 500,
   fadeOutDuration: 500,
   opacity: 1
