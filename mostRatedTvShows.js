@@ -200,10 +200,6 @@ class Root extends Component {
       title={item.name + ' (' + new Date(item.firstAired).getFullYear() + ')'}
       titleSize={(Platform.OS === 'ios') ? 15 : 17}
       titleColor={'rgba(255,255,255,0.86)'}
-      subtitleLeft={'#' + (index+1)}
-      subtitleRight={item.trend > 0 ? '▲ ' + item.trend : item.trend === 0 ? '--' : '▼ ' + item.trend}
-      subtitleLeftColor={'rgba(255,255,255,0.86)'}
-      subtitleRightColor={item.trend > 0 ? 'rgba(0,230,0,0.56)' + item.trend : item.trend === 0 ? 'rgba(0,230,0,0.56)' : '#ba2c20'}
       score={item.score}
       voteCount={item.voteCount}
       resizeMode={'cover'}/>

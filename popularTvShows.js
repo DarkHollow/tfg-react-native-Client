@@ -37,18 +37,19 @@ class Root extends Component {
   }
 
   componentWillMount() {
-    this.getUserDataAndFetch();
+    this.getUserData().then(() => {
+      this.getPopular();
+    });
   }
 
   // obtener datos usuario
-  async getUserDataAndFetch() {
+  async getUserData() {
     await AsyncStorage.multiGet(['userId', 'userName', 'jwt']).then((userData) => {
       this.setState({
         userId: userData[0][1],
         userName: userData[1][1],
         jwt: userData[2][1]
       });
-      this.getPopular();
     });
   }
 

@@ -13,7 +13,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 
 const ANIMATION_DURATION = 500;
 
-class tvShowButton extends Component {
+class topRatedListItem extends Component {
   constructor(props) {
     super(props);
     this.animated = new Animated.Value(0);
@@ -322,4 +322,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default tvShowButton;
+export default topRatedListItem;
