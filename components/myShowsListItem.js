@@ -52,6 +52,18 @@ class myShowsListItem extends Component {
     }).start();
   }
 
+  /* redirige a la vista de ficha de tv show */
+  openTvShow(tvShowId) {
+    console.log('Ver TV Show con id:' + tvShowId);
+    this.props.navigator.push({
+      name: 'tvshow',
+      passProps: {
+        tvShowId: tvShowId,
+        backButtonText: 'myShows'
+      }
+    });
+  }
+
   getTvShowVote() {
     // segun la plataforma, url
     const tvShowId = this.props.id;
@@ -207,7 +219,7 @@ class myShowsListItem extends Component {
       outputRange: ['rgba(255,255,255,0.36)', 'rgba(76,217,100,0.90)'],
     });
 
-    const { poster, name, firstAired, score, voteCount, following } = this.props;
+    const { id, poster, name, score, voteCount, following } = this.props;
     const personalScore = this.personalScore;
 
     let fixedScore;
@@ -236,7 +248,7 @@ class myShowsListItem extends Component {
       }>
         {Platform.OS === 'ios' ? (
           <TouchableOpacity disabled={this.props.disabled}
-                            onPress={this.following.bind(this)}
+                            onPress={this.props.onPress}
                             style={
                               [
                                 {
@@ -309,7 +321,7 @@ class myShowsListItem extends Component {
             disabled={this.props.disabled}
             useForeground={this.props.useForeground}
             background={TouchableNativeFeedback.Ripple(this.props.opacityColor, true)}
-            onPress={this.following.bind(this)}
+            onPress={this.props.onPress}
           >
             <View style={
               [
