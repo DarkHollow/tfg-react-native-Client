@@ -47,11 +47,14 @@ class Root extends Component {
       modalVisible: false,
       popularFetchEnded: false,
       popularData: {},
+      popularRefreshed: false,
       topRatedFetchEnded: false,
       topRatedData: {},
-      refreshing: false,
-      popularRefreshed: false,
       topRatedRefreshed: false,
+      topTwitterFetchEnded: false,
+      topTwitterData: {},
+      toptwitterRefreshed: false,
+      refreshing: false,
     }
   }
 
@@ -59,6 +62,7 @@ class Root extends Component {
     this.getUserData().then(() => {
       this.getPopular();
       this.getTopRated();
+      this.getTopTwitter();
     });
   }
 
@@ -75,7 +79,7 @@ class Root extends Component {
       name: 'tvshow',
       passProps: {
         tvShowId: tvShowId,
-        backButtonText: 'popularTvShows'
+        backButtonText: 'root'
       }
     });
   }
@@ -92,10 +96,11 @@ class Root extends Component {
   }
 
   onRefresh() {
-    this.setState({refreshing: true, popularRefreshed: false, topRatedRefreshed: false});
+    this.setState({refreshing: true, popularRefreshed: false, topRatedRefreshed: false, toptwitterRefreshed: false, });
     this.getPopular();
     this.getTopRated();
-    if (this.state.popularRefreshed && this.state.topRatedRefreshed) {
+    this.getTopTwitter();
+    if (this.state.popularRefreshed && this.state.topRatedRefreshed && this.state.topTwitterRefreshed) {
       this.setState({refreshing: false});
     }
   }
@@ -224,7 +229,6 @@ class Root extends Component {
         // otro tipo de error interno
       }
       // mostramos error y volvemos atrás
-      console.log(data);
       this.showAndHideModal(true, 'Error', 'No se han podido cargar los datos de las series populares', false);
     } else {
       // cargamos datos en el state
@@ -268,11 +272,53 @@ class Root extends Component {
         // otro tipo de error interno
       }
       // mostramos error y volvemos atrás
-      console.log(data);
       this.showAndHideModal(true, 'Error', 'No se han podido cargar los datos de las series mejor valoradas', false);
     } else {
       // cargamos datos en el state
       this.setState({topRatedData: data});
+    }
+  }
+
+  getTopTwitter() {
+    console.log('obtener series trending twitter');
+    // segun la plataforma, url
+    const URL = (Platform.OS === 'ios') ?
+      'http://localhost:9000/api/tvshows/toptwitter' : 'http://192.168.1.13:9000/api/tvshows/toptwitter';
+
+    // hacemos fetch a la API
+    fetch(URL, {
+      method: "GET",
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer ' + this.state.jwt,
+      }
+    }).then((response) => response.json())
+      .then((responseData) => {
+        // procesamos datos
+        this.processTopTwitter(responseData);
+      }).then( () => {
+      // indicamos que fetch ha terminado
+      this.setState({topTwitterFetchEnded: true, topTwitterRefreshed: true});
+    }).catch((error) => {
+      console.log(error.stack);
+      this.setState({topTwitterRefreshed: true});
+      this.showAndHideModal(true, 'Error', 'No se han podido cargar los datos de las tendencias en Twitter', false);
+    });
+  }
+
+  processTopTwitter(data) {
+    // si la API nos devuelve que no ha encontrado nada
+    if (data.error) {
+      if (data.error === 'Not found') {
+        // no hay series top twitter
+      } else {
+        // otro tipo de error interno
+      }
+      // mostramos error y volvemos atrás
+      this.showAndHideModal(true, 'Error', 'No se han podido cargar los datos de las tendencias en Twitter', false);
+    } else {
+      // cargamos datos en el state
+      this.setState({topTwitterData: data});
     }
   }
 
@@ -397,6 +443,28 @@ class Root extends Component {
       subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
       subtitleLeftColor={'rgba(255,255,255,0.86)'}
       subtitleRightColor={item.trend > 0 ? 'rgba(0,230,0,0.56)' + item.trend : item.trend === 0 ? 'rgba(0,230,0,0.56)' : '#ba2c20'}
+      resizeMode={'cover'}
+    />
+  );
+
+  renderTopTwitterItem = ({item, index}) => (
+    <TvShowButton
+      onPress={ this.openTvShow.bind(this, item.id) }
+      width={(Platform.OS === 'ios') ? 130 : 130}
+      imageWidth={(Platform.OS === 'ios') ? 130 : 130}
+      imageHeight={(Platform.OS === 'ios') ? 191 : 191}
+      backgroundColor={'#212121'}
+      opacityColor={'rgba(255,149,0,1)'}
+      useForeground
+      source={item.poster !== null && item.poster !== undefined ? {uri: (URLSERVER + item.poster.substring(2))} : require('./img/placeholderPoster.png')}
+      title={item.name}
+      titleSize={(Platform.OS === 'ios') ? 13 : 14}
+      titleColor={'rgba(255,255,255,0.86)'}
+      subtitleLeft={'#' + (index+1)}
+      subtitleRight={<Text> <Icon style={styles.scoreAvgStar} name={(Platform.OS === 'ios') ? 'ios-star' : 'md-star'} /> <Text style={styles.textIconStar}>{this.formatAvgScore(item.score, item.voteCount)}</Text></Text>}
+      subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
+      subtitleLeftColor={'rgba(255,255,255,0.86)'}
+      subtitleRightColor={'rgba(255,255,255,0.56)'}
       resizeMode={'cover'}
     />
   );
@@ -546,6 +614,28 @@ class Root extends Component {
                               renderItem={this.renderTopRatedItem.bind(this)}
                               keyExtractor={this.keyExtractor.bind(this)}
                               extraData={this.state.topRatedData}
+                    />
+                  ) : (
+                    null
+                  ) : (
+                    <ActivityIndicator style={styles.modalLoader}
+                                       size={'small'} color={'rgba(255,149,0,1)'} />
+                  ))}
+              </View>
+            </View>
+
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Tendencia en Twitter</Text>
+              </View>
+              <View style={styles.sectionContent}>
+                {(this.state.topTwitterFetchEnded ?
+                  (this.state.topTwitterData.size > 0) ? (
+                    <FlatList horizontal style={styles.scrollH} contentContainerStyle={styles.scrollHcontent}
+                              data={this.state.topTwitterData.tvShows}
+                              renderItem={this.renderTopTwitterItem.bind(this)}
+                              keyExtractor={this.keyExtractor.bind(this)}
+                              extraData={this.state.topTwitterData}
                     />
                   ) : (
                     null
@@ -768,12 +858,12 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
   },
   section: {
-    marginBottom: 10,
+    marginBottom: 4,
   },
   sectionHeader: {
     flexDirection: 'row',
     padding: 14,
-    paddingBottom: 10,
+    paddingBottom: 6,
     justifyContent: 'space-between'
   },
   sectionTitle: {
