@@ -428,6 +428,7 @@ class Root extends Component {
   renderPopularItem = ({item, index}) => (
     <TvShowButton
       onPress={ this.openTvShow.bind(this, item.id) }
+      unseenCount={item.following ? item.unseenCount : null}
       width={(Platform.OS === 'ios') ? 130 : 130}
       imageWidth={(Platform.OS === 'ios') ? 130 : 130}
       imageHeight={(Platform.OS === 'ios') ? 191 : 191}
@@ -450,6 +451,7 @@ class Root extends Component {
   renderTopTwitterItem = ({item, index}) => (
     <TvShowButton
       onPress={ this.openTvShow.bind(this, item.id) }
+      unseenCount={item.following ? item.unseenCount : null}
       width={(Platform.OS === 'ios') ? 130 : 130}
       imageWidth={(Platform.OS === 'ios') ? 130 : 130}
       imageHeight={(Platform.OS === 'ios') ? 191 : 191}
@@ -485,6 +487,7 @@ class Root extends Component {
   renderTopRatedItem = ({item, index}) => (
     <TvShowButton
       onPress={ this.openTvShow.bind(this, item.id) }
+      unseenCount={item.following ? item.unseenCount : null}
       width={(Platform.OS === 'ios') ? 130 : 130}
       imageWidth={(Platform.OS === 'ios') ? 130 : 130}
       imageHeight={(Platform.OS === 'ios') ? 191 : 191}
