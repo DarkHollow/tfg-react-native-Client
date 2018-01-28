@@ -799,6 +799,7 @@ class TvShow extends Component {
                         return (
                           <SeasonButton
                             key={index}
+                            unseenCount={this.state.tvShowData.following ? season.unseenCount : null}
                             onPress={ this.openSeason.bind(this, season.seasonNumber) }
                             imageWidth={(Platform.OS === 'ios') ? 110 : 120}
                             imageHeight={(Platform.OS === 'ios') ? 159 : 173}
