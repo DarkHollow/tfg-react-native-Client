@@ -13,10 +13,20 @@ import {
   Dimensions,
   Easing,
   Modal,
-  Button
+  Button,
+  ScrollView,
+  FlatList,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import CustomComponents from 'react-native-deprecated-custom-components';
 import Icon from 'react-native-vector-icons/Ionicons';
+import MCIcon from 'react-native-vector-icons/MaterialCommunityIcons';
+import TvShowButton from './components/tvShowButton';
+
+/* Constantes */
+const URLSERVER = (Platform.OS === 'ios') ?
+  'http://localhost:9000/' : 'http://192.168.1.13:9000/';
 
 const InitialNavBarElementsOpacity = 1;
 const InitialSearchMarginRight = 50;
@@ -35,13 +45,64 @@ class Root extends Component {
       searchWidth: new Animated.Value(InitialSearchWidth),
       searchBorderRadius: new Animated.Value(InitialSearchBorderRadius),
       modalVisible: false,
+      popularFetchEnded: false,
+      popularData: {},
+      popularRefreshed: false,
+      topRatedFetchEnded: false,
+      topRatedData: {},
+      topRatedRefreshed: false,
+      topTwitterFetchEnded: false,
+      topTwitterData: {},
+      toptwitterRefreshed: false,
+      refreshing: false,
     }
+  }
+
+  componentWillMount() {
+    this.getUserData().then(() => {
+      this.getPopular();
+      this.getTopRated();
+      this.getTopTwitter();
+    });
   }
 
   navigateTo(route, reset) {
     this.props.navigator.push({
       name: route, reset: reset
     });
+  }
+
+  /* redirige a la vista de ficha de tv show */
+  openTvShow(tvShowId) {
+    console.log('Ver TV Show con id:' + tvShowId);
+    this.props.navigator.push({
+      name: 'tvshow',
+      passProps: {
+        tvShowId: tvShowId,
+        backButtonText: 'root'
+      }
+    });
+  }
+
+  // obtener datos usuario
+  async getUserData() {
+    return await AsyncStorage.multiGet(['userId', 'userName', 'jwt']).then((userData) => {
+      this.setState({
+        userId: userData[0][1],
+        userName: userData[1][1],
+        jwt: userData[2][1]
+      });
+    });
+  }
+
+  onRefresh() {
+    this.setState({refreshing: true, popularRefreshed: false, topRatedRefreshed: false, toptwitterRefreshed: false, });
+    this.getPopular();
+    this.getTopRated();
+    this.getTopTwitter();
+    if (this.state.popularRefreshed && this.state.topRatedRefreshed && this.state.topTwitterRefreshed) {
+      this.setState({refreshing: false});
+    }
   }
 
   async logout() {
@@ -130,6 +191,135 @@ class Root extends Component {
         });
       }, 500);
     });
+  }
+
+  getPopular() {
+    console.log('obtener series populares');
+    // segun la plataforma, url
+    const URL = (Platform.OS === 'ios') ?
+      'http://localhost:9000/api/tvshows/popular' : 'http://192.168.1.13:9000/api/tvshows/popular';
+
+    // hacemos fetch a la API
+    fetch(URL, {
+      method: "GET",
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer ' + this.state.jwt,
+      }
+    }).then((response) => response.json())
+      .then((responseData) => {
+        // procesamos datos
+        this.processPopularData(responseData);
+      }).then( () => {
+      // indicamos que fetch ha terminado
+      this.setState({popularFetchEnded: true, popularRefreshed: true});
+    }).catch((error) => {
+      console.log(error.stack);
+      this.setState({popularRefreshed: true});
+      this.showAndHideModal(true, 'Error', 'No se han podido cargar los datos de las series populares', false);
+    });
+  }
+
+  processPopularData(data) {
+    // si la API nos devuelve que no ha encontrado nada
+    if (data.error) {
+      if (data.error === 'Not found') {
+        // no hay series populares
+      } else {
+        // otro tipo de error interno
+      }
+      // mostramos error y volvemos atrás
+      this.showAndHideModal(true, 'Error', 'No se han podido cargar los datos de las series populares', false);
+    } else {
+      // cargamos datos en el state
+      this.setState({popularData: data});
+    }
+  }
+
+  getTopRated() {
+    console.log('obtener series mejor valoradas');
+    // segun la plataforma, url
+    const URL = (Platform.OS === 'ios') ?
+      'http://localhost:9000/api/tvshows/toprated' : 'http://192.168.1.13:9000/api/tvshows/toprated';
+
+    // hacemos fetch a la API
+    fetch(URL, {
+      method: "GET",
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer ' + this.state.jwt,
+      }
+    }).then((response) => response.json())
+      .then((responseData) => {
+        // procesamos datos
+        this.processTopRatedData(responseData);
+      }).then( () => {
+      // indicamos que fetch ha terminado
+      this.setState({topRatedFetchEnded: true, topRatedRefreshed: true});
+    }).catch((error) => {
+      console.log(error.stack);
+      this.setState({topRatedRefreshed: true});
+      this.showAndHideModal(true, 'Error', 'No se han podido cargar los datos de las series mejor valoradas', false);
+    });
+  }
+
+  processTopRatedData(data) {
+    // si la API nos devuelve que no ha encontrado nada
+    if (data.error) {
+      if (data.error === 'Not found') {
+        // no hay series populares
+      } else {
+        // otro tipo de error interno
+      }
+      // mostramos error y volvemos atrás
+      this.showAndHideModal(true, 'Error', 'No se han podido cargar los datos de las series mejor valoradas', false);
+    } else {
+      // cargamos datos en el state
+      this.setState({topRatedData: data});
+    }
+  }
+
+  getTopTwitter() {
+    console.log('obtener series trending twitter');
+    // segun la plataforma, url
+    const URL = (Platform.OS === 'ios') ?
+      'http://localhost:9000/api/tvshows/toptwitter' : 'http://192.168.1.13:9000/api/tvshows/toptwitter';
+
+    // hacemos fetch a la API
+    fetch(URL, {
+      method: "GET",
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer ' + this.state.jwt,
+      }
+    }).then((response) => response.json())
+      .then((responseData) => {
+        // procesamos datos
+        this.processTopTwitter(responseData);
+      }).then( () => {
+      // indicamos que fetch ha terminado
+      this.setState({topTwitterFetchEnded: true, topTwitterRefreshed: true});
+    }).catch((error) => {
+      console.log(error.stack);
+      this.setState({topTwitterRefreshed: true});
+      this.showAndHideModal(true, 'Error', 'No se han podido cargar los datos de las tendencias en Twitter', false);
+    });
+  }
+
+  processTopTwitter(data) {
+    // si la API nos devuelve que no ha encontrado nada
+    if (data.error) {
+      if (data.error === 'Not found') {
+        // no hay series top twitter
+      } else {
+        // otro tipo de error interno
+      }
+      // mostramos error y volvemos atrás
+      this.showAndHideModal(true, 'Error', 'No se han podido cargar los datos de las tendencias en Twitter', false);
+    } else {
+      // cargamos datos en el state
+      this.setState({topTwitterData: data});
+    }
   }
 
   render() {
@@ -233,6 +423,90 @@ class Root extends Component {
     );
   }
 
+  keyExtractor = (item, index) => index;
+
+  renderPopularItem = ({item, index}) => (
+    <TvShowButton
+      onPress={ this.openTvShow.bind(this, item.id) }
+      unseenCount={item.following ? item.unseenCount : null}
+      width={(Platform.OS === 'ios') ? 130 : 130}
+      imageWidth={(Platform.OS === 'ios') ? 130 : 130}
+      imageHeight={(Platform.OS === 'ios') ? 191 : 191}
+      backgroundColor={'#212121'}
+      opacityColor={'rgba(255,149,0,1)'}
+      useForeground
+      source={item.poster !== null && item.poster !== undefined ? {uri: (URLSERVER + item.poster.substring(2))} : require('./img/placeholderPoster.png')}
+      title={item.name}
+      titleSize={(Platform.OS === 'ios') ? 13 : 14}
+      titleColor={'rgba(255,255,255,0.86)'}
+      subtitleLeft={'#' + (index+1)}
+      subtitleRight={item.trend > 0 ? '▲ ' + item.trend : item.trend === 0 ? '--' : '▼ ' + item.trend}
+      subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
+      subtitleLeftColor={'rgba(255,255,255,0.86)'}
+      subtitleRightColor={item.trend > 0 ? 'rgba(0,230,0,0.56)' + item.trend : item.trend === 0 ? 'rgba(0,230,0,0.56)' : '#ba2c20'}
+      resizeMode={'cover'}
+    />
+  );
+
+  renderTopTwitterItem = ({item, index}) => (
+    <TvShowButton
+      onPress={ this.openTvShow.bind(this, item.id) }
+      unseenCount={item.following ? item.unseenCount : null}
+      width={(Platform.OS === 'ios') ? 130 : 130}
+      imageWidth={(Platform.OS === 'ios') ? 130 : 130}
+      imageHeight={(Platform.OS === 'ios') ? 191 : 191}
+      backgroundColor={'#212121'}
+      opacityColor={'rgba(255,149,0,1)'}
+      useForeground
+      source={item.poster !== null && item.poster !== undefined ? {uri: (URLSERVER + item.poster.substring(2))} : require('./img/placeholderPoster.png')}
+      title={item.name}
+      titleSize={(Platform.OS === 'ios') ? 13 : 14}
+      titleColor={'rgba(255,255,255,0.86)'}
+      subtitleLeft={'#' + (index+1)}
+      subtitleRight={<Text> <Icon style={styles.scoreAvgStar} name={(Platform.OS === 'ios') ? 'ios-star' : 'md-star'} /> <Text style={styles.textIconStar}>{this.formatAvgScore(item.score, item.voteCount)}</Text></Text>}
+      subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
+      subtitleLeftColor={'rgba(255,255,255,0.86)'}
+      subtitleRightColor={'rgba(255,255,255,0.56)'}
+      resizeMode={'cover'}
+    />
+  );
+
+  formatAvgScore(score, count) {
+    let newScore;
+    // procesamos nota media
+    if (count === 0) {
+      newScore = '-';
+    } else if (score === 10) {
+      newScore = 10;
+    } else {
+      newScore = score.toFixed(1);
+    }
+    return newScore;
+  }
+
+  renderTopRatedItem = ({item, index}) => (
+    <TvShowButton
+      onPress={ this.openTvShow.bind(this, item.id) }
+      unseenCount={item.following ? item.unseenCount : null}
+      width={(Platform.OS === 'ios') ? 130 : 130}
+      imageWidth={(Platform.OS === 'ios') ? 130 : 130}
+      imageHeight={(Platform.OS === 'ios') ? 191 : 191}
+      backgroundColor={'#212121'}
+      opacityColor={'rgba(255,149,0,1)'}
+      useForeground
+      source={item.poster !== null && item.poster !== undefined ? {uri: (URLSERVER + item.poster.substring(2))} : require('./img/placeholderPoster.png')}
+      title={item.name}
+      titleSize={(Platform.OS === 'ios') ? 13 : 14}
+      titleColor={'rgba(255,255,255,0.86)'}
+      subtitleLeft={<Text> <Icon style={styles.scoreAvgStar} name={(Platform.OS === 'ios') ? 'ios-star' : 'md-star'} /> <Text style={styles.textIconStar}>{this.formatAvgScore(item.score, item.voteCount)}</Text></Text>}
+      subtitleRight={'(' + item.voteCount + ')'}
+      subtitleLeftSize={(Platform.OS === 'ios') ? 12 : 13}
+      subtitleLeftColor={'rgba(255,255,255,0.86)'}
+      subtitleRightColor={'rgba(255,255,255,0.56)'}
+      resizeMode={'cover'}
+    />
+  );
+
   renderScene(route, navigator) {
 
     let { navBarElementsOpacity, searchHeight, searchWidth, searchMarginRight, searchBorderRadius } = this.state;
@@ -241,6 +515,22 @@ class Root extends Component {
       <View style={styles.container}>
         <View style={styles.navBarView}>
           <Animated.Text style={[styles.navBarTitle, {opacity: navBarElementsOpacity}]}>Principal</Animated.Text>
+          <Animated.View style={[styles.myShowsButtonView, {opacity: navBarElementsOpacity}]}>
+          {Platform.OS === 'ios' ? (
+            <TouchableHighlight onPress={ this.navigateTo.bind(this, 'myShows', false) } underlayColor={'rgba(255,179,0,0.5)'}>
+              <MCIcon style={styles.bookmarkNavIcon} name={'bookmark-check'} />
+            </TouchableHighlight>
+          ) : (
+            <TouchableNativeFeedback
+              onPress={ this.navigateTo.bind(this, 'myShows', false) }
+              delayPressIn={0}
+              background={TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true)}>
+              <View>
+                <MCIcon style={styles.bookmarkNavIcon} name={'bookmark-check'} />
+              </View>
+            </TouchableNativeFeedback>
+          )}
+          </Animated.View>
           <Animated.View style={[styles.searchView,
             {height: searchHeight, width: searchWidth, right: searchMarginRight, borderRadius: searchBorderRadius}
           ]}>
@@ -257,7 +547,7 @@ class Root extends Component {
           </Animated.View>
           {(Platform.OS === 'ios') ?
             <Animated.View style={[styles.accountButtonView, {opacity: navBarElementsOpacity}]}>
-              <TouchableHighlight onPress={ this.onLogoutPress.bind(this) } underlayColor={'rgba(255,179,0,1)'}>
+              <TouchableHighlight onPress={ this.onLogoutPress.bind(this) } underlayColor={'rgba(255,179,0,0.5)'}>
                 <Icon style={styles.accountButtonIcon} name={'ios-log-out'} />
               </TouchableHighlight>
             </Animated.View>
@@ -274,6 +564,93 @@ class Root extends Component {
             </Animated.View>
           }
         </View>
+
+        <ScrollView style={styles.scrollViewV}
+                    scrollEventThrottle={16}
+                    refreshControl={
+                      <RefreshControl
+                        refreshing={this.state.refreshing}
+                        onRefresh={this.onRefresh.bind(this)}
+                        tintColor={'rgba(239,186,126,1)'}
+                        colors={['rgba(255,149,0,1)']}
+                        progressBackgroundColor={['rgba(60,60,60,0.7)']}
+                        title={'Actualizar datos'}
+                        titleColor={'rgba(255,255,255,0.3)'}
+                      />
+                    }
+        >
+          <View style={styles.sections}>
+
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Más populares</Text>
+                <Text style={styles.sectionButton} onPress={this.navigateTo.bind(this, 'popularTvShows', false)}>Ver todo</Text>
+              </View>
+              <View style={styles.sectionContent}>
+                {(this.state.popularFetchEnded ?
+                  (this.state.popularData.size > 0) ? (
+                    <FlatList horizontal style={styles.scrollH} contentContainerStyle={styles.scrollHcontent}
+                              data={this.state.popularData.tvShows}
+                              renderItem={this.renderPopularItem.bind(this)}
+                              keyExtractor={this.keyExtractor.bind(this)}
+                              extraData={this.state.popularData}
+                    />
+                  ) : (
+                    null
+                  ) : (
+                    <ActivityIndicator style={styles.modalLoader}
+                                       size={'small'} color={'rgba(255,149,0,1)'} />
+                  ))}
+              </View>
+            </View>
+
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Mejor valoradas</Text>
+                <Text style={styles.sectionButton} onPress={this.navigateTo.bind(this, 'mostRatedTvShows', false)}>Ver todo</Text>
+              </View>
+              <View style={styles.sectionContent}>
+                {(this.state.topRatedFetchEnded ?
+                  (this.state.topRatedData.size > 0) ? (
+                    <FlatList horizontal style={styles.scrollH} contentContainerStyle={styles.scrollHcontent}
+                              data={this.state.topRatedData.tvShows}
+                              renderItem={this.renderTopRatedItem.bind(this)}
+                              keyExtractor={this.keyExtractor.bind(this)}
+                              extraData={this.state.topRatedData}
+                    />
+                  ) : (
+                    null
+                  ) : (
+                    <ActivityIndicator style={styles.modalLoader}
+                                       size={'small'} color={'rgba(255,149,0,1)'} />
+                  ))}
+              </View>
+            </View>
+
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Tendencia en Twitter</Text>
+              </View>
+              <View style={styles.sectionContent}>
+                {(this.state.topTwitterFetchEnded ?
+                  (this.state.topTwitterData.size > 0) ? (
+                    <FlatList horizontal style={styles.scrollH} contentContainerStyle={styles.scrollHcontent}
+                              data={this.state.topTwitterData.tvShows}
+                              renderItem={this.renderTopTwitterItem.bind(this)}
+                              keyExtractor={this.keyExtractor.bind(this)}
+                              extraData={this.state.topTwitterData}
+                    />
+                  ) : (
+                    null
+                  ) : (
+                    <ActivityIndicator style={styles.modalLoader}
+                                       size={'small'} color={'rgba(255,149,0,1)'} />
+                  ))}
+              </View>
+            </View>
+          </View>
+        </ScrollView>
+
       </View>
     )
   }
@@ -291,13 +668,25 @@ const styles = StyleSheet.create({
     backgroundColor: '#141414',
   },
   navBarView: {
+    position: 'relative',
+    zIndex: 1,
     height: 56,
     alignSelf: 'stretch',
     flexDirection: 'row',
     alignItems: 'center',
     paddingLeft: 10,
     backgroundColor: '#1f1f1f',
-    elevation: 1,
+    ...Platform.select({
+      ios: {
+        shadowColor: 'rgba(0,0,0,1)',
+        shadowOffset: { width: 0, height: 0},
+        shadowOpacity: 1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 1,
+      },
+    }),
   },
   navBarTitle: {
     paddingLeft: 14,
@@ -306,6 +695,24 @@ const styles = StyleSheet.create({
     ...Platform.select({
       android: {
         fontFamily: 'Roboto-Medium'
+      },
+    }),
+  },
+  myShowsButtonView: {
+    position: 'absolute',
+    right: 226,
+  },
+  bookmarkNavIcon: {
+    fontSize: 26,
+    paddingTop: 3,
+    paddingBottom: 3,
+    paddingLeft: 3,
+    paddingRight: 3,
+    color: 'rgba(255,255,255,0.76)',
+    ...Platform.select({
+      android: {
+        fontFamily: 'Roboto-Light',
+        fontSize: 26,
       },
     }),
   },
@@ -355,6 +762,9 @@ const styles = StyleSheet.create({
       android: {
         fontFamily: 'Roboto-Light',
         fontSize: 20,
+      },
+      ios: {
+        color: 'rgba(255,255,255,0.96)',
       },
     }),
   },
@@ -443,6 +853,61 @@ const styles = StyleSheet.create({
       },
     }),
     fontSize: 14,
+  },
+  scrollViewV: {
+    flex: 1,
+    position: 'relative',
+    zIndex: -2,
+    alignSelf: 'stretch',
+  },
+  section: {
+    marginBottom: 4,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    padding: 14,
+    paddingBottom: 6,
+    justifyContent: 'space-between'
+  },
+  sectionTitle: {
+    color: 'rgba(255,255,255,0.56)',
+    fontSize: 14,
+    ...Platform.select({
+      android: {
+        fontFamily: 'Roboto-Medium'
+      },
+      ios: {
+        fontWeight: '600',
+      },
+    }),
+  },
+  sectionButton: {
+    backgroundColor: 'transparent',
+    fontSize: 13,
+    alignSelf: 'flex-end',
+    color: 'rgba(255,149,0,1)',
+    ...Platform.select({
+      ios: {
+        fontWeight: '600',
+      },
+      android: {
+        fontFamily: 'Roboto-Medium',
+      },
+    }),
+  },
+  sectionContent: {
+
+  },
+  scrollH: {
+
+  },
+  scrollHcontent: {
+    paddingLeft: 14,
+    paddingRight: 14,
+  },
+  scoreAvgStar: {
+    fontSize: 16,
+    color: 'rgba(255,204,0,1)',
   },
 });
 

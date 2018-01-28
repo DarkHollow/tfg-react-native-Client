@@ -4,7 +4,6 @@ import {
   Platform,
   Text,
   View,
-  TouchableOpacity,
   TouchableWithoutFeedback,
   StatusBar,
   Alert,
@@ -19,11 +18,11 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import CustomComponents from 'react-native-deprecated-custom-components';
 import Icon from 'react-native-vector-icons/Ionicons';
-import ReadMore from '@expo/react-native-read-more-text';
+import MCIcon from 'react-native-vector-icons/MaterialCommunityIcons';
+import ReadMore from 'react-native-read-more-text';
 import StarRatingBar from 'react-native-star-rating-view/StarRatingBar';
-
-//import CircularButton from './components/circularButton';
-//import SeasonButton from './components/seasonButton';
+import SeasonButton from './components/seasonButton';
+import CustomToast, { DURATION } from './components/customToast';
 
 const TouchableNativeFeedback = Platform.select({
   android: () => require('TouchableNativeFeedback'),
@@ -65,18 +64,27 @@ class TvShow extends Component {
       voteModalBottomMessage: ' ',
       voteModalBottomMessageOpacity: new Animated.Value(0),
       voteModalLoading: false,
-    }
+      followIconColor: new Animated.Value(0),
+    };
+
+    this.state.followIconColor.addListener(({value}) => this._value = value);
+  }
+
+  componentWillMount() {
+    console.log('Consulta tv show id: ' + this.state.tvShowId);
+    this.getUserData().then(() => {
+      this.getTvShow();
+    });
   }
 
   // obtener datos usuario
-  async getUserDataAndFetchTvShow() {
+  async getUserData() {
     await AsyncStorage.multiGet(['userId', 'userName', 'jwt']).then((userData) => {
       this.setState({
         userId: userData[0][1],
         userName: userData[1][1],
         jwt: userData[2][1]
       });
-      this.getTvShow();
     });
   }
 
@@ -136,14 +144,22 @@ class TvShow extends Component {
     });
   }
 
+  formatAvgScore(score, count) {
+    let newScore;
+    // procesamos nota media
+    if (count === 0) {
+      newScore = '-';
+    } else if (score === 10) {
+      newScore = 10;
+    } else {
+      newScore = score.toFixed(1);
+    }
+    return newScore;
+  }
+
   errorAndPop() {
     Alert.alert('Error', 'Lamentablemente no se han podido cargar los datos del tv show');
     this.props.navigator.pop();
-  }
-
-  componentWillMount() {
-    console.log('Consulta tv show id: ' + this.state.tvShowId);
-    this.getUserDataAndFetchTvShow();
   }
 
   processData(data) {
@@ -158,6 +174,11 @@ class TvShow extends Component {
       console.log(data);
       this.errorAndPop();
     } else {
+      // procesamos color follow
+      if (data.following) {
+        this.setState({followIconColor: new Animated.Value(1)});
+      }
+
       // procesamos URLs imagenes
       data.fanart = this.formatImageUri(data.fanart);
       data.poster = this.formatImageUri(data.poster);
@@ -168,6 +189,11 @@ class TvShow extends Component {
 
       // procesamos la nota personal del usuario
       this.getTvShowVote();
+
+      // procesamos orden temporadas
+      data.seasons.sort(function(a, b) {
+        return a.seasonNumber - b.seasonNumber;
+      });
 
       // cargamos datos en el state
       this.setState({tvShowData: data});
@@ -322,6 +348,79 @@ class TvShow extends Component {
     }
   };
 
+  followingFetch(method) {
+    // segun la plataforma, url
+    const URL = (Platform.OS === 'ios') ?
+      'http://localhost:9000/api/tvshows/' : 'http://192.168.1.13:9000/api/tvshows/';
+    const ACTION = '/following';
+
+    // hacemos fetch a la API
+    fetch(URL + this.state.tvShowId + ACTION, {
+      method: method,
+      headers: {
+        'Authorization': 'Bearer ' + this.state.jwt,
+      }
+    }).then(function (response) {
+      if (response.status === 204) {
+        this.followAnimations(method);
+      } else {
+        // mal: mostrar toast ?
+      }
+    }.bind(this)).catch((error) => {
+      console.log(error.stack);
+      // mostrar toast ?
+    });
+  }
+
+  /* boton follow */
+  following() {
+    if (this.state.tvShowData.following) {
+      // dejar de seguir
+      this.followingFetch('DELETE');
+    } else {
+      // seguir
+      this.followingFetch('PUT');
+    }
+  }
+
+  followAnimations(method) {
+    let tvShowData = this.state.tvShowData;
+    let toValue = 0;
+    let toastMessage = 'Serie no seguida';
+
+    if (method === 'PUT') {
+      tvShowData.following = true;
+      toValue = 1;
+      toastMessage = 'Siguiendo serie';
+    } else {
+      tvShowData.following = false;
+    }
+
+    this.setState({tvShowData: tvShowData});
+
+    Animated.timing(this.state.followIconColor, {
+      delay: 0,
+      duration: 300,
+      toValue: toValue,
+    }).start();
+
+    // toast
+    this.refs.toast.show(toastMessage, 2000);
+  }
+
+  /* redirige a la vista de una season */
+  openSeason(seasonNumber) {
+    console.log('Ver la season:' + seasonNumber + ' de ' + this.state.tvShowData.id);
+    this.props.navigator.push({
+      name: 'season',
+      passProps: {
+        tvShowId: this.state.tvShowData.id,
+        seasonNumber: seasonNumber,
+        backButtonText: this.state.tvShowData.name
+      }
+    });
+  }
+
   // process image uri
   formatImageUri(uri) {
     result = uri;
@@ -449,6 +548,7 @@ class TvShow extends Component {
             </View>
           </TouchableWithoutFeedback>
         </Modal>
+        <CustomToast ref='toast' />
       </View>
     );
   }
@@ -466,13 +566,20 @@ class TvShow extends Component {
       outputRange: [0, 0, 0.8],
       extrapolate: 'clamp',
     });
+    /* calculo color boton follow */
+    const followIconColor = this.state.followIconColor.interpolate({
+      inputRange: [0, 1],
+      outputRange: ['rgba(255,255,255,0.36)', 'rgba(76,217,100,0.90)'],
+    });
+    /* MCIcon animado */
+    const AnimatedMCIcon = Animated.createAnimatedComponent(MCIcon);
 
     let overview = this.state.fetchEnded ? (
       <ReadMore numberOfLines={3}
                 renderTruncatedFooter={this.overviewTruncatedFooter}
                 renderRevealedFooter={this.overviewRevealedFooter}
                 onReady={this.overviewReady}>
-        <Text style={styles.overview}>{this.state.tvShowData.overview}</Text>
+        <Text style={styles.overview}>{this.state.tvShowData.overview !== undefined && this.state.tvShowData.overview !== null ? this.state.tvShowData.overview : 'Sin sinopsis'}</Text>
       </ReadMore>
     ) : (
       null
@@ -517,13 +624,21 @@ class TvShow extends Component {
               <View style={styles.scrollViewContent}>
                 <View style={styles.zIndexFix} />
                 <View style={styles.headerContent}>
-                  <Animated.Image style={[styles.poster, {opacity: this.state.posterOpacity}]} source={this.state.tvShowData.poster !== null ? {uri: this.state.tvShowData.poster} : require('./img/placeholderPoster.png')} onLoadEnded={this.onPosterLoadEnded()} />
+                  <View style={styles.posterView}>
+                    <Animated.Image style={[styles.poster, {opacity: this.state.posterOpacity}]} source={this.state.tvShowData.poster !== null ? {uri: this.state.tvShowData.poster} : require('./img/placeholderPoster.png')} onLoadEnded={this.onPosterLoadEnded()}>
+                      {this.state.tvShowData.following ? this.state.tvShowData.unseenCount > 0 ?
+                        (<View style={styles.posterUnseen}>
+                          <Text style={styles.posterUnseenText}>{this.state.tvShowData.unseenCount}</Text>
+                        </View>)
+                        : null : null}
+                    </Animated.Image>
+                  </View>
                   <View style={styles.headerData}>
                     <Text style={styles.tvShowTitle} numberOfLines={1}>{this.state.tvShowData.name}</Text>
                     <View style={styles.tvShowSubtitle}>
                       <View style={styles.tvShowSubtitleLeft}>
-                        <Text style={styles.tvShowYearRating}>{new Date(this.state.tvShowData.firstAired).getFullYear()}   <Text numberOfLines={1}>{this.state.tvShowData.rating}</Text></Text>
-                        <Text style={styles.tvShowGenre} numberOfLines={1}>{this.state.tvShowGenres}</Text>
+                        <Text style={styles.tvSubtitleText}>{new Date(this.state.tvShowData.firstAired).getFullYear()}   <Text numberOfLines={1}>{this.state.tvShowData.rating}</Text></Text>
+                        <Text style={styles.tvShowFirstAired} numberOfLines={1}>{this.state.tvShowGenres}</Text>
                       </View>
                       <View style={styles.subtitleRight}>
                         {/*<Text style={styles.ratingText}>
@@ -543,6 +658,30 @@ class TvShow extends Component {
 
                 <View style={styles.bodyContent}>
                   <View style={styles.scores}>
+                    <View style={styles.followView}>
+                      {Platform.OS === 'ios' ? (
+                        <TouchableHighlight style={styles.followIconView}
+                                            onPress={this.state.followIconColor._value === 0 || this.state.followIconColor._value === 1 ? this.following.bind(this) : null}
+                                            underlayColor={'rgba(255,179,0,0.5)'}>
+                          <AnimatedMCIcon
+                            style={[this.state.tvShowData.following ? styles.bookmarkCheck : styles.bookmarkPlus, {color: followIconColor}]}
+                            name={this.state.tvShowData.following ? 'bookmark-check' : 'bookmark-plus'} />
+                        </TouchableHighlight>
+                      ) : (
+                        <TouchableNativeFeedback
+                          onPress={this.state.followIconColor._value === 0 || this.state.followIconColor._value === 1 ? this.following.bind(this) : null}
+                          delayPressIn={0}
+                          background={TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true)}>
+                          <View style={styles.followIconView}>
+                            <AnimatedMCIcon
+                              style={[this.state.tvShowData.following ? styles.bookmarkCheck : styles.bookmarkPlus, {color: followIconColor}]}
+                              name={this.state.tvShowData.following ? 'bookmark-check' : 'bookmark-plus'} />
+                          </View>
+                        </TouchableNativeFeedback>
+                      )}
+                    </View>
+
+
                     {(this.state.tvShowData.voteCount === 0) ? (
                       <View style={styles.scoreAvg}>
                         <View style={styles.iconView}><Icon style={styles.scoreAvgStar} name={(Platform.OS === 'ios') ? 'ios-star-outline' : 'md-star-outline'} /></View>
@@ -551,7 +690,7 @@ class TvShow extends Component {
                     ) : (
                       <View style={styles.scoreAvg}>
                         <View style={styles.iconView}><Icon style={styles.scoreAvgStar} name={(Platform.OS === 'ios') ? 'ios-star' : 'md-star'} /></View>
-                        <Text style={styles.scoreAvgText}> {this.state.tvShowData.score} <Text style={styles.scoreAvgTextNull}>({this.state.tvShowData.voteCount})</Text></Text>
+                        <Text style={styles.scoreAvgText}> {this.formatAvgScore(this.state.tvShowData.score)} <Text style={styles.scoreAvgTextNull}>({this.state.tvShowData.voteCount})</Text></Text>
                       </View>
                     )}
 
@@ -561,7 +700,7 @@ class TvShow extends Component {
                           <TouchableHighlight style={styles.scorePersonal} onPress={ this.showVoteModal } underlayColor={'rgba(255,179,0,0.5)'}>
                             <View style={styles.insideButton}>
                               <View style={styles.iconView}><Icon style={styles.scorePersonalStarNull} name={'ios-star-outline'} /></View>
-                              <Text style={styles.scorePersonalTextNull}>Vota</Text>
+                              <Text style={styles.scorePersonalTextNull}>Votar</Text>
                             </View>
                           </TouchableHighlight>
                         </View>
@@ -573,7 +712,7 @@ class TvShow extends Component {
                             background={TouchableNativeFeedback.Ripple('rgba(255,224,130,0.60)', true)}>
                             <View style={styles.insideButton}>
                               <View style={styles.iconView}><Icon style={styles.scorePersonalStarNull} name={'md-star-outline'} /></View>
-                              <Text style={styles.scorePersonalTextNull}>Vota</Text>
+                              <Text style={styles.scorePersonalTextNull}>Votar</Text>
                             </View>
                           </TouchableNativeFeedback>
                         </View>
@@ -651,80 +790,38 @@ class TvShow extends Component {
                   </View>
                 </View>
 
-                {/*<View style={styles.seasonsContent}>
-                <ScrollView horizontal style={styles.scrollH}>
 
-                  <SeasonButton
-                    imageWidth={(Platform.OS === 'ios') ? 110 : 120}
-                    imageHeight={(Platform.OS === 'ios') ? 159 : 173}
-                    backgroundColor={'#212121'}
-                    opacityColor={'#fe3f80'}
-                    source={'https://thetvdb.com/banners/seasons/305288-1-3.jpg'}
-                    title={'Temporada 1'}
-                    titleSize={(Platform.OS === 'ios') ? 13 : 14}
-                    titleColor={'#dedede'}
-                    subtitle={'8 episodios'}
-                    subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
-                    subtitleColor={'#bbbbc1'}
-                  />
+                {(this.state.tvShowData.seasons.length > 0) ? (
+                  <View style={styles.seasonsContent}>
+                    <ScrollView horizontal style={styles.scrollH}>
 
-                  <SeasonButton
-                    imageWidth={(Platform.OS === 'ios') ? 110 : 120}
-                    imageHeight={(Platform.OS === 'ios') ? 159 : 173}
-                    backgroundColor={'#212121'}
-                    opacityColor={'#fe3f80'}
-                    source={'https://thetvdb.com/banners/seasons/305288-1-3.jpg'}
-                    title={'Temporada 1'}
-                    titleSize={(Platform.OS === 'ios') ? 13 : 14}
-                    titleColor={'#dedede'}
-                    subtitle={'8 episodios'}
-                    subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
-                    subtitleColor={'#bbbbc1'}
-                  />
+                      {this.state.tvShowData.seasons.map((season, index) => {
+                        return (
+                          <SeasonButton
+                            key={index}
+                            unseenCount={this.state.tvShowData.following ? season.unseenCount : null}
+                            onPress={ this.openSeason.bind(this, season.seasonNumber) }
+                            imageWidth={(Platform.OS === 'ios') ? 110 : 120}
+                            imageHeight={(Platform.OS === 'ios') ? 159 : 173}
+                            backgroundColor={'#212121'}
+                            opacityColor={'rgba(255,149,0,1)'}
+                            useForeground
+                            source={season.poster !== null ? {uri: (URLSERVER + season.poster.substring(2))} : require('./img/placeholderPoster.png')}
+                            title={season.seasonNumber !== 0 ? 'Temporada ' + season.seasonNumber : 'Especiales'}
+                            titleSize={(Platform.OS === 'ios') ? 13 : 14}
+                            titleColor={'#dedede'}
+                            subtitle={season.episodeCount + ' episodios'}
+                            subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
+                            subtitleColor={'#bbbbc1'}
+                          />
+                        )
+                      })}
+                    </ScrollView>
+                  </View>
+                ) : (
+                  null
+                )}
 
-                  <SeasonButton
-                    imageWidth={(Platform.OS === 'ios') ? 110 : 120}
-                    imageHeight={(Platform.OS === 'ios') ? 159 : 173}
-                    backgroundColor={'#212121'}
-                    opacityColor={'#fe3f80'}
-                    source={'https://thetvdb.com/banners/seasons/305288-1-3.jpg'}
-                    title={'Temporada 1'}
-                    titleSize={(Platform.OS === 'ios') ? 13 : 14}
-                    titleColor={'#dedede'}
-                    subtitle={'8 episodios'}
-                    subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
-                    subtitleColor={'#bbbbc1'}
-                  />
-
-                  <SeasonButton
-                    imageWidth={(Platform.OS === 'ios') ? 110 : 120}
-                    imageHeight={(Platform.OS === 'ios') ? 159 : 173}
-                    backgroundColor={'#212121'}
-                    opacityColor={'#fe3f80'}
-                    source={'https://thetvdb.com/banners/seasons/305288-1-3.jpg'}
-                    title={'Temporada 1'}
-                    titleSize={(Platform.OS === 'ios') ? 13 : 14}
-                    titleColor={'#dedede'}
-                    subtitle={'8 episodios'}
-                    subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
-                    subtitleColor={'#bbbbc1'}
-                  />
-
-                  <SeasonButton
-                    imageWidth={(Platform.OS === 'ios') ? 110 : 120}
-                    imageHeight={(Platform.OS === 'ios') ? 159 : 173}
-                    backgroundColor={'#212121'}
-                    opacityColor={'#fe3f80'}
-                    source={'https://thetvdb.com/banners/seasons/305288-1-3.jpg'}
-                    title={'Temporada 1'}
-                    titleSize={(Platform.OS === 'ios') ? 13 : 14}
-                    titleColor={'#dedede'}
-                    subtitle={'8 episodios'}
-                    subtitleSize={(Platform.OS === 'ios') ? 13 : 14}
-                    subtitleColor={'#bbbbc1'}
-                  />
-                </ScrollView>
-              </View>*/}
               </View>
               {(Platform.OS === 'android') ?
                 <View style={styles.scrollPaddingBottom} /> : null}
@@ -911,13 +1008,57 @@ const styles = StyleSheet.create({
     }),
   },
   // imagen poster del tv show
-  poster: {
+  posterView: {
+    position: 'relative',
     marginTop: -86,
     height: 147,
     width: 100,
-    resizeMode: 'contain',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    shadowColor: 'rgba(0,0,0,1)',
+    shadowOffset: { width: 0, height: 0},
+    shadowOpacity: 0.45,
+    shadowRadius: 2,
+  },
+  poster: {
+    position: 'relative',
+    height: 147,
+    width: 100,
+    resizeMode: 'cover',
+  },
+  posterUnseen: {
+    alignSelf: 'flex-end',
+    backgroundColor: 'rgba(255,149,0,0.76)',
+    paddingRight: 8,
+    paddingLeft: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: 'rgba(0,0,0,1)',
+        shadowOffset: { width: 0, height: 0},
+        shadowOpacity: 0.6,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 3,
+      }
+    }),
+  },
+  posterUnseenText: {
+    color: 'rgba(255,255,255,1)',
+    textShadowOffset: { width: 1, height: 1},
+    textShadowColor: 'rgba(0,0,0,0.1)',
+    textShadowRadius: 3,
+    ...Platform.select({
+      ios: {
+        fontSize: 13,
+        lineHeight: 24,
+        fontWeight: '600',
+      },
+      android: {
+        fontSize: 13,
+        lineHeight: 20,
+        paddingBottom: 3,
+        fontFamily: 'Roboto-Medium',
+      }
+    }),
   },
   // vista donde estan el titulo, año, content rating y generos del tv show
   headerData: {
@@ -939,16 +1080,16 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     height: 22,
     fontSize: 17,
-    color: '#eaeaea',
+    color: '#ededed',
     backgroundColor: 'transparent',
     ...Platform.select({
       ios: {
         fontWeight: '500',
-        opacity: 0.9,
+        opacity: 0.95,
       },
       android: {
         fontFamily: 'Roboto-Medium',
-        opacity: 0.8,
+        opacity: 0.9,
       }
     }),
   },
@@ -964,7 +1105,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     maxWidth: 160,
   },
-  tvShowYearRating: {
+  tvSubtitleText: {
     color: '#bbbbc1',
     ...Platform.select({
       ios: {
@@ -979,7 +1120,7 @@ const styles = StyleSheet.create({
       }
     }),
   },
-  tvShowGenre: {
+  tvShowFirstAired: {
     color: '#bbbbc1',
     ...Platform.select({
       ios: {
@@ -1057,13 +1198,13 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingLeft: 14,
     paddingRight: 14,
-    paddingTop: 6,
+    paddingTop: 5,
     backgroundColor: '#212121',
   },
   scores: {
     flex: 1,
     flexDirection: 'row',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   scoreAvg: {
     flex: 1,
@@ -1109,6 +1250,27 @@ const styles = StyleSheet.create({
   scorePersonalStarNull: {
     fontSize: 24,
     color: 'rgba(255,255,255,0.3)'
+  },
+  followView: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  followIconView: {
+    borderWidth: 1,
+    borderColor: 'transparent',
+    paddingHorizontal: 10,
+    paddingTop: 4,
+  },
+  bookmarkPlus: {
+    fontSize: 32,
+  },
+  bookmarkCheck: {
+    fontSize: 32,
+  },
+  followText: {
+    color: 'rgba(255,255,255,0.3)',
   },
   principalButtons: {
     backgroundColor: '#212121',
@@ -1188,7 +1350,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     paddingLeft: 20,
     paddingRight: 20,
-    paddingBottom: 20,
+    paddingBottom: 10,
     backgroundColor: '#212121',
   },
   footerTitleView: {
@@ -1403,7 +1565,7 @@ const styles = StyleSheet.create({
   // temporadas!
   seasonsContent: {
     flex: 1,
-    marginTop: 20,
+    marginTop: 10,
   },
   scrollH: {
     backgroundColor: '#1C1C1C',

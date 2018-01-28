@@ -6,10 +6,33 @@ React Native client for [Trending Series Playframework API](https://github.com/D
 Branches
 ========
 
-## master [![Version](https://img.shields.io/badge/release-v0.10.0-blue.svg)](https://github.com/DarkHollow/tfg-react-native-Client/releases/tag/v0.10.0)
+## master [![Version](https://img.shields.io/badge/release-v1.0.0-blue.svg)](https://github.com/DarkHollow/tfg-react-native-Client/releases/tag/v1.0.0)
 
-##### Current version `v0.10.0`
-[![Release](https://darkhollow.github.com/tfg-series-playApi/rocket.svg) v0.10.0](https://github.com/DarkHollow/tfg-react-native-Client/releases/tag/v0.10.0)
+##### Current version `v1.0.0`
+
+[![Release](https://darkhollow.github.com/tfg-series-playApi/rocket.svg) v1.0.0](https://github.com/DarkHollow/tfg-react-native-Client/releases/tag/v0.10.0)
+including:
+
+- TV Shows
+  - Set TV Shows as following
+- See Seasons
+  - Showing name, poster, number, date, synopsis
+- See Episodes
+  - Showing name, screenshot, number, date, synopsis
+  - Set episodes as seen/unseen
+- TV Shows lists
+  - popular TV Shows in the system
+  - most rated TV Shows
+  - top Twitter ratio
+  - My TV Shows
+- TV Show/Season/Episode tracking system
+  - See on all posters of the Following TV Shows an indicator of unseen episodes
+- Princpal View developed
+- Lot of new componentes developed for all this
+- New dependency componentes installed via `npm`
+
+##### Version `v0.10.0`
+[![Release](https://darkhollow.github.com/tfg-series-playApi/rocket.svg) v0.10.0](https://github.com/DarkHollow/tfg-react-native-Client/releases/tag/v1.0.0)
 including:
 
 - Register and login
@@ -20,7 +43,7 @@ including:
   - Showing name, banner image, it's on local or not
   - Request searched externally TV Shows
 - See TV Show
-  - Showing name, parallax fanart, poster, average rating, user rating, year, genres, episode runtime, network, synpsis, status
+  - Showing name, parallax fanart, poster, average rating, user rating, year, genres, episode runtime, network, synopsis, status
   - Rate TV Show
 - Theme 2.0
   - New color palette
