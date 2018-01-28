@@ -30,6 +30,7 @@ including:
 - Princpal View developed
 - Lot of new componentes developed for all this
 - New dependency componentes installed via `npm`
+- Lot of code improvements and view union
 
 ##### Version `v0.10.0`
 [![Release](https://darkhollow.github.com/tfg-series-playApi/rocket.svg) v0.10.0](https://github.com/DarkHollow/tfg-react-native-Client/releases/tag/v1.0.0)
