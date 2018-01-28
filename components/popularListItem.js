@@ -120,18 +120,20 @@ class tvShowButton extends Component {
                 styles.interiorView,
               ]
             }>
-              <Image style={
-                [
-                  {
-                    height: this.props.imageHeight,
-                    width: this.props.imageWidth,
-                    resizeMode: this.props.resizeMode,
-                  },
-                  styles.poster
-                ]
-              }
-                     source={this.props.source}
+              <View style={styles.posterView}>
+                <Image style={
+                  [
+                    {
+                      height: this.props.imageHeight,
+                      width: this.props.imageWidth,
+                      resizeMode: this.props.resizeMode,
+                    },
+                    styles.poster
+                  ]
+                }
+                       source={this.props.source}
               />
+              </View>
               <View style={[{width: this.props.width,}, styles.titleAndSubtitle,]}>
                 <Text numberOfLines={1} style={
                   [
@@ -199,19 +201,21 @@ class tvShowButton extends Component {
                 styles.interiorView,
               ]
             }>
-              <Image style={
-                  [
-                    {
-                      height: this.props.imageHeight,
-                      width: this.props.imageWidth,
-                      resizeMode: this.props.resizeMode,
-                      zIndex: -3,
-                    },
-                    styles.poster,
-                  ]
-                }
-                 source={this.props.source}
-              />
+              <View style={styles.posterView}>
+                <Image style={
+                    [
+                      {
+                        height: this.props.imageHeight,
+                        width: this.props.imageWidth,
+                        resizeMode: this.props.resizeMode,
+                        zIndex: -3,
+                      },
+                      styles.poster,
+                    ]
+                  }
+                   source={this.props.source}
+                />
+              </View>
               <View style={[{width: this.props.width,}, styles.titleAndSubtitle,]}>
                 <Text numberOfLines={1} style={
                   [
@@ -281,9 +285,53 @@ const styles = StyleSheet.create({
   },
   touchableOpacity: {
   },
+  posterView: {
+    position: 'relative',
+    shadowColor: 'rgba(0,0,0,1)',
+    shadowOffset: { width: 0, height: 0},
+    shadowOpacity: 0.45,
+    shadowRadius: 2,
+    elevation: 2,
+  },
   poster: {
     alignSelf: 'center',
     borderRadius: 1,
+  },
+  posterUnseen: {
+    alignSelf: 'flex-end',
+    backgroundColor: 'rgba(255,149,0,0.76)',
+    paddingRight: 8,
+    paddingLeft: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: 'rgba(0,0,0,1)',
+        shadowOffset: { width: 0, height: 0},
+        shadowOpacity: 0.6,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 3,
+      }
+    }),
+  },
+  posterUnseenText: {
+    color: 'rgba(255,255,255,1)',
+    textShadowOffset: { width: 1, height: 1},
+    textShadowColor: 'rgba(0,0,0,0.1)',
+    textShadowRadius: 3,
+    ...Platform.select({
+      ios: {
+        fontSize: 13,
+        lineHeight: 24,
+        fontWeight: '600',
+      },
+      android: {
+        fontSize: 13,
+        lineHeight: 20,
+        paddingBottom: 3,
+        fontFamily: 'Roboto-Medium',
+      }
+    }),
   },
   titleAndSubtitle: {
     padding: 8,

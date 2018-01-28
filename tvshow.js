@@ -624,7 +624,15 @@ class TvShow extends Component {
               <View style={styles.scrollViewContent}>
                 <View style={styles.zIndexFix} />
                 <View style={styles.headerContent}>
-                  <Animated.Image style={[styles.poster, {opacity: this.state.posterOpacity}]} source={this.state.tvShowData.poster !== null ? {uri: this.state.tvShowData.poster} : require('./img/placeholderPoster.png')} onLoadEnded={this.onPosterLoadEnded()} />
+                  <View style={styles.posterView}>
+                    <Animated.Image style={[styles.poster, {opacity: this.state.posterOpacity}]} source={this.state.tvShowData.poster !== null ? {uri: this.state.tvShowData.poster} : require('./img/placeholderPoster.png')} onLoadEnded={this.onPosterLoadEnded()}>
+                      {this.state.tvShowData.following ? this.state.tvShowData.unseenCount > 0 ?
+                        (<View style={styles.posterUnseen}>
+                          <Text style={styles.posterUnseenText}>{this.state.tvShowData.unseenCount}</Text>
+                        </View>)
+                        : null : null}
+                    </Animated.Image>
+                  </View>
                   <View style={styles.headerData}>
                     <Text style={styles.tvShowTitle} numberOfLines={1}>{this.state.tvShowData.name}</Text>
                     <View style={styles.tvShowSubtitle}>
@@ -791,6 +799,7 @@ class TvShow extends Component {
                         return (
                           <SeasonButton
                             key={index}
+                            unseenCount={this.state.tvShowData.following ? season.unseenCount : null}
                             onPress={ this.openSeason.bind(this, season.seasonNumber) }
                             imageWidth={(Platform.OS === 'ios') ? 110 : 120}
                             imageHeight={(Platform.OS === 'ios') ? 159 : 173}
@@ -999,15 +1008,57 @@ const styles = StyleSheet.create({
     }),
   },
   // imagen poster del tv show
-  poster: {
+  posterView: {
     position: 'relative',
     marginTop: -86,
     height: 147,
     width: 100,
-    resizeMode: 'contain',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderTopRightRadius: 10,
+    shadowColor: 'rgba(0,0,0,1)',
+    shadowOffset: { width: 0, height: 0},
+    shadowOpacity: 0.45,
+    shadowRadius: 2,
+  },
+  poster: {
+    position: 'relative',
+    height: 147,
+    width: 100,
+    resizeMode: 'cover',
+  },
+  posterUnseen: {
+    alignSelf: 'flex-end',
+    backgroundColor: 'rgba(255,149,0,0.76)',
+    paddingRight: 8,
+    paddingLeft: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: 'rgba(0,0,0,1)',
+        shadowOffset: { width: 0, height: 0},
+        shadowOpacity: 0.6,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 3,
+      }
+    }),
+  },
+  posterUnseenText: {
+    color: 'rgba(255,255,255,1)',
+    textShadowOffset: { width: 1, height: 1},
+    textShadowColor: 'rgba(0,0,0,0.1)',
+    textShadowRadius: 3,
+    ...Platform.select({
+      ios: {
+        fontSize: 13,
+        lineHeight: 24,
+        fontWeight: '600',
+      },
+      android: {
+        fontSize: 13,
+        lineHeight: 20,
+        paddingBottom: 3,
+        fontFamily: 'Roboto-Medium',
+      }
+    }),
   },
   // vista donde estan el titulo, año, content rating y generos del tv show
   headerData: {

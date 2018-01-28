@@ -219,7 +219,7 @@ class myShowsListItem extends Component {
       outputRange: ['rgba(255,255,255,0.36)', 'rgba(76,217,100,0.90)'],
     });
 
-    const { id, poster, name, score, voteCount, following } = this.props;
+    const { id, poster, name, score, voteCount, following, unseenCount } = this.props;
     const personalScore = this.personalScore;
 
     let fixedScore;
@@ -306,6 +306,11 @@ class myShowsListItem extends Component {
                 </View>
               </View>
               <View style={styles.footerView}>
+                {following ? unseenCount > 0 ?
+                  (<View style={styles.posterUnseen}>
+                    <Text style={styles.posterUnseenText}>{this.props.unseenCount}</Text>
+                  </View>)
+                  : null : null}
                 <TouchableHighlight style={styles.followIconView}
                                     onPress={this.following.bind(this)}
                                     underlayColor={'rgba(255,179,0,0.5)'}>
@@ -409,6 +414,43 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     borderRadius: 1,
   },
+  posterUnseen: {
+    alignSelf: 'center',
+    marginRight: 10,
+    backgroundColor: 'rgba(255,149,0,0.76)',
+    paddingRight: 8,
+    paddingLeft: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: 'rgba(0,0,0,1)',
+        shadowOffset: { width: 0, height: 0},
+        shadowOpacity: 0.6,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 3,
+      }
+    }),
+  },
+  posterUnseenText: {
+    color: 'rgba(255,255,255,1)',
+    textShadowOffset: { width: 1, height: 1},
+    textShadowColor: 'rgba(0,0,0,0.1)',
+    textShadowRadius: 3,
+    ...Platform.select({
+      ios: {
+        fontSize: 13,
+        lineHeight: 24,
+        fontWeight: '600',
+      },
+      android: {
+        fontSize: 13,
+        lineHeight: 20,
+        paddingBottom: 3,
+        fontFamily: 'Roboto-Medium',
+      }
+    }),
+  },
   titleAndSubtitle: {
     padding: 8,
     paddingLeft: 20,
@@ -488,12 +530,13 @@ const styles = StyleSheet.create({
   },
   footerView: {
     flex: 1,
-    justifyContent: 'center',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
   },
   followIconView: {
     borderWidth: 1,
     borderColor: 'transparent',
-    alignSelf: 'flex-end',
+    alignSelf: 'center',
     padding: 3,
   },
   bookmarkPlus: {
