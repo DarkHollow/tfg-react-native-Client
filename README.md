@@ -10,7 +10,7 @@ Branches
 
 ##### Current version `v1.0.0`
 
-[![Release](https://darkhollow.github.com/tfg-series-playApi/rocket.svg) v1.0.0](https://github.com/DarkHollow/tfg-react-native-Client/releases/tag/v0.10.0)
+[![Release](https://darkhollow.github.com/tfg-series-playApi/rocket.svg) v1.0.0](https://github.com/DarkHollow/tfg-react-native-Client/releases/tag/v1.0.0)
 including:
 
 - TV Shows
