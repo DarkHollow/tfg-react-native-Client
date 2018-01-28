@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
         fontSize: 13,
         lineHeight: 20,
         paddingBottom: 3,
-        fontWeight: 'Roboto-Medium',
+        fontFamily: 'Roboto-Medium',
       }
     }),
   },
