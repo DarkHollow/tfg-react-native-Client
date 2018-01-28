@@ -166,6 +166,10 @@ class Season extends Component {
     navigator.parentNavigator.pop();
   }
 
+  refresh() {
+    this.getSeason();
+  }
+
   /* render */
   render() {
     return (
@@ -285,6 +289,10 @@ class Season extends Component {
                       return (
                         <EpisodeCollapse
                           key={index}
+                          jwt={this.state.jwt}
+                          refresh={this.refresh.bind(this)}
+                          tvShowId={this.state.tvShowId}
+                          seasonNumber={this.state.seasonNumber}
                           screenshot={episode.screenshot !== null ? {uri: this.formatImageUri(episode.screenshot)} : require('./img/placeholderPoster.png')}
                           name={episode.name}
                           number={episode.episodeNumber}
@@ -539,7 +547,7 @@ const styles = StyleSheet.create({
         fontSize: 13,
         lineHeight: 20,
         paddingBottom: 3,
-        fontWeight: 'Roboto-Medium',
+        fontFamily: 'Roboto-Medium',
       }
     }),
   },
