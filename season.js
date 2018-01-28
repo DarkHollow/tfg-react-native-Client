@@ -256,7 +256,13 @@ class Season extends Component {
                   <LinearGradient style={[styles.headerContentGradient]}
                                   locations={[0, 0.3, 0.7, 1]}
                                           colors={['transparent', '#000', '#000', 'transparent']} />
-                  <Animated.Image style={[styles.poster, {opacity: this.state.posterOpacity}]} source={this.state.seasonData.poster !== null ? {uri: this.state.seasonData.poster} : require('./img/placeholderPoster.png')} onLoadEnded={this.onPosterLoadEnded()} />
+                  <Animated.Image style={[styles.poster, {opacity: this.state.posterOpacity}]} source={this.state.seasonData.poster !== null ? {uri: this.state.seasonData.poster} : require('./img/placeholderPoster.png')} onLoadEnded={this.onPosterLoadEnded()}>
+                    {this.state.seasonData.following ? this.state.seasonData.unseenCount > 0 ?
+                      (<View style={styles.posterUnseen}>
+                        <Text style={styles.posterUnseenText}>{this.state.seasonData.unseenCount}</Text>
+                      </View>)
+                      : null : null}
+                  </Animated.Image>
                   <View style={styles.headerData}>
                     <Text style={styles.tvShowTitle} numberOfLines={1}>{this.state.seasonData.name}</Text>
                     <View style={styles.tvShowSubtitle}>
@@ -282,7 +288,8 @@ class Season extends Component {
                           screenshot={episode.screenshot !== null ? {uri: this.formatImageUri(episode.screenshot)} : require('./img/placeholderPoster.png')}
                           name={episode.name}
                           number={episode.episodeNumber}
-                          date={(episode.firstAired !== null) ? new Date(episode.firstAired).toLocaleDateString() : null}>
+                          date={(episode.firstAired !== null) ? new Date(episode.firstAired).toLocaleDateString() : null}
+                          seen={episode.seen !== null}>
                           <Text style={styles.episodeOverview}>{(episode.overview !== null) ? episode.overview : 'Sin sinopsis'}</Text>
                         </EpisodeCollapse>
                       )
@@ -496,9 +503,45 @@ const styles = StyleSheet.create({
   poster: {
     height: 147,
     width: 100,
-    resizeMode: 'contain',
-    borderWidth: 1,
+    resizeMode: 'cover',
+    //borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  posterUnseen: {
+    alignSelf: 'flex-end',
+    backgroundColor: 'rgba(255,149,0,0.76)',
+    paddingRight: 8,
+    paddingLeft: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: 'rgba(0,0,0,1)',
+        shadowOffset: { width: 0, height: 0},
+        shadowOpacity: 0.6,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 3,
+      }
+    }),
+  },
+  posterUnseenText: {
+    color: 'rgba(255,255,255,1)',
+    textShadowOffset: { width: 1, height: 1},
+    textShadowColor: 'rgba(0,0,0,0.1)',
+    textShadowRadius: 3,
+    ...Platform.select({
+      ios: {
+        fontSize: 13,
+        lineHeight: 24,
+        fontWeight: '600',
+      },
+      android: {
+        fontSize: 13,
+        lineHeight: 20,
+        paddingBottom: 3,
+        fontWeight: 'Roboto-Medium',
+      }
+    }),
   },
   // vista donde estan el titulo y demas
   headerData: {
