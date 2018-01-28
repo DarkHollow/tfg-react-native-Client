@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import {Animated, Image, Platform, StyleSheet, Text, View, TouchableOpacity, TouchableNativeFeedback} from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 class EpisodeCollapse extends Component {
   constructor(props) {
@@ -11,6 +12,7 @@ class EpisodeCollapse extends Component {
       name       : props.title,
       screenshot : props.screenshot,
       date       : props.date,
+      seen       : props.seen,
       expanded   : false,
       animation  : new Animated.Value(),
     };
@@ -52,41 +54,19 @@ class EpisodeCollapse extends Component {
     return (
       (Platform.OS === 'ios') ? (
         <Animated.View style={[(this.state.expanded) ? styles.episodeExpanded : styles.episode, {height: this.state.animation}]}>
-          <TouchableOpacity style={styles.episode} onPress={this.toggle.bind(this)}>
-
-            <View style={styles.episodeInner} onLayout={this._setMinHeight.bind(this)}>
-              <View style={styles.episodeScreenshotView}>
-                <Image style={styles.episodeScreenshot}
-                       source={this.props.screenshot} />
-              </View>
-              <View style={styles.episodeNameNumber}>
-                <Text style={styles.episodeName} numberOfLines={1}>{this.props.name}</Text>
-                <View style={styles.episodeSubtitle}>
-                  <Text style={styles.episodeNumber}>Episodio {this.props.number}</Text>
-                  <Text style={styles.episodeDate}>{this.props.date}</Text>
-                </View>
-              </View>
-              <View style={styles.episodeOption}>
-              </View>
-            </View>
-
-          </TouchableOpacity>
-          <View style={styles.body} onLayout={this._setMaxHeight.bind(this)}>
-            {this.props.children}
-          </View>
-        </Animated.View>
-
-      ) : (
-          <Animated.View style={[(this.state.expanded) ? styles.episodeExpanded : styles.episode, {height: this.state.animation}]}>
-            <TouchableNativeFeedback onLayout={this._setMinHeight.bind(this)}
-              onPress={this.toggle.bind(this)}
-              background={TouchableNativeFeedback.Ripple('rgba(255,149,0,1)', true)}
-              useForeground>
-
-              <View style={styles.episodeInner}>
+          <View style={styles.episodeRow}>
+            <TouchableOpacity style={styles.episode} onPress={this.toggle.bind(this)}>
+              <View style={styles.episodeInner} onLayout={this._setMinHeight.bind(this)}>
                 <View style={styles.episodeScreenshotView}>
                   <Image style={styles.episodeScreenshot}
-                         source={this.props.screenshot} />
+                         source={this.props.screenshot}>
+                    {!this.props.seen ? (
+                      <Image style={styles.episodeScreenshotUnseen}
+                              source={require('../img/unseen-screenshot.png')} />
+                    ) : (
+                      null
+                    )}
+                  </Image>
                 </View>
                 <View style={styles.episodeNameNumber}>
                   <Text style={styles.episodeName} numberOfLines={1}>{this.props.name}</Text>
@@ -95,11 +75,56 @@ class EpisodeCollapse extends Component {
                     <Text style={styles.episodeDate}>{this.props.date}</Text>
                   </View>
                 </View>
-                <View style={styles.episodeOption}>
-                </View>
               </View>
+            </TouchableOpacity>
+            <View style={styles.episodeOptions}>
+              {/*<Icon style={styles.eyeIcon} onPress={ this.onSeenPress.bind(this, navigator) }
+                    name={(Platform.OS === 'ios') ? 'ios-eye-off' : 'md-arrow-back'}>
+              </Icon>*/}
+            </View>
+          </View>
 
-            </TouchableNativeFeedback>
+          <View style={styles.body} onLayout={this._setMaxHeight.bind(this)}>
+            {this.props.children}
+          </View>
+        </Animated.View>
+
+      ) : (
+          <Animated.View style={[(this.state.expanded) ? styles.episodeExpanded : styles.episode, {height: this.state.animation}]}>
+            <View style={styles.episodeRow}>
+              <TouchableNativeFeedback onLayout={this._setMinHeight.bind(this)}
+                onPress={this.toggle.bind(this)}
+                background={TouchableNativeFeedback.Ripple('rgba(255,149,0,1)', true)}
+                useForeground>
+
+                <View style={styles.episodeInner}>
+                  <View style={styles.episodeScreenshotView}>
+                    <Image style={styles.episodeScreenshot}
+                           source={this.props.screenshot}>
+                      {!this.props.seen ? (
+                        <Image style={styles.episodeScreenshotUnseen}
+                               source={require('../img/unseen-screenshot.png')} />
+                      ) : (
+                        null
+                      )}
+                    </Image>
+                  </View>
+                  <View style={styles.episodeNameNumber}>
+                    <Text style={styles.episodeName} numberOfLines={1}>{this.props.name}</Text>
+                    <View style={styles.episodeSubtitle}>
+                      <Text style={styles.episodeNumber}>Episodio {this.props.number}</Text>
+                      <Text style={styles.episodeDate}>{this.props.date}</Text>
+                    </View>
+                  </View>
+                </View>
+              </TouchableNativeFeedback>
+              <View style={styles.episodeOptions}>
+                {/*<Icon style={styles.eyeIcon} onPress={ this.onSeenPress.bind(this, navigator) }
+                    name={(Platform.OS === 'ios') ? 'ios-eye-off' : 'md-arrow-back'}>
+              </Icon>*/}
+              </View>
+            </View>
+
             <View style={styles.body} onLayout={this._setMaxHeight.bind(this)}>
               {this.props.children}
             </View>
@@ -127,9 +152,15 @@ let styles = StyleSheet.create({
     overflow:'hidden',
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
+  episodeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
   episodeInner: {
     flexDirection: 'row',
     padding: 10,
+    paddingRight: 5,
     alignItems: 'center',
   },
   episodeScreenshotView: {
@@ -143,17 +174,24 @@ let styles = StyleSheet.create({
     resizeMode: 'cover',
     borderRadius: 3,
   },
+  episodeScreenshotUnseen: {
+    flex: 1,
+    width: null,
+    height: null,
+    resizeMode: 'cover',
+    opacity: 0.76,
+  },
   episodeNameNumber: {
     flex: 1,
     flexDirection: 'column',
     paddingLeft: 10,
-    paddingRight: 2,
   },
   episodeName: {
     color: '#dadade',
     fontSize: 14.5,
     fontWeight: '600',
     letterSpacing: -0.4,
+    paddingRight: 5,
   },
   episodeSubtitle: {
     flexDirection: 'row',
@@ -167,9 +205,13 @@ let styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.66)',
     fontSize: 13,
   },
-  episodeOption: {
-
+  episodeOptions: {
+    paddingRight: 10,
   },
+  eyeIcon: {
+    color: 'white',
+    fontSize: 24,
+  }
 });
 
 export default EpisodeCollapse;
